@@ -1,0 +1,17 @@
+/vendor
+/node_modules
+/public/storage
+/Homestead.yaml
+Homestead.json
+.env
+.env.local
+.claude
+opencode.json
+.agents
+boost.json
+.phpunit.result.cache
+test26.9.txt
+
+# graphify derived AST/semantic cache - regenerable, `graphify update` rebuilds it
+graphify-out/cache/
+/graphify-out

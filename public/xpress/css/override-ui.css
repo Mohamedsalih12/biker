@@ -1,0 +1,64 @@
+/* Non-invasive UI overrides to harmonize button and dropdown spacing */
+
+/* Make small buttons consistently compact */
+.btn-sm {
+    padding: .25rem .5rem !important;
+    font-size: .8125rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Ensure dropdown toggles match small button height when using btn-sm */
+.dropdown .dropdown-toggle.btn-sm,
+.btn.dropdown-toggle.btn-sm {
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
+}
+
+/* Slightly tighter dropdown menu padding and item spacing */
+.dropdown-menu {
+    padding: .5rem !important;
+}
+
+.dropdown-menu .form-check {
+    margin-bottom: .25rem !important;
+}
+
+/* Reduce hr spacing used inside small control groups */
+.dropdown-menu hr {
+    margin: .375rem 0 !important;
+}
+
+/* Keep action buttons in dropdown compact and vertically centered */
+.dropdown-menu .btn {
+    padding-top: .28rem !important;
+    padding-bottom: .28rem !important;
+    font-size: .875rem !important;
+}
+
+/* Small adjustments for input-group buttons to align heights */
+.input-group .btn {
+    padding-top: .35rem !important;
+    padding-bottom: .35rem !important;
+}
+
+/* Ensure small form controls in top button groups match small button height */
+.btn-group-top .form-control-sm,
+.btn-group-top input[type="date"] {
+    padding-top: .28rem !important;
+    padding-bottom: .28rem !important;
+    font-size: .8125rem !important;
+    border:0.01px light #020202 !important;
+}
+
+/* Ensure add/export/button components inside .btn-group-top are vertically aligned */
+.btn-group-top a.btn,
+.btn-group-top button.btn,
+.btn-group-top .btn {
+    vertical-align: middle;
+}
+
+/* Prevent float-end from misaligning inside compact btn-group-top */
+.btn-group-top .btn.float-end {
+    float: none !important;
+    margin-left: .5rem;
+}
