@@ -84,6 +84,15 @@
                                 </ul>
                             </li>
                             @endcan
+                            @can('manage-vehicles')
+                            <li class="dropdown-submenu">
+                                <a class="dropdown-item dropdown-toggle" href="#">Vehicles</a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <li><a class="dropdown-item" href="{{ route('xpress.vehicles.index') }}">View Vehicles</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('xpress.vehicles.create') }}">Add Vehicle</a></li>
+                                </ul>
+                            </li>
+                            @endcan
                             <li><a class="dropdown-item" href="{{ route('settings') }}">Settings</a></li>
                         </ul>
                         </li>
@@ -169,6 +178,16 @@
                                     href="{{ url('admin/users') }}">
                                         View Users
                                     </a>
+                                </li>
+                            </x-sidebar-collapse-item>
+                            @endcan
+                            @can('manage-vehicles')
+                            <x-sidebar-collapse-item id="vehicles" title="Vehicles" icon="fa fa-motorcycle" :patterns="['admin/vehicles', 'admin/vehicles/*']">
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/vehicles') ? 'active' : '' }}" href="{{ route('xpress.vehicles.index') }}">View Vehicles</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/vehicles/create') ? 'active' : '' }}" href="{{ route('xpress.vehicles.create') }}">Add Vehicle</a>
                                 </li>
                             </x-sidebar-collapse-item>
                             @endcan

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -68,6 +69,10 @@ class AppServiceProvider extends ServiceProvider
             $subject = $arguments[0] ?? null;
 
             if ($ability === 'manage-users' || $subject === User::class || $subject instanceof User) {
+                return $user instanceof User && $user->role === 'admin';
+            }
+
+            if ($ability === 'manage-vehicles' || $subject === Vehicle::class || $subject instanceof Vehicle) {
                 return $user instanceof User && $user->role === 'admin';
             }
 
