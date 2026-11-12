@@ -2,7 +2,7 @@
 @section('title', 'Users List')
 @section('content')
     <x-session-message />
-    @if(session('reset_password_once'))
+    @if (session('reset_password_once'))
         @php
             $reset = session('reset_password_once');
         @endphp
@@ -33,22 +33,16 @@
             }
         </script>
     @endif
-    
+
     <div class="container-fluid">
         <div class="topbar">
             <div>
                 <h3 class="mb-0">Users</h3>
                 <div class="small-muted">Data loads from Database table <b>Users</b></div>
             </div>
-
-            <!-- Buttons -->
             <div class="btn-group-top">
                 <x-add-btn :routing="route('xpress.users.create')" />
-                <x-bulk-delete
-                    table-name="user-table"
-                    :model="\App\Models\User::class"
-                    button-id="users-bulk-delete"
-                />
+                <x-bulk-delete table-name="user-table" :model="\App\Models\User::class" button-id="users-bulk-delete" />
             </div>
         </div>
         <div class="card shadow-sm">
