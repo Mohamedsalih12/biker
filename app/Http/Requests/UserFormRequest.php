@@ -31,17 +31,15 @@ class UserFormRequest extends FormRequest
     public function rules(): array
     {
         $user = $this->route('user');
-        $rules = [
+
+        return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'max:255', $user ? Rule::unique('users', 'email')->ignore($user) : 'unique:users'],
-        ];
-
-        if ($user) {
-            return $rules + ['active_status' => ['boolean']];
-        }
-
-        return $rules + [
-            'password' => ['required', 'string', Password::default()],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
+            'phone' => ['required', 'string', 'max:30'],
+            'role' => ['sometimes', 'required', Rule::in(['admin', 'staff', 'customer'])],
+            'address' => ['nullable', 'string', 'max:10000'],
+            'password' => ['nullable', 'string', Password::default()],
+            'active_status' => ['sometimes', 'boolean'],
         ];
     }
 

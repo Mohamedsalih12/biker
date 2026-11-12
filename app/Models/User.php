@@ -35,6 +35,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
     ];
 
     public function warehouse(): HasOne

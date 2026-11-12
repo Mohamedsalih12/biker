@@ -27,6 +27,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAsUser()->put(route('xpress.users.update', $user), [
             'name' => $user->name,
             'email' => $user->email,
+            'phone' => $user->phone,
             'active_status' => true,
             'password' => 'NewPassword!123',
         ]);
@@ -56,6 +57,7 @@ class UserControllerTest extends TestCase
         $response = $this->actingAsUser()->put(route('xpress.users.update', $user), [
             'name' => $user->name,
             'email' => $user->email,
+            'phone' => $user->phone,
             'active_status' => true,
         ]);
 

@@ -7,7 +7,7 @@
         <x-session-message />
         <div class="col-md-12 grid-margin">
             
-            <form method="POST" action="{{ route('xpress.settings') }}">
+            <form method="POST" action="{{ route('settings') }}">
                 @csrf
                 <div class="card mb-3">
                     <div class="card-header bg-primary text-white">

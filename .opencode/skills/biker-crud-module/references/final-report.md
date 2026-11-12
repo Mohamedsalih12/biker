@@ -3,8 +3,8 @@
 ## Verification steps
 
 1. Review all changed files.
-2. Check migrations, model relationships, routes, policies, permissions, validation.
-3. Check CRUD, search/filtering, bulk delete, import, export, activity logging, Blade UI.
+2. Check migrations, model relationships, routes, validation.
+3. Check CRUD, search/filtering, bulk delete, export, activity logging, Blade UI.
 4. Run the relevant PHPUnit tests.
 5. Run any static analysis / code-quality tools the project has (for example Pint, PHPStan/Larastan, if installed).
 6. Fix implementation-related failures, then re-run the affected tests.
@@ -19,12 +19,11 @@ Keep it concise.
 
 **Database**: tables, columns, constraints, indexes added or changed.
 
-**Authorization**: policies, permissions, roles affected.
-
-**UI**: pages, search/filtering, bulk actions, import/export.
+**UI**: pages, search/filtering, bulk actions, export.
 
 **Testing**: the actual commands run and their real results.
 
 **Security**: important controls implemented.
 
-**Remaining issues**: failed tests, warnings, unresolved decisions, manual steps (for example seeding permissions, assigning them to roles), deployment considerations. Do not hide failures.
+**Remaining issues**: failed tests, warnings, unresolved decisions, manual steps (for example seeding permissions), deployment considerations. Do not hide failures.
+

@@ -43,73 +43,17 @@
 
             <!-- Buttons -->
             <div class="btn-group-top">
-                <x-add-btn :routing="url('admin/users/create')" />
-                
+                <x-add-btn :routing="route('xpress.users.create')" />
+                <x-bulk-delete
+                    table-name="user-table"
+                    :model="\App\Models\User::class"
+                    button-id="users-bulk-delete"
+                />
             </div>
         </div>
         <div class="card shadow-sm">
             <div class="card-body">
-                <table class="table table-striped table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Active Status</th>
-                            <th>Actions</th>
-                            <th>Reset Password</th>
-                            <th>Reset 2FA</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($users as $user)
-                            <tr>
-                                <td class="text-center" >{{ $user->id ?? null }}</td>
-                                <td><a href="{{ route('xpress.users.edit', $user) }}"  @style(['color: #000', 'text-decoration: none']) >
-                                        {{ $user->name }}
-                                    </a>
-                                </td>
-                                <td>{{ $user->email }}</td>
-                                <td>
-                                    {{ $user->active_status ? 'Active' : 'Inactive' }}
-                                </td>
-                                <td class="text-center" >
-                                    <x-edit-btn :routing="url('admin/users/' . $user->id . '/edit')" />
-                                    <form action="{{ url('admin/users/' . $user->id . '/delete') }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')                                        
-                                        <x-destroy-btn />
-                                    </form>
-                                </td>
-                                <td>
-                                    <form action="{{ route('users.reset-password.store', $user) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('Reset password for {{ $user->name }}?')">
-                                        @csrf
-                                        @if(auth()->id() !== $user->id)
-                                        <button type="submit" class="btn btn-warning btn-sm">
-                                            Reset Password
-                                        </button>
-                                        @endif
-                                    </form>
-                                </td>
-                                <td>
-                                    <form action="{{ route('users.reset-2fa.store', $user) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('Reset 2FA for {{ $user->name }}?')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-danger btn-sm">Reset 2FA</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center">No Users Available</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                <div class="mt-3">
-                    {{ $users->links() }}
-                </div>
+                <livewire:admin.user-table />
             </div>
         </div>
     </div>

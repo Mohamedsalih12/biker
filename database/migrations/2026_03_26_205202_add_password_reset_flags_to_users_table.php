@@ -9,6 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'email')) {
+                $table->string('email')->nullable();
+            }
+
+            if (! Schema::hasColumn('users', 'password')) {
+                $table->string('password')->nullable();
+            }
+        });
+
+        Schema::table('users', function (Blueprint $table) {
             $table->boolean('must_change_password')->default(false)->after('password');
             $table->timestamp('password_reset_at')->nullable()->after('must_change_password');
             $table->unsignedBigInteger('password_reset_by')->nullable()->after('password_reset_at');

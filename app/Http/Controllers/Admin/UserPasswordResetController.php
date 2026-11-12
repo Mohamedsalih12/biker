@@ -16,6 +16,8 @@ class UserPasswordResetController extends Controller
 {
     public function store(User $user)
     {
+        $this->authorize('manage-users');
+
         $currentUser = Auth::user();
 
         abort_unless($currentUser !== null, 403);
@@ -61,6 +63,8 @@ class UserPasswordResetController extends Controller
 
     public function reset2fa(User $user, Request $request, TwoFactorAssurance $twoFactorAssurance): RedirectResponse
     {
+        $this->authorize('manage-users');
+
         $currentUser = Auth::user();
 
         abort_unless($currentUser !== null, 403);

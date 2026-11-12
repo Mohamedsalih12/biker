@@ -31,14 +31,14 @@ class UserController extends Controller
 
     public function editProfileAdmin(User $user): View
     {
-        $this->authorize('isAdmin');
+        $this->authorize('manage-users');
 
         return view('admin.users.profile', compact('user'));
     }
 
     public function updateProfileAdmin(User $user, UpdateAdminProfileRequest $request): RedirectResponse
     {
-        $this->authorize('isAdmin');
+        $this->authorize('manage-users');
 
         $user->update($request->safe()->only(['name']));
 

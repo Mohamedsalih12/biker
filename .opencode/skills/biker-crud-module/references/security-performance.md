@@ -1,6 +1,6 @@
 # Security and Performance Review
 
-Run this review before calling the module complete. Follow Laravel 13 security best practices and the existing fieldt360 security architecture.
+Run this review before calling the module complete. Follow Laravel 13 security best practices and the existing biker security architecture.
 
 ## Security checklist
 
@@ -10,8 +10,8 @@ Run this review before calling the module complete. Follow Laravel 13 security b
 * XSS (escaped output) and CSRF (tokens on every state-changing form/request)
 * Unsafe file uploads (type, size, storage location)
 * Spreadsheet formula injection in exports
-* Sensitive information leakage (responses, logs, import error output)
-* Unauthorized imports, exports, bulk deletion
+* Sensitive information leakage (responses, logs)
+* Unauthorized exports, bulk deletion
 * Missing validation or missing authorization on any endpoint
 * Excessive database exposure (selecting or returning more columns than needed)
 
@@ -20,8 +20,7 @@ Run this review before calling the module complete. Follow Laravel 13 security b
 * N+1 queries; unnecessary eager loading
 * Missing or redundant indexes
 * Large unbounded queries; entire datasets loaded into memory
-* Inefficient search, import, or export (prefer query/chunked/queued approaches for large data)
+* Inefficient search, export (prefer query/chunked/queued approaches for large data)
 * Pagination used for large datasets
 
 Do not optimize prematurely, but fix obvious production risks and mention any that remain.
-

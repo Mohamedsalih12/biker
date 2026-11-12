@@ -30,6 +30,7 @@ class TwoFactorController extends Controller
         $targetUser = $user ?? $currentUser;
 
         if ($targetUser->id !== $currentUser->id) {
+            $this->authorize('manage-users');
             $this->twoFactorAssurance->ensureVerified(request());
         }
 
@@ -86,6 +87,7 @@ class TwoFactorController extends Controller
         }
 
         if ($targetUser->id !== $currentUser->id) {
+            $this->authorize('manage-users');
             $this->twoFactorAssurance->ensureVerified($request);
         }
 
@@ -128,6 +130,10 @@ class TwoFactorController extends Controller
 
         $targetUser = $user ?? $currentUser;
 
+        if ($targetUser->id !== $currentUser->id) {
+            $this->authorize('manage-users');
+        }
+
         $this->twoFactorAssurance->ensureVerified(request());
 
         if (! $targetUser->google2fa_secret) {
@@ -147,6 +153,10 @@ class TwoFactorController extends Controller
 
         $targetUserId = $request->input('user_id', $currentUser->id);
         $targetUser = User::find($targetUserId) ?? $currentUser;
+
+        if ($targetUser->id !== $currentUser->id) {
+            $this->authorize('manage-users');
+        }
 
         $this->twoFactorAssurance->ensureVerified($request);
 

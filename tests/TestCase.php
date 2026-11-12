@@ -19,7 +19,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->admin()->create();
         $this->otherUser = User::factory()->create();
 
         // Ensure tests that rely on authenticated, OTP-verified sessions have the flag by default

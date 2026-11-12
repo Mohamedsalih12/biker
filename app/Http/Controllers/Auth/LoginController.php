@@ -133,7 +133,7 @@ class LoginController extends Controller
 
         session(['login_log_id' => $loginLogId]);
 
-        return redirect('/xpress/warehouse')->with('message', 'Logged in Successfully');
+        return redirect()->route('xpress.users.index')->with('message', 'Logged in Successfully');
     }
 
     public function logout(Request $request)

@@ -22,7 +22,7 @@ class TwoFactorTest extends TestCase
         $this->assertNull($user->fresh()->google2fa_secret);
     }
 
-    public function test_enrolled_user_login_redirects_to_warehouses(): void
+    public function test_enrolled_user_login_redirects_to_user_index(): void
     {
         $user = User::factory()->create([
             'password' => bcrypt('password123'),
@@ -34,7 +34,7 @@ class TwoFactorTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response->assertRedirect(route('xpress.warehouse.index'));
+        $response->assertRedirect(route('xpress.users.index'));
         $this->assertAuthenticatedAs($user);
     }
 

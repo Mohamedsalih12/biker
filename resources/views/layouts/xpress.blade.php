@@ -68,9 +68,9 @@
                                 <a class="dropdown-item dropdown-toggle" href="#">Source Table</a>
                                 <ul class="dropdown-menu dropdown-menu-dark">
                                     <li><a class="dropdown-item" href="{{ route('home') }}">Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="{{ url('xpress/warehouse') }}">Warehouse</a></li>
                                 </ul>
                             </li>
+                            @can('manage-users')
                             <li class="dropdown-submenu">
                                 <a class="dropdown-item dropdown-toggle" href="#">User Pages</a>
                                 <ul class="dropdown-menu dropdown-menu-dark">
@@ -82,8 +82,9 @@
                                         </ul>
                                     </li>
                                 </ul>
-                            </li>                            
-                            <li><a class="dropdown-item" href="{{ route('xpress.settings') }}">Settings</a></li>
+                            </li>
+                            @endcan
+                            <li><a class="dropdown-item" href="{{ route('settings') }}">Settings</a></li>
                         </ul>
                         </li>
                     </ul>
@@ -116,7 +117,7 @@
                                 <i class="mdi mdi-cog text-primary"></i>
                                 User Profile
                             </a>
-                            <a class="dropdown-item" href="{{ route('xpress.settings') }}">
+                            <a class="dropdown-item" href="{{ route('settings') }}">
                                 <i class="mdi mdi-cog text-primary"></i>
                                 Site Settings
                             </a>
@@ -153,6 +154,7 @@
                                 </a>
                             </li>
                             
+                            @can('manage-users')
                             <x-sidebar-collapse-item
                                 id="auth"
                                 title="User Pages"
@@ -169,27 +171,7 @@
                                     </a>
                                 </li>
                             </x-sidebar-collapse-item>
-                            <x-sidebar-collapse-item
-                                id="stocks"
-                                title="Stocks"
-                                icon="fa fa-warehouse"
-                                :patterns="[
-                                    'xpress/warehouse',
-                                    'xpress/warehouse/*',
-                                ]">
-                                <li class="nav-item">
-                                    <a class="nav-link {{ Request::is('xpress/warehouse') ? 'active' : '' }}" 
-                                    href="{{ url('xpress/warehouse') }}" aria-expanded="false" aria-controls="ui-basic">
-                                    <span class="menu-title">Warehouses</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {{ Request::is('xpress/warehouse/bin') ? 'active' : '' }}"
-                                    href="{{ route('xpress.warehouse.bin') }}">
-                                    <span class="menu-title">Warehouse Bin</span>
-                                    </a>
-                                </li>
-                            </x-sidebar-collapse-item>
+                            @endcan
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
@@ -63,7 +64,13 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()?->id ?: $request->ip());
         });
 
-        Gate::before(static function (?Authenticatable $user): ?bool {
+        Gate::before(static function (?Authenticatable $user, string $ability, array $arguments): ?bool {
+            $subject = $arguments[0] ?? null;
+
+            if ($ability === 'manage-users' || $subject === User::class || $subject instanceof User) {
+                return $user instanceof User && $user->role === 'admin';
+            }
+
             return $user === null ? null : true;
         });
 

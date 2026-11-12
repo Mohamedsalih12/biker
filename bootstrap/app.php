@@ -18,11 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['web', 'auth', '2fa', 'force.password.change'])
                 ->prefix('admin')
                 ->group(base_path('routes/admin.php'));
-
-            // Xpress Module Routes
-            Route::middleware(['web'])
-                ->prefix('xpress')
-                ->group(base_path('routes/xpress.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

@@ -13,7 +13,7 @@ class SettingController extends Controller
         $this->authorize('isAdmin');
         $settings = Setting::first();
 
-        return view('xpress.settings', compact('settings'));
+        return view('settings', compact('settings'));
     }
 
     public function store(StoreSettingRequest $request)

@@ -24,14 +24,14 @@ class SettingTest extends TestCase
     {
         Setting::create(['website_name' => 'Field Visit', 'website_url' => 'https://example.com']);
 
-        $this->actingAsUser()->get(route('xpress.settings'))->assertOk();
+        $this->actingAsUser()->get(route('settings'))->assertOk();
     }
 
     public function test_authenticated_user_can_save_https_urls(): void
     {
         Setting::create(['website_name' => 'Existing']);
 
-        $response = $this->actingAsUser()->post(route('xpress.settings.store'), [
+        $response = $this->actingAsUser()->post(route('settings.store'), [
             'website_name' => 'Field Visit',
             'website_url' => 'https://example.com',
             'facebook' => 'https://facebook.com/fieldvisit',
@@ -51,7 +51,7 @@ class SettingTest extends TestCase
     {
         $this->assertDatabaseCount('settings', 0);
 
-        $response = $this->actingAsUser()->post(route('xpress.settings.store'), [
+        $response = $this->actingAsUser()->post(route('settings.store'), [
             'website_name' => 'Field Visit',
             'website_url' => 'http://example.com',
         ]);
@@ -67,7 +67,7 @@ class SettingTest extends TestCase
     {
         Setting::create(['website_name' => 'Field Visit']);
 
-        $response = $this->actingAsUser()->post(route('xpress.settings.store'), [
+        $response = $this->actingAsUser()->post(route('settings.store'), [
             'website_url' => $payload,
             'facebook' => $payload,
         ]);
@@ -97,7 +97,7 @@ class SettingTest extends TestCase
 
     public function test_authenticated_user_cannot_save_a_non_email_value_in_an_email_field(): void
     {
-        $response = $this->actingAsUser()->post(route('xpress.settings.store'), [
+        $response = $this->actingAsUser()->post(route('settings.store'), [
             'email_1' => 'not-an-email',
         ]);
 
@@ -106,7 +106,7 @@ class SettingTest extends TestCase
 
     public function test_linked_fields_may_be_left_empty(): void
     {
-        $response = $this->actingAsUser()->post(route('xpress.settings.store'), [
+        $response = $this->actingAsUser()->post(route('settings.store'), [
             'website_name' => 'Field Visit',
         ]);
 
@@ -118,7 +118,7 @@ class SettingTest extends TestCase
     {
         $this->shareSettings(['website_name' => 'Field Visit', 'website_url' => self::DATA_URL_PAYLOAD]);
 
-        $response = $this->actingAsUser()->get(route('xpress.settings'));
+        $response = $this->actingAsUser()->get(route('settings'));
 
         $response->assertOk();
 
@@ -134,7 +134,7 @@ class SettingTest extends TestCase
         $this->shareSettings(['website_name' => 'Field Visit', 'website_url' => 'https://example.com']);
 
         $this->actingAsUser()
-            ->get(route('xpress.settings'))
+            ->get(route('settings'))
             ->assertOk()
             ->assertSee('href="https://example.com"', false);
     }

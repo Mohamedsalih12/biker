@@ -13,7 +13,7 @@ class UpdateAdminProfileRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Gate::authorize('isAdmin')->allowed();
+        return Gate::authorize('manage-users')->allowed();
     }
 
     /**

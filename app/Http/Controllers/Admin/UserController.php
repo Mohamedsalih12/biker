@@ -23,9 +23,6 @@ class UserController extends Controller
     {
         $this->authorize('viewAny', User::class);
 
-        $query = User::query();
-
-        $users = $query->paginate(15);
         $firstRecord = User::first();
 
         activity('user')
@@ -37,7 +34,7 @@ class UserController extends Controller
             ])
             ->log('Users viewed');
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index');
     }
 
     public function userdetails(Request $request): RedirectResponse
@@ -58,11 +55,12 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $validated = $request->validated();
+        $user = new User;
+        $user->fill($request->safe()->only(['name', 'email', 'phone', 'address']));
+        $user->role = $validated['role'] ?? 'customer';
+        $user->password = $validated['password'] ?? null;
+        $user->save();
 
         return redirect()->route('xpress.users.edit', $user)
             ->with('message', 'User account created successfully.');
@@ -81,9 +79,9 @@ class UserController extends Controller
 
         $validated = $request->validated();
 
-        $user->name = $request->name;
-        $user->email = $validated['email'];
-        $user->active_status = $request->active_status;
+        $user->fill($request->safe()->only(['name', 'email', 'phone', 'address']));
+        $user->role = $validated['role'] ?? $user->role;
+        $user->active_status = $validated['active_status'] ?? $user->active_status;
 
         if ($request->password) {
             $user->password = Hash::make($request->password);
@@ -102,7 +100,7 @@ class UserController extends Controller
             $user->save();
         }
 
-        return redirect('/admin/users')->with('message', 'User updated successfully.');
+        return redirect()->route('xpress.users.index')->with('message', 'User updated successfully.');
     }
 
     public function destroy(User $user)
