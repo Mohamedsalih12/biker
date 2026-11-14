@@ -27,8 +27,9 @@ class BookingTest extends TestCase
     public function test_admin_can_create_bookings_with_generated_identity_defaults_and_nullable_returns(): void
     {
         $payload = $this->payload();
-        $this->actingAsUser()->post('/admin/bookings', $payload + ['booking_code' => 'SPOOFED', 'user_id' => $this->otherUser->id])->assertRedirect();
+        $response = $this->actingAsUser()->post('/admin/bookings', $payload + ['booking_code' => 'SPOOFED', 'user_id' => $this->otherUser->id]);
         $first = Booking::query()->sole();
+        $response->assertRedirect("/admin/bookings/{$first->id}/agreement");
         $this->post('/admin/bookings', $payload)->assertRedirect();
 
         $this->assertSame('10000', $first->booking_code);
@@ -62,7 +63,7 @@ class BookingTest extends TestCase
             'booking_status' => 'returned', 'rental_type' => 'weekly', 'actual_return_date' => '2026-12-01',
             'end_odometer' => 200, 'handover_notes' => '<script>handover</script>', 'return_notes' => '<script>return</script>',
             'user_id' => $this->otherUser->id, 'booking_code' => 'CHANGED',
-        ])->assertRedirect('/admin/bookings');
+        ])->assertRedirect("/admin/bookings/{$booking->id}/agreement");
 
         $booking->refresh();
         $this->assertSame($code, $booking->booking_code);
@@ -187,7 +188,7 @@ class BookingTest extends TestCase
             'customer_id' => $booking->customer_id, 'vehicle_id' => $booking->vehicle_id,
             'rate_per_unit' => '2500.00', 'start_date' => '2026-11-01', 'end_date' => '2026-12-01',
             'start_odometer' => 100, $field => 'Private note content',
-        ])->assertRedirect('/admin/bookings');
+        ])->assertRedirect("/admin/bookings/{$booking->id}/agreement");
 
         $this->assertSame('Private note content', $booking->fresh()->{$field});
         $activities = Activity::query()->where('log_name', 'booking')->where('event', 'updated')->get();

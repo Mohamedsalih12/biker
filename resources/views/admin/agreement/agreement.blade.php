@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agreement Draft — {{ $booking->booking_code }}</title>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #2b6cb0;
+            --border: #cbd5e0;
+            --bg-light: #f7fafc;
+            --text: #1a202c;
+            --muted: #4a5568;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: #edf2f7;
+            padding: 2rem 1rem;
+        }
+        .document {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2.5rem 3rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 4px;
+            overflow-wrap: anywhere;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .intro { margin-bottom: 1.75rem; font-size: 0.95rem; }
+        .intro strong { color: var(--primary); }
+        .parties {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .party-box {
+            min-width: 0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.1rem 1.25rem;
+            background: var(--bg-light);
+        }
+        .party-box h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.35rem;
+        }
+        .party-box p { font-size: 0.92rem; margin-bottom: 0.35rem; }
+        .party-box .label { color: var(--muted); font-size: 0.8rem; }
+        .section { margin-bottom: 1.75rem; }
+        .section h2 {
+            font-size: 1.05rem;
+            color: var(--primary);
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+            margin-bottom: 0.85rem;
+        }
+        .vehicle-details, .rental-terms { list-style: none; }
+        .vehicle-details li, .rental-terms li {
+            padding: 0.4rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+            font-size: 0.93rem;
+        }
+        .vehicle-details li:last-child, .rental-terms li:last-child { border-bottom: none; }
+        .vehicle-details strong, .rental-terms strong {
+            display: inline-block;
+            min-width: 160px;
+            color: var(--muted);
+        }
+        .terms-list { list-style: none; counter-reset: term; }
+        .terms-list li {
+            position: relative;
+            padding: 0.65rem 0 0.65rem 2.2rem;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.92rem;
+        }
+        .terms-list li:last-child { border-bottom: none; }
+        .terms-list li::before {
+            counter-increment: term;
+            content: counter(term);
+            position: absolute;
+            left: 0;
+            top: 0.65rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: var(--primary);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .terms-list li strong { color: var(--primary); }
+        .signature-section {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--border);
+        }
+        .signature-section p { margin-bottom: 1.5rem; font-size: 0.93rem; }
+        .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .sig-box { border: 1px dashed var(--border); border-radius: 6px; padding: 1.25rem; min-height: 110px; }
+        .sig-box h4 { font-size: 0.85rem; color: var(--muted); margin-bottom: 2.5rem; }
+        .witnesses { margin-top: 1.5rem; }
+        .witnesses h4 { font-size: 0.9rem; color: var(--primary); margin-bottom: 0.75rem; }
+        .witness-line {
+            border-bottom: 1px solid #a0aec0;
+            min-height: 2rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .footer-note { margin-top: 2rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+        @media (max-width: 600px) {
+            .parties, .signatures { grid-template-columns: 1fr; }
+            .document { padding: 1.5rem 1rem; }
+        }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .document { box-shadow: none; padding: 1.5rem; }
+            .party-box, .sig-box { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <main class="document">
+        <div class="header">
+            <h1>Electric Vehicle Rental Agreement</h1>
+            <p>Draft · Booking {{ $booking->booking_code }}</p>
+        </div>
+
+        <p class="intro">
+            This Electric Scooter Rental Agreement ("Agreement") is executed on this
+            <strong>{{ now()->format('d-M-Y') }}</strong> at
+            <strong>Adirampattinam, Thanjavur District, Tamil Nadu (Pincode: 614701)</strong>.
+        </p>
+
+        <p class="intro" style="margin-bottom: 0.5rem;"><strong>BY AND BETWEEN:</strong></p>
+
+        <div class="parties">
+            <div class="party-box">
+                <h3>Lessor (Vehicle Owner)</h3>
+                <p><span class="label">Name:</span><br><strong>Mohamed Salih</strong></p>
+                <p><span class="label">Aadhaar No / Govt ID:</span><br>323326041254</p>
+                <p><span class="label">Address:</span><br>Adirampattinam, Tamil Nadu – 614701</p>
+                <p><span class="label">Phone / WhatsApp:</span><br>+91 9994518970</p>
+            </div>
+
+            <div class="party-box">
+                <h3>Lessee (NRI Renter)</h3>
+                <p><span class="label">Full Name:</span><br>{{ $booking->customer->name }}</p>
+                <p><span class="label">Aadhaar No.:</span><br>{{ $booking->customer->aadhaar ?? '—' }}</p>
+                <p><span class="label">Local Address in Adirampattinam:</span><br>{{ $booking->customer->address ?? '—' }}</p>
+                <p><span class="label">Contact No (WhatsApp / Local SIM):</span><br>{{ $booking->customer->phone ?? '—' }}</p>
+            </div>
+        </div>
+
+        <section class="section">
+            <h2>1. Vehicle Details &amp; Handover Condition</h2>
+            <ul class="vehicle-details">
+                <li><strong>Make &amp; Model:</strong> {{ $booking->vehicle->brand }} - {{ $booking->vehicle->model }}</li>
+                <li><strong>Registration Number:</strong> {{ $booking->vehicle->registration_number }}</li>
+                <li><strong>Odometer:</strong> {{ $booking->start_odometer }} km</li>
+                <li><strong>Accessories Included:</strong> 1 Portable Charger, 2 Keys, 1 Helmet, Vehicle RC Copy, Commercial Insurance Copy</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>2. Rental Period, Deposit &amp; Payment Terms</h2>
+            <ul class="rental-terms">
+                <li><strong>Rental Term:</strong> From {{ $booking->start_date->format('d-M-Y') }} to {{ $booking->end_date->format('d-M-Y') }}</li>
+                <li><strong>{{ ucfirst($booking->rental_type) }} Rental Fee:</strong> ₹{{ number_format((float) $booking->rate_per_unit, 2) }} / {{ ['daily' => 'day', 'weekly' => 'week', 'monthly' => 'month'][$booking->rental_type] }} (payable in advance upon vehicle handover)</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>3. Terms &amp; Conditions</h2>
+            <ol class="terms-list">
+                <li>
+                    <strong>Prohibited Inter-District Travel:</strong>
+                    The vehicle shall NOT be driven beyond a 30 km radius of Adirampattinam
+                    (e.g., Thanjavur city, Tiruchirappalli, Erode) without prior written consent from the Lessor.
+                </li>
+                <li>
+                    <strong>Sub-leasing Ban:</strong>
+                    The Lessee shall not sub-let, assign, or allow third parties or unlicensed persons to drive the vehicle.
+                </li>
+                <li>
+                    <strong>Safe Parking:</strong>
+                    The vehicle must be parked in a secure, covered area overnight to protect it from weather and coastal saltwater exposure.
+                </li>
+                <li>
+                    <strong>Traffic Penalties &amp; Fines:</strong>
+                    The Lessee is 100% responsible for all traffic fines, e-challans (e.g., helmet violation, overspeeding), or toll charges incurred during the rental tenure.
+                </li>
+                <li>
+                    <strong>Minor damage</strong> (scratches, broken mirrors, lever snaps):
+                    Repair costs will be deducted from the security deposit or paid directly by the Lessee.
+                </li>
+                <li>
+                    <strong>Major accidents / Third-Party Damage:</strong>
+                    Covered under Commercial Insurance. However, the Lessee shall pay the insurance claim processing fee
+                    (compulsory deductible ~₹1,500–₹2,500) plus rental income loss for the repair duration.
+                </li>
+                <li>
+                    <strong>Theft or Total Loss:</strong>
+                    In the event of theft or total loss due to negligence (e.g., leaving keys in the ignition),
+                    the Lessee shall compensate the Lessor for the unrecovered market value of the vehicle.
+                </li>
+                <li>
+                    This Agreement is governed by the laws of India and the state of Tamil Nadu.
+                    Any disputes arising out of this Agreement shall fall under the jurisdiction of the
+                    Civil Courts in <strong>Pattukkottai / Thanjavur District</strong>.
+                </li>
+            </ol>
+        </section>
+
+        <div class="signature-section">
+            <p>
+                <strong>IN WITNESS WHEREOF</strong>, the Parties have signed this Agreement on the date first mentioned above.
+            </p>
+            <div class="signatures">
+                <div class="sig-box"><h4>LESSOR (Owner Signature)</h4></div>
+                <div class="sig-box"><h4>LESSEE (Renter Signature)</h4></div>
+            </div>
+            <div class="witnesses">
+                <h4>Witnesses</h4>
+                <div class="witness-line">Witness 1 (Local Contact Name &amp; Phone):</div>
+                <div class="witness-line">Witness 2 (Name &amp; Phone):</div>
+            </div>
+        </div>
+
+        <p class="footer-note">Electric Vehicle Rental Agreement · Adirampattinam, Thanjavur District, Tamil Nadu</p>
+    </main>
+</body>
+</html>

@@ -44,7 +44,7 @@ class BookingController extends Controller
             return $booking;
         });
 
-        return redirect()->route('xpress.bookings.edit', $booking)->with('message', 'Booking created successfully.');
+        return redirect()->route('xpress.bookings.agreement', $booking)->with('message', 'Booking created successfully.');
     }
 
     public function show(Booking $booking): View
@@ -64,12 +64,22 @@ class BookingController extends Controller
         return view('admin.bookings.edit', $this->formData($booking));
     }
 
+    public function agreement(Booking $booking): View
+    {
+        Gate::authorize('view', $booking);
+        $booking->load(['customer:id,name,aadhaar,address,phone', 'vehicle:id,brand,model,registration_number']);
+        activity('booking')->causedBy(auth()->user())->performedOn($booking)->event('view')
+            ->withProperties(['action' => 'view'])->log('Booking agreement draft viewed');
+
+        return view('admin.agreement.agreement', compact('booking'));
+    }
+
     public function update(BookingFormRequest $request, Booking $booking): RedirectResponse
     {
         Gate::authorize('update', $booking);
         DB::transaction(fn (): bool => $booking->update($request->validated()));
 
-        return redirect()->route('xpress.bookings.index')->with('message', 'Booking updated successfully.');
+        return redirect()->route('xpress.bookings.agreement', $booking)->with('message', 'Booking updated successfully.');
     }
 
     public function destroy(Booking $booking): RedirectResponse

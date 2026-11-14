@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\AllBookingController;
+use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\BookingCustomerController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -40,6 +40,7 @@ Route::middleware(['auth', '2fa', 'force.password.change'])->group(function () {
         Route::post('bookings', [BookingController::class, 'store'])->name('xpress.bookings.store');
         Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('xpress.bookings.show');
         Route::get('bookings/{booking}/edit', [BookingController::class, 'edit'])->name('xpress.bookings.edit');
+        Route::get('bookings/{booking}/agreement', [BookingController::class, 'agreement'])->name('xpress.bookings.agreement');
         Route::put('bookings/{booking}', [BookingController::class, 'update'])->name('xpress.bookings.update');
         Route::delete('bookings/{booking}/delete', [BookingController::class, 'destroy'])->name('xpress.bookings.destroy');
     });
