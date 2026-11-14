@@ -26,7 +26,8 @@ class BookingFactory extends Factory
             'user_id' => User::factory()->admin(),
             'rental_type' => 'monthly', 'rate_per_unit' => '2500.00',
             'start_date' => '2026-11-01', 'end_date' => '2026-12-01',
-            'start_odometer' => 100, 'status' => 'pending',
+            'start_odometer' => 100, 'booking_status' => 'taken',
+            'payment_status' => 'paid',
         ];
     }
 }

@@ -26,12 +26,14 @@ class Booking extends Model
 
     public const array RENTAL_TYPES = ['daily', 'weekly', 'monthly'];
 
-    public const array STATUSES = ['pending', 'active', 'completed', 'cancelled'];
+    public const array STATUSES = ['reserved', 'taken', 'returned', 'cancelled'];
+
+    public const array PAYMENT_STATUSES = ['pending', 'paid', 'overdue'];
 
     /** @var list<string> */
     protected $fillable = [
         'customer_id', 'vehicle_id', 'rental_type', 'rate_per_unit', 'start_date', 'end_date',
-        'actual_return_date', 'start_odometer', 'end_odometer', 'status', 'handover_notes', 'return_notes',
+        'actual_return_date', 'start_odometer', 'end_odometer', 'booking_status', 'payment_status', 'handover_notes', 'return_notes',
     ];
 
     protected static function booted(): void
@@ -97,7 +99,7 @@ class Booking extends Model
     {
         return LogOptions::defaults()->useLogName('booking')
             ->logOnly(['booking_code', 'customer_id', 'vehicle_id', 'user_id', 'rental_type', 'rate_per_unit',
-                'start_date', 'end_date', 'actual_return_date', 'start_odometer', 'end_odometer', 'status'])
+                'start_date', 'end_date', 'actual_return_date', 'start_odometer', 'end_odometer', 'booking_status', 'payment_status'])
             ->logOnlyDirty()->dontLogIfAttributesChangedOnly(['updated_at'])->logEmptyChanges();
     }
 }

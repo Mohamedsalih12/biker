@@ -36,7 +36,7 @@ class BookingTest extends TestCase
         $this->assertSame(2, Booking::query()->distinct()->count('booking_code'));
         $this->assertSame($this->user->id, $first->user_id);
         $this->assertSame('monthly', $first->rental_type);
-        $this->assertSame('pending', $first->status);
+        $this->assertSame('reserved', $first->booking_status);
         $this->assertSame('2500.50', $first->rate_per_unit);
         $this->assertNull($first->actual_return_date);
         $this->assertNull($first->end_odometer);
@@ -59,7 +59,7 @@ class BookingTest extends TestCase
         $this->get('/admin/bookings/create')->assertSee('Add Booking')->assertSee('Quick Add');
         $this->get("/admin/bookings/{$booking->id}/edit")->assertSee($code);
         $this->put("/admin/bookings/{$booking->id}", $this->payload() + [
-            'status' => 'completed', 'rental_type' => 'weekly', 'actual_return_date' => '2026-12-01',
+            'booking_status' => 'returned', 'rental_type' => 'weekly', 'actual_return_date' => '2026-12-01',
             'end_odometer' => 200, 'handover_notes' => '<script>handover</script>', 'return_notes' => '<script>return</script>',
             'user_id' => $this->otherUser->id, 'booking_code' => 'CHANGED',
         ])->assertRedirect('/admin/bookings');
@@ -67,11 +67,12 @@ class BookingTest extends TestCase
         $booking->refresh();
         $this->assertSame($code, $booking->booking_code);
         $this->assertSame($this->user->id, $booking->user_id);
-        $this->assertSame('completed', $booking->status);
+        $this->assertSame('returned', $booking->booking_status);
         $this->assertSame('weekly', $booking->rental_type);
         $this->assertSame('2026-12-01', $booking->actual_return_date->toDateString());
         $this->assertSame(200, $booking->end_odometer);
-        $this->get("/admin/bookings/{$booking->id}")->assertSee('<script>return</script>')->assertDontSee('<script>return</script>', false)
+        $this->get("/admin/bookings/{$booking->id}")->assertSee('Returned')->assertSee('Paid')
+            ->assertSee('<script>return</script>')->assertDontSee('<script>return</script>', false)
             ->assertSee('<script>handover</script>')->assertDontSee('<script>handover</script>', false);
         $this->delete("/admin/bookings/{$booking->id}/delete")->assertRedirect('/admin/bookings');
         $this->assertModelMissing($booking);
@@ -102,7 +103,8 @@ class BookingTest extends TestCase
         return [
             'missing customer' => ['customer_id', 999999], 'missing vehicle' => ['vehicle_id', 999999],
             'invalid rental' => ['rental_type', 'hourly'], 'null rental' => ['rental_type', null],
-            'invalid status' => ['status', 'unknown'], 'null status' => ['status', null],
+            'invalid booking status' => ['booking_status', 'unknown'], 'null booking status' => ['booking_status', null],
+            'invalid payment status' => ['payment_status', 'unknown'], 'null payment status' => ['payment_status', null],
             'negative rate' => ['rate_per_unit', -1], 'zero rate' => ['rate_per_unit', 0],
             'rate precision' => ['rate_per_unit', '1.001'], 'rate overflow' => ['rate_per_unit', '10000000000.00'],
             'invalid start' => ['start_date', '2026-02-30'], 'early end' => ['end_date', '2026-10-01'],

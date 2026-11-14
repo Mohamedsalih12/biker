@@ -29,15 +29,29 @@ class BookingTableTest extends TestCase
 
     public function test_searches_booking_customer_and_vehicle_and_combines_filters(): void
     {
-        $booking = Booking::factory()->create(['status' => 'active', 'rental_type' => 'weekly']);
+        $booking = Booking::factory()->create(['booking_status' => 'taken', 'rental_type' => 'weekly']);
         $booking->customer->update(['name' => 'Unique Customer']);
-        Booking::factory()->create(['status' => 'pending', 'rental_type' => 'monthly']);
+        Booking::factory()->create(['booking_status' => 'taken', 'rental_type' => 'monthly']);
         $grid = Livewire::actingAs($this->user)->test(BookingTable::class)
-            ->set('filters.select.bookings.status', 'active')->set('filters.select.bookings.rental_type', 'weekly');
+            ->set('filters.select.bookings.booking_status', 'taken')->set('filters.select.bookings.rental_type', 'weekly');
         foreach ([$booking->booking_code, 'Unique Customer', $booking->vehicle->registration_number] as $term) {
             $grid->set('search', $term)->assertSee($booking->booking_code);
         }
-        $grid->set('filters.select.bookings.status', 'cancelled')->assertDontSee($booking->booking_code);
+        $grid->set('filters.select.bookings.booking_status', 'cancelled')->assertDontSee($booking->booking_code);
+    }
+
+    public function test_index_only_shows_reserved_and_taken_bookings(): void
+    {
+        $reserved = Booking::factory()->create(['booking_status' => 'reserved']);
+        $taken = Booking::factory()->create(['booking_status' => 'taken']);
+        $returned = Booking::factory()->create(['booking_status' => 'returned']);
+        $cancelled = Booking::factory()->create(['booking_status' => 'cancelled']);
+
+        Livewire::actingAs($this->user)->test(BookingTable::class)
+            ->assertSee($reserved->booking_code)
+            ->assertSee($taken->booking_code)
+            ->assertDontSee($returned->booking_code)
+            ->assertDontSee($cancelled->booking_code);
     }
 
     public function test_grid_sorts_paginates_and_escapes_customer_content(): void
@@ -131,10 +145,10 @@ class BookingTableTest extends TestCase
     public function test_xlsx_exports_filtered_rows_beyond_current_page_and_preserves_text_safely(): void
     {
         $customer = User::factory()->create(['name' => '=HYPERLINK("https://example.com")', 'aadhaar' => '123456789012']);
-        Booking::factory()->count(16)->for($customer, 'customer')->create(['status' => 'active', 'rental_type' => 'daily', 'handover_notes' => '=SUM(1,2)']);
-        $excluded = Booking::factory()->create(['status' => 'cancelled']);
+        Booking::factory()->count(16)->for($customer, 'customer')->create(['booking_status' => 'taken', 'rental_type' => 'daily', 'handover_notes' => '=SUM(1,2)']);
+        $excluded = Booking::factory()->create(['booking_status' => 'cancelled']);
         $grid = Livewire::actingAs($this->user)->test(BookingTable::class)->set('search', 'HYPERLINK')
-            ->set('filters.select.bookings.status', 'active')->set('filters.select.bookings.rental_type', 'daily')->call('exportToXLS')->assertFileDownloaded('bookings.xlsx');
+            ->set('filters.select.bookings.booking_status', 'taken')->set('filters.select.bookings.rental_type', 'daily')->call('exportToXLS')->assertFileDownloaded('bookings.xlsx');
         $path = tempnam(sys_get_temp_dir(), 'bookings-xlsx-');
         try {
             file_put_contents($path, base64_decode($grid->effects['download']['content']));
@@ -144,8 +158,8 @@ class BookingTableTest extends TestCase
             $this->assertSame('Booking Code', $sheet->getCell('B1')->getFormattedValue());
             $this->assertSame("'".$customer->name, $sheet->getCell('C2')->getFormattedValue());
             $this->assertNotSame(DataType::TYPE_FORMULA, $sheet->getCell('C2')->getDataType());
-            $this->assertSame("'=SUM(1,2)", $sheet->getCell('N2')->getFormattedValue());
-            $this->assertSame('O', $sheet->getHighestDataColumn());
+            $this->assertSame("'=SUM(1,2)", $sheet->getCell('O2')->getFormattedValue());
+            $this->assertSame('P', $sheet->getHighestDataColumn());
             $this->assertStringNotContainsString('123456789012', json_encode($sheet->toArray()));
             $this->assertStringNotContainsString($excluded->booking_code, json_encode($sheet->toArray()));
             $workbook->disconnectWorksheets();

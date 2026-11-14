@@ -35,7 +35,7 @@
         </select>
         @error('vehicle_id') <div id="vehicle_id-error" class="text-danger small">{{ $message }}</div> @enderror
     </div>
-    @foreach (['rental_type' => ['Rental Type', \App\Models\Booking::RENTAL_TYPES, 'monthly'], 'status' => ['Status', \App\Models\Booking::STATUSES, 'pending']] as $field => [$label, $options, $default])
+    @foreach (['rental_type' => ['Rental Type', \App\Models\Booking::RENTAL_TYPES, 'monthly'], 'booking_status' => ['Booking Status', \App\Models\Booking::STATUSES, 'reserved'], 'payment_status' => ['Payment Status', \App\Models\Booking::PAYMENT_STATUSES, 'pending']] as $field => [$label, $options, $default])
         <div class="col-md-6 mb-3">
             <label for="{{ $field }}" class="form-label">{{ $label }} (required)</label>
             <select id="{{ $field }}" name="{{ $field }}" class="form-select mySelect2 @error($field) is-invalid @enderror" required aria-describedby="{{ $field }}-error">

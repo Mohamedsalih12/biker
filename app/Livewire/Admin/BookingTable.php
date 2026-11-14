@@ -64,6 +64,8 @@ class BookingTable extends PowerGridComponent
             ->join('users as customers', 'customers.id', '=', 'bookings.customer_id')
             ->join('vehicles as booked_vehicles', 'booked_vehicles.id', '=', 'bookings.vehicle_id')
             ->join('users as creators', 'creators.id', '=', 'bookings.user_id')
+            ->whereNotIn('bookings.booking_status', ['returned'])
+            ->orWhereNotIn('bookings.payment_status', ['paid'])
             ->select(['bookings.*', 'customers.name as customer_name', 'booked_vehicles.registration_number as vehicle_registration', 'creators.name as creator_name']);
     }
 
@@ -76,7 +78,8 @@ class BookingTable extends PowerGridComponent
             ->add('end_date_formatted', fn (Booking $booking): string => $booking->end_date?->format('Y-m-d') ?? '')
             ->add('actual_return_date_formatted', fn (Booking $booking): string => $booking->actual_return_date?->format('Y-m-d') ?? '')
             ->add('start_odometer')->add('end_odometer')
-            ->add('status', fn (Booking $booking): string => e(ucfirst($booking->status)))
+            ->add('booking_status', fn (Booking $booking): string => e(ucfirst($booking->booking_status)))
+            ->add('payment_status', fn (Booking $booking): string => e(ucfirst($booking->payment_status)))
             ->add('handover_notes')->add('return_notes')
             ->add('row_actions', fn (Booking $booking): string => view('admin.bookings.table-actions', compact('booking'))->render());
     }
@@ -96,7 +99,8 @@ class BookingTable extends PowerGridComponent
             Column::make('Actual Return Date', 'actual_return_date_formatted', 'bookings.actual_return_date')->sortable(),
             Column::make('Start Odometer', 'start_odometer', 'bookings.start_odometer')->sortable(),
             Column::make('End Odometer', 'end_odometer', 'bookings.end_odometer')->sortable(),
-            Column::make('Status', 'status', 'bookings.status')->sortable(),
+            Column::make('Booking Status', 'booking_status', 'bookings.booking_status')->sortable(),
+            Column::make('Payment Status', 'payment_status', 'bookings.payment_status')->sortable(),
             Column::make('Handover Notes', 'handover_notes')->hidden()->visibleInExport(true),
             Column::make('Return Notes', 'return_notes')->hidden()->visibleInExport(true),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
@@ -106,8 +110,11 @@ class BookingTable extends PowerGridComponent
     public function filters(): array
     {
         return [
-            Filter::select('status', 'bookings.status')->dataSource(array_map(
+            Filter::select('booking_status', 'bookings.booking_status')->dataSource(array_map(
                 fn (string $status): array => ['value' => $status, 'label' => ucfirst($status)], Booking::STATUSES,
+            ))->optionValue('value')->optionLabel('label'),
+            Filter::select('payment_status', 'bookings.payment_status')->dataSource(array_map(
+                fn (string $status): array => ['value' => $status, 'label' => ucfirst($status)], Booking::PAYMENT_STATUSES,
             ))->optionValue('value')->optionLabel('label'),
             Filter::select('rental_type', 'bookings.rental_type')->dataSource(array_map(
                 fn (string $type): array => ['value' => $type, 'label' => ucfirst($type)], Booking::RENTAL_TYPES,

@@ -208,6 +208,9 @@
                                 <li class="nav-item">
                                     <a class="nav-link {{ Request::is('admin/bookings/create') ? 'active' : '' }}" href="{{ route('xpress.bookings.create') }}">Add Booking</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/all-bookings') ? 'active' : '' }}" href="{{ route('xpress.all-bookings.index') }}">All Bookings</a>
+                                </li>
                             </x-sidebar-collapse-item>
                             @endcan
                         </div>

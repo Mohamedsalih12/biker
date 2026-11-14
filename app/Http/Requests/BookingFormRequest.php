@@ -34,7 +34,8 @@ class BookingFormRequest extends FormRequest
             'actual_return_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'start_odometer' => ['required', 'integer', 'min:0', 'max:9223372036854775807'],
             'end_odometer' => ['nullable', 'integer', 'min:0', 'max:9223372036854775807', 'gte:start_odometer'],
-            'status' => ['sometimes', 'required', Rule::in(Booking::STATUSES)],
+            'booking_status' => ['sometimes', 'required', Rule::in(Booking::STATUSES)],
+            'payment_status' => ['sometimes', 'required', Rule::in(Booking::PAYMENT_STATUSES)],
             'handover_notes' => ['nullable', 'string', 'max:10000'],
             'return_notes' => ['nullable', 'string', 'max:10000'],
         ];
