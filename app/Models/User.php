@@ -7,6 +7,7 @@ use App\Models\Xpress\Warehouse;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -78,5 +79,15 @@ class User extends Authenticatable
     public function resetBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'password_reset_by');
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'customer_id');
+    }
+
+    public function createdBookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'user_id');
     }
 }

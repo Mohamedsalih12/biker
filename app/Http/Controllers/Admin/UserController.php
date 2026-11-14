@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserFormRequest;
 use App\Models\User;
 use App\Services\AuditService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -103,11 +105,22 @@ class UserController extends Controller
         return redirect()->route('xpress.users.index')->with('message', 'User updated successfully.');
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
         $this->authorize('delete', $user);
 
-        $user->delete();
+        try {
+            DB::transaction(function () use ($user): void {
+                if ($user->delete() !== true) {
+                    throw ValidationException::withMessages(['user' => 'This user could not be deleted.']);
+                }
+            });
+        } catch (QueryException $exception) {
+            if (! in_array((string) $exception->getCode(), ['23000', '23503'], true)) {
+                throw $exception;
+            }
+            throw ValidationException::withMessages(['user' => 'This user is linked to bookings or other records and cannot be deleted.']);
+        }
 
         return redirect('/admin/users')->with('message', 'User deleted successfully.');
     }

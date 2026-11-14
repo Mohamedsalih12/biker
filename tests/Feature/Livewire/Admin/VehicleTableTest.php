@@ -16,6 +16,17 @@ use Tests\TestCase;
 
 class VehicleTableTest extends TestCase
 {
+    public function test_select_all_selects_the_visible_page_and_can_clear_selection(): void
+    {
+        $vehicles = Vehicle::factory()->count(2)->create();
+
+        Livewire::actingAs($this->user)->test(VehicleTable::class)
+            ->set('checkboxAll', true)->call('selectCheckboxAll')
+            ->assertSet('checkboxValues', array_map('strval', $vehicles->modelKeys()))
+            ->set('checkboxAll', false)->call('selectCheckboxAll')
+            ->assertSet('checkboxValues', []);
+    }
+
     public function test_grid_searches_identifiers_and_combines_status_filter(): void
     {
         $vehicle = Vehicle::factory()->create(['registration_number' => 'MATCH-100', 'brand' => 'SearchBrand', 'model' => 'SearchModel', 'chassis_number' => 'CHASSIS-100', 'battery_serial_number' => 'BATTERY-100', 'insurance_policy_number' => 'POLICY-100', 'status' => 'maintenance']);

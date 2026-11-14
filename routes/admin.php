@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\BookingController;
+use App\Http\Controllers\Admin\BookingCustomerController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserPasswordResetController;
@@ -26,6 +28,18 @@ Route::middleware(['auth', '2fa', 'force.password.change'])->group(function () {
     Route::controller(FrontendUserController::class)->middleware('can:manage-users')->group(function () {
         Route::get('profile/{user}/edit', 'editProfileAdmin')->name('xpress.adminprofile.edit');
         Route::put('profile/{user}', 'updateProfileAdmin')->name('xpress.adminprofile.update');
+    });
+
+    Route::middleware('can:manage-bookings')->group(function () {
+        Route::get('booking-customers', [BookingCustomerController::class, 'index'])->name('xpress.booking-customers.index');
+        Route::post('booking-customers', [BookingCustomerController::class, 'store'])->name('xpress.booking-customers.store');
+        Route::get('bookings', [BookingController::class, 'index'])->name('xpress.bookings.index');
+        Route::get('bookings/create', [BookingController::class, 'create'])->name('xpress.bookings.create');
+        Route::post('bookings', [BookingController::class, 'store'])->name('xpress.bookings.store');
+        Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('xpress.bookings.show');
+        Route::get('bookings/{booking}/edit', [BookingController::class, 'edit'])->name('xpress.bookings.edit');
+        Route::put('bookings/{booking}', [BookingController::class, 'update'])->name('xpress.bookings.update');
+        Route::delete('bookings/{booking}/delete', [BookingController::class, 'destroy'])->name('xpress.bookings.destroy');
     });
 
     Route::controller(VehicleController::class)->middleware('can:manage-vehicles')->group(function () {

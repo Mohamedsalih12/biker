@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
@@ -32,6 +34,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->runningInConsole() && PHP_OS_FAMILY === 'Windows') {
+            ServeCommand::$passthroughVariables = array_values(array_unique([
+                ...ServeCommand::$passthroughVariables, 'TEMP', 'TMP',
+            ]));
+        }
+
         Paginator::useBootstrap();
 
         // Neutralise spreadsheet formula injection in the two exports that are
@@ -73,6 +81,10 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($ability === 'manage-vehicles' || $subject === Vehicle::class || $subject instanceof Vehicle) {
+                return $user instanceof User && $user->role === 'admin';
+            }
+
+            if ($ability === 'manage-bookings' || $subject === Booking::class || $subject instanceof Booking) {
                 return $user instanceof User && $user->role === 'admin';
             }
 

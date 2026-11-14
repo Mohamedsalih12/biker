@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // LoginUserSeeder::class,
             // VehicleSeeder::class,
+            BookingSeeder::class,
         ]);
     }
 }

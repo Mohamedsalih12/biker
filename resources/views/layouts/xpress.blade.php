@@ -93,6 +93,15 @@
                                 </ul>
                             </li>
                             @endcan
+                            @can('manage-bookings')
+                            <li class="dropdown-submenu">
+                                <a class="dropdown-item dropdown-toggle" href="#">Bookings</a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <li><a class="dropdown-item" href="{{ route('xpress.bookings.index') }}">View Bookings</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('xpress.bookings.create') }}">Add Booking</a></li>
+                                </ul>
+                            </li>
+                            @endcan
                             <li><a class="dropdown-item" href="{{ route('settings') }}">Settings</a></li>
                         </ul>
                         </li>
@@ -188,6 +197,16 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ Request::is('admin/vehicles/create') ? 'active' : '' }}" href="{{ route('xpress.vehicles.create') }}">Add Vehicle</a>
+                                </li>
+                            </x-sidebar-collapse-item>
+                            @endcan
+                            @can('manage-bookings')
+                            <x-sidebar-collapse-item id="bookings" title="Bookings" icon="fa fa-calendar" :patterns="['admin/bookings', 'admin/bookings/*']">
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/bookings') ? 'active' : '' }}" href="{{ route('xpress.bookings.index') }}">View Bookings</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/bookings/create') ? 'active' : '' }}" href="{{ route('xpress.bookings.create') }}">Add Booking</a>
                                 </li>
                             </x-sidebar-collapse-item>
                             @endcan
