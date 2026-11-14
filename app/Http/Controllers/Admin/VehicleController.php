@@ -44,6 +44,7 @@ class VehicleController extends Controller
     public function show(Vehicle $vehicle): View
     {
         Gate::authorize('view', $vehicle);
+        $vehicle = Vehicle::query()->withCurrentStatus()->findOrFail($vehicle->id);
 
         activity('vehicle')->causedBy(auth()->user())->performedOn($vehicle)->event('view')
             ->withProperties(['action' => 'view'])->log('Vehicle viewed');

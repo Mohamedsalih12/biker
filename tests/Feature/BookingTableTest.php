@@ -29,29 +29,33 @@ class BookingTableTest extends TestCase
 
     public function test_searches_booking_customer_and_vehicle_and_combines_filters(): void
     {
-        $booking = Booking::factory()->create(['booking_status' => 'taken', 'rental_type' => 'weekly']);
+        $booking = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'pending', 'rental_type' => 'weekly']);
         $booking->customer->update(['name' => 'Unique Customer']);
-        Booking::factory()->create(['booking_status' => 'taken', 'rental_type' => 'monthly']);
+        Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'pending', 'rental_type' => 'monthly']);
         $grid = Livewire::actingAs($this->user)->test(BookingTable::class)
-            ->set('filters.select.bookings.booking_status', 'taken')->set('filters.select.bookings.rental_type', 'weekly');
+            ->set('filters.select.bookings.booking_status', 'returned')->set('filters.select.bookings.rental_type', 'weekly');
         foreach ([$booking->booking_code, 'Unique Customer', $booking->vehicle->registration_number] as $term) {
             $grid->set('search', $term)->assertSee($booking->booking_code);
         }
         $grid->set('filters.select.bookings.booking_status', 'cancelled')->assertDontSee($booking->booking_code);
     }
 
-    public function test_index_only_shows_reserved_and_taken_bookings(): void
+    public function test_index_shows_unreturned_or_unpaid_bookings(): void
     {
-        $reserved = Booking::factory()->create(['booking_status' => 'reserved']);
-        $taken = Booking::factory()->create(['booking_status' => 'taken']);
-        $returned = Booking::factory()->create(['booking_status' => 'returned']);
-        $cancelled = Booking::factory()->create(['booking_status' => 'cancelled']);
+        $reserved = Booking::factory()->create(['booking_status' => 'reserved', 'payment_status' => 'paid']);
+        $taken = Booking::factory()->create(['booking_status' => 'taken', 'payment_status' => 'paid']);
+        $returnedPaid = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'paid']);
+        $returnedPending = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'pending']);
+        $returnedOverdue = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'overdue']);
+        $cancelled = Booking::factory()->create(['booking_status' => 'cancelled', 'payment_status' => 'paid']);
 
         Livewire::actingAs($this->user)->test(BookingTable::class)
             ->assertSee($reserved->booking_code)
             ->assertSee($taken->booking_code)
-            ->assertDontSee($returned->booking_code)
-            ->assertDontSee($cancelled->booking_code);
+            ->assertSee($cancelled->booking_code)
+            ->assertSee($returnedPending->booking_code)
+            ->assertSee($returnedOverdue->booking_code)
+            ->assertDontSee($returnedPaid->booking_code);
     }
 
     public function test_grid_sorts_paginates_and_escapes_customer_content(): void
@@ -145,10 +149,10 @@ class BookingTableTest extends TestCase
     public function test_xlsx_exports_filtered_rows_beyond_current_page_and_preserves_text_safely(): void
     {
         $customer = User::factory()->create(['name' => '=HYPERLINK("https://example.com")', 'aadhaar' => '123456789012']);
-        Booking::factory()->count(16)->for($customer, 'customer')->create(['booking_status' => 'taken', 'rental_type' => 'daily', 'handover_notes' => '=SUM(1,2)']);
-        $excluded = Booking::factory()->create(['booking_status' => 'cancelled']);
+        Booking::factory()->count(16)->for($customer, 'customer')->create(['booking_status' => 'returned', 'payment_status' => 'pending', 'rental_type' => 'daily', 'handover_notes' => '=SUM(1,2)']);
+        $excluded = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'overdue', 'rental_type' => 'weekly']);
         $grid = Livewire::actingAs($this->user)->test(BookingTable::class)->set('search', 'HYPERLINK')
-            ->set('filters.select.bookings.booking_status', 'taken')->set('filters.select.bookings.rental_type', 'daily')->call('exportToXLS')->assertFileDownloaded('bookings.xlsx');
+            ->set('filters.select.bookings.booking_status', 'returned')->set('filters.select.bookings.rental_type', 'daily')->call('exportToXLS')->assertFileDownloaded('bookings.xlsx');
         $path = tempnam(sys_get_temp_dir(), 'bookings-xlsx-');
         try {
             file_put_contents($path, base64_decode($grid->effects['download']['content']));
@@ -171,8 +175,8 @@ class BookingTableTest extends TestCase
 
     public function test_xlsx_only_exports_selected_bookings(): void
     {
-        $booking = Booking::factory()->create();
-        Booking::factory()->create();
+        $booking = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'pending']);
+        Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'pending']);
         $grid = Livewire::actingAs($this->user)->test(BookingTable::class)->set('checkboxValues', [$booking->id])->call('exportToXLS', true)->assertFileDownloaded('bookings.xlsx');
         $path = tempnam(sys_get_temp_dir(), 'bookings-selected-');
         try {

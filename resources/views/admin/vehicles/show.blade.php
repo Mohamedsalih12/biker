@@ -30,7 +30,7 @@
                         @if (in_array($field, ['purchase_date', 'insurance_expires_at'], true))
                             {{ $vehicle->{$field}?->format('Y-m-d') ?? '—' }}
                         @elseif ($field === 'status')
-                            {{ ucfirst($vehicle->status) }}
+                            {{ ucfirst($vehicle->current_status) }}
                         @elseif ($field === 'damages')
                             <div class="text-break" style="white-space: pre-wrap">{{ $vehicle->damages ?? '—' }}</div>
                         @else

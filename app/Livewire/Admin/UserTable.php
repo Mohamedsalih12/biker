@@ -44,9 +44,10 @@ class UserTable extends PowerGridComponent
     public function setUp(): array
     {
         $this->showCheckBox();
+        $this->persist(['columns'], 'user-'.auth()->id());
 
         return [
-            PowerGrid::header()->showSearchInput()->includeViewOnTop('admin.users.table-feedback'),
+            PowerGrid::header()->showSearchInput()->showToggleColumns()->includeViewOnTop('admin.users.table-feedback'),
             PowerGrid::footer()->showPerPage(15, [15, 25, 50, 100])->showRecordCount(),
             PowerGrid::exportable('users')->type(Exportable::TYPE_XLS),
         ];
@@ -76,12 +77,12 @@ class UserTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('ID', 'id')->sortable(),
-            Column::make('Name', 'name')->sortable()->searchable(),
-            Column::make('Email', 'email')->sortable()->searchable(),
-            Column::make('Phone', 'phone')->sortable()->searchable(),
-            Column::make('Role', 'role')->sortable(),
-            Column::make('Active Status', 'active_status')->sortable(),
+            Column::make('ID', 'id')->sortable()->visibleInExport(true),
+            Column::make('Name', 'name')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Email', 'email')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Phone', 'phone')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Role', 'role')->sortable()->visibleInExport(true),
+            Column::make('Active Status', 'active_status')->sortable()->visibleInExport(true),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
             Column::make('Reset Password', 'reset_password')->visibleInExport(false),
             Column::make('Reset 2FA', 'reset_2fa')->visibleInExport(false),

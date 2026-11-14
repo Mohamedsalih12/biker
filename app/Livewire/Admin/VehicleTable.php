@@ -45,9 +45,10 @@ class VehicleTable extends PowerGridComponent
     public function setUp(): array
     {
         $this->showCheckBox();
+        $this->persist(['columns'], 'user-'.auth()->id());
 
         return [
-            PowerGrid::header()->showSearchInput()->includeViewOnTop('admin.vehicles.table-feedback'),
+            PowerGrid::header()->showSearchInput()->showToggleColumns()->includeViewOnTop('admin.vehicles.table-feedback'),
             PowerGrid::footer()->showPerPage(15, [15, 25, 50, 100])->showRecordCount(),
             PowerGrid::exportable('vehicles')->type(Exportable::TYPE_XLS),
         ];
@@ -57,10 +58,10 @@ class VehicleTable extends PowerGridComponent
     {
         Gate::authorize('manage-vehicles');
 
-        return Vehicle::query()->select([
+        return Vehicle::query()->fromSub(Vehicle::query()->withCurrentStatus(), 'vehicles')->select([
             'id', 'registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number',
             'odometer_reading', 'status', 'purchase_date', 'purchase_cost', 'insurance_policy_number', 'insurance_expires_at',
-            'image', 'damages',
+            'image', 'damages', 'current_status',
         ]);
     }
 
@@ -69,7 +70,7 @@ class VehicleTable extends PowerGridComponent
         return PowerGrid::fields()
             ->add('id')->add('registration_number')->add('brand')->add('model')
             ->add('chassis_number')->add('battery_serial_number')->add('odometer_reading')
-            ->add('status', fn (Vehicle $vehicle): string => e(ucfirst($vehicle->status)))
+            ->add('status', fn (Vehicle $vehicle): string => e(ucfirst($vehicle->current_status)))
             ->add('purchase_date_formatted', fn (Vehicle $vehicle): string => $vehicle->purchase_date?->format('Y-m-d') ?? '')
             ->add('purchase_cost')
             ->add('insurance_policy_number')
@@ -83,21 +84,21 @@ class VehicleTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('ID', 'id')->sortable(),
+            Column::make('ID', 'id')->sortable()->visibleInExport(true),
             Column::make('Photo', 'image_preview')->visibleInExport(false),
-            Column::make('Registration Number', 'registration_number')->sortable()->searchable(),
-            Column::make('Brand', 'brand')->sortable()->searchable(),
-            Column::make('Model', 'model')->sortable()->searchable(),
-            Column::make('Chassis Number', 'chassis_number')->sortable()->searchable(),
-            Column::make('Battery Serial Number', 'battery_serial_number')->sortable()->searchable(),
-            Column::make('Odometer Reading', 'odometer_reading')->sortable(),
-            Column::make('Status', 'status')->sortable(),
-            Column::make('Purchase Date', 'purchase_date_formatted', 'purchase_date')->sortable(),
-            Column::make('Purchase Cost', 'purchase_cost')->sortable(),
-            Column::make('Insurance Policy Number', 'insurance_policy_number')->sortable()->searchable(),
-            Column::make('Insurance Expires At', 'insurance_expires_at_formatted', 'insurance_expires_at')->sortable(),
+            Column::make('Registration Number', 'registration_number')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Brand', 'brand')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Model', 'model')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Chassis Number', 'chassis_number')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Battery Serial Number', 'battery_serial_number')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Odometer Reading', 'odometer_reading')->sortable()->visibleInExport(true),
+            Column::make('Status', 'status', 'current_status')->sortable()->visibleInExport(true),
+            Column::make('Purchase Date', 'purchase_date_formatted', 'purchase_date')->sortable()->visibleInExport(true),
+            Column::make('Purchase Cost', 'purchase_cost')->sortable()->visibleInExport(true),
+            Column::make('Insurance Policy Number', 'insurance_policy_number')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Insurance Expires At', 'insurance_expires_at_formatted', 'insurance_expires_at')->sortable()->visibleInExport(true),
             Column::make('Image Path', 'image')->hidden()->visibleInExport(true),
-            Column::make('Damages', 'damages')->searchable()->bodyAttribute('text-wrap text-break', 'min-width: 15rem; max-width: 24rem;'),
+            Column::make('Damages', 'damages')->searchable()->bodyAttribute('text-wrap text-break', 'min-width: 15rem; max-width: 24rem;')->visibleInExport(true),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
         ];
     }
@@ -107,8 +108,13 @@ class VehicleTable extends PowerGridComponent
         return [
             Filter::select('status')->dataSource(array_map(
                 fn (string $status): array => ['value' => $status, 'label' => ucfirst($status)],
-                Vehicle::STATUSES,
-            ))->optionValue('value')->optionLabel('label'),
+                Vehicle::CURRENT_STATUSES,
+            ))->optionValue('value')->optionLabel('label')
+                ->builder(function (Builder $query, mixed $value): void {
+                    if (filled($value)) {
+                        $query->where('current_status', $value);
+                    }
+                }),
         ];
     }
 

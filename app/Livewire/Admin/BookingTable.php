@@ -48,9 +48,10 @@ class BookingTable extends PowerGridComponent
     public function setUp(): array
     {
         $this->showCheckBox();
+        $this->persist(['columns'], 'user-'.auth()->id());
 
         return [
-            PowerGrid::header()->showSearchInput()->includeViewOnTop('admin.bookings.table-feedback'),
+            PowerGrid::header()->showSearchInput()->showToggleColumns()->includeViewOnTop('admin.bookings.table-feedback'),
             PowerGrid::footer()->showPerPage(15, [15, 25, 50, 100])->showRecordCount(),
             PowerGrid::exportable('bookings')->type(Exportable::TYPE_XLS),
         ];
@@ -87,22 +88,22 @@ class BookingTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('ID', 'id', 'bookings.id')->sortable(),
-            Column::make('Booking Code', 'booking_code', 'bookings.booking_code')->sortable()->searchable(),
-            Column::make('Customer', 'customer_name', 'customers.name')->sortable()->searchable(),
-            Column::make('Vehicle Registration', 'vehicle_registration', 'booked_vehicles.registration_number')->sortable()->searchable(),
-            Column::make('Created By', 'creator_name', 'creators.name')->sortable(),
-            Column::make('Rental Type', 'rental_type', 'bookings.rental_type')->sortable(),
-            Column::make('Rate per Unit', 'rate_per_unit', 'bookings.rate_per_unit')->sortable(),
-            Column::make('Start Date', 'start_date_formatted', 'bookings.start_date')->sortable(),
-            Column::make('End Date', 'end_date_formatted', 'bookings.end_date')->sortable(),
-            Column::make('Actual Return Date', 'actual_return_date_formatted', 'bookings.actual_return_date')->sortable(),
-            Column::make('Start Odometer', 'start_odometer', 'bookings.start_odometer')->sortable(),
-            Column::make('End Odometer', 'end_odometer', 'bookings.end_odometer')->sortable(),
-            Column::make('Booking Status', 'booking_status', 'bookings.booking_status')->sortable(),
-            Column::make('Payment Status', 'payment_status', 'bookings.payment_status')->sortable(),
-            Column::make('Handover Notes', 'handover_notes')->hidden()->visibleInExport(true),
-            Column::make('Return Notes', 'return_notes')->hidden()->visibleInExport(true),
+            Column::make('ID', 'id', 'bookings.id')->sortable()->visibleInExport(true),
+            Column::make('Booking Code', 'booking_code', 'bookings.booking_code')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Customer', 'customer_name', 'customers.name')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Vehicle Registration', 'vehicle_registration', 'booked_vehicles.registration_number')->sortable()->searchable()->visibleInExport(true),
+            Column::make('Created By', 'creator_name', 'creators.name')->sortable()->visibleInExport(true),
+            Column::make('Rental Type', 'rental_type', 'bookings.rental_type')->sortable()->visibleInExport(true),
+            Column::make('Rate per Unit', 'rate_per_unit', 'bookings.rate_per_unit')->sortable()->visibleInExport(true),
+            Column::make('Start Date', 'start_date_formatted', 'bookings.start_date')->sortable()->visibleInExport(true),
+            Column::make('End Date', 'end_date_formatted', 'bookings.end_date')->sortable()->visibleInExport(true),
+            Column::make('Actual Return Date', 'actual_return_date_formatted', 'bookings.actual_return_date')->sortable()->visibleInExport(true),
+            Column::make('Start Odometer', 'start_odometer', 'bookings.start_odometer')->sortable()->visibleInExport(true),
+            Column::make('End Odometer', 'end_odometer', 'bookings.end_odometer')->sortable()->visibleInExport(true),
+            Column::make('Booking Status', 'booking_status', 'bookings.booking_status')->sortable()->visibleInExport(true),
+            Column::make('Payment Status', 'payment_status', 'bookings.payment_status')->sortable()->visibleInExport(true),
+            Column::make('Handover Notes', 'handover_notes')->hidden(true, false)->visibleInExport(true),
+            Column::make('Return Notes', 'return_notes')->hidden(true, false)->visibleInExport(true),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
         ];
     }

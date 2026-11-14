@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Database\Factories\VehicleFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +18,7 @@ use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
  * @property Carbon|null $insurance_expires_at
  * @property string|null $image
  * @property string|null $damages
+ * @property-read string $current_status
  */
 class Vehicle extends Model
 {
@@ -23,6 +26,8 @@ class Vehicle extends Model
     use HasFactory, KeepsDeletedModels, LogsActivity;
 
     public const array STATUSES = ['available', 'rented', 'maintenance', 'decommissioned'];
+
+    public const array CURRENT_STATUSES = ['available', 'reserved', 'rented', 'maintenance', 'decommissioned'];
 
     /** @var list<string> */
     protected $fillable = [
@@ -50,6 +55,22 @@ class Vehicle extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /** @param Builder<static> $query */
+    #[Scope]
+    protected function withCurrentStatus(Builder $query): void
+    {
+        $latestBooking = Booking::query()
+            ->selectRaw("CASE booking_status WHEN 'reserved' THEN 'reserved' WHEN 'taken' THEN 'rented' WHEN 'returned' THEN 'available' WHEN 'cancelled' THEN 'available' END")
+            ->whereColumn('bookings.vehicle_id', 'vehicles.id')
+            ->orderByDesc('bookings.id')
+            ->limit(1);
+
+        $query->addSelect('vehicles.*')->selectRaw(
+            "CASE WHEN vehicles.status IN ('maintenance', 'decommissioned') THEN vehicles.status ELSE COALESCE((".$latestBooking->toSql().'), vehicles.status) END AS current_status',
+            $latestBooking->getBindings(),
+        );
     }
 
     public function imageUrl(): ?string

@@ -26,6 +26,7 @@
             @endforeach
         </select>
         @error('status') <div class="text-danger small">{{ $message }}</div> @enderror
+        <div class="form-text">The latest booking determines the displayed status. Maintenance and decommissioned override bookings; this value is used when there are no bookings.</div>
     </div>
     <div class="col-md-6 mb-3">
         <label for="purchase_date" class="form-label">Purchase Date</label>
