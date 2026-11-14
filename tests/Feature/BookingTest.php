@@ -14,6 +14,37 @@ use Tests\TestCase;
 
 class BookingTest extends TestCase
 {
+    public function test_booking_form_includes_vehicle_odometer_readings(): void
+    {
+        $vehicle = Vehicle::factory()->create(['odometer_reading' => 4321]);
+
+        $response = $this->actingAsUser()->get('/admin/bookings/create');
+
+        $response->assertSee('value="'.$vehicle->id.'" data-odometer-reading="4321"', false);
+    }
+
+    public function test_booking_form_defaults_start_odometer_from_selected_vehicle(): void
+    {
+        $vehicle = Vehicle::factory()->create(['odometer_reading' => 4321]);
+
+        $response = $this->actingAsUser()->withSession(['_old_input' => ['vehicle_id' => $vehicle->id]])
+            ->get('/admin/bookings/create');
+
+        $response->assertSee('name="start_odometer" class="form-control " value="4321"', false);
+    }
+
+    public function test_booking_form_preserves_saved_and_old_start_odometer_values(): void
+    {
+        $booking = Booking::factory()->create(['start_odometer' => 123]);
+        $booking->vehicle->update(['odometer_reading' => 4321]);
+
+        $this->actingAsUser()->get("/admin/bookings/{$booking->id}/edit")
+            ->assertSee('name="start_odometer" class="form-control " value="123"', false);
+        $this->withSession(['_old_input' => ['start_odometer' => 0]])
+            ->get("/admin/bookings/{$booking->id}/edit")
+            ->assertSee('name="start_odometer" class="form-control " value="0"', false);
+    }
+
     public function test_factory_creates_bookings_with_model_events_disabled(): void
     {
         Model::withoutEvents(fn () => Booking::factory()->count(2)->create());
@@ -52,6 +83,19 @@ class BookingTest extends TestCase
         $this->assertDatabaseHas('activity_log', ['log_name' => 'booking', 'event' => 'created', 'subject_id' => $first->id]);
     }
 
+    public function test_booking_creation_syncs_end_odometer_to_vehicle(): void
+    {
+        $payload = $this->payload();
+        $vehicle = Vehicle::query()->findOrFail($payload['vehicle_id']);
+
+        $response = $this->actingAsUser()->post('/admin/bookings', $payload + ['end_odometer' => 200]);
+        $booking = Booking::query()->sole();
+
+        $response->assertRedirect("/admin/bookings/{$booking->id}/agreement");
+        $this->assertSame(200, $booking->end_odometer);
+        $this->assertSame(200, $vehicle->fresh()->odometer_reading);
+    }
+
     public function test_admin_can_view_update_and_delete_a_booking_without_changing_its_identity(): void
     {
         $booking = Booking::factory()->create(['user_id' => $this->user->id]);
@@ -72,6 +116,7 @@ class BookingTest extends TestCase
         $this->assertSame('weekly', $booking->rental_type);
         $this->assertSame('2026-12-01', $booking->actual_return_date->toDateString());
         $this->assertSame(200, $booking->end_odometer);
+        $this->assertSame(200, $booking->vehicle->fresh()->odometer_reading);
         $this->get("/admin/bookings/{$booking->id}")->assertSee('Returned')->assertSee('Paid')
             ->assertSee('<script>return</script>')->assertDontSee('<script>return</script>', false)
             ->assertSee('<script>handover</script>')->assertDontSee('<script>handover</script>', false);
@@ -81,6 +126,22 @@ class BookingTest extends TestCase
         foreach (['view', 'updated', 'deleted'] as $event) {
             $this->assertDatabaseHas('activity_log', ['log_name' => 'booking', 'event' => $event]);
         }
+    }
+
+    public function test_booking_update_without_end_odometer_does_not_overwrite_vehicle_reading(): void
+    {
+        $booking = Booking::factory()->create(['end_odometer' => 150]);
+        $vehicle = $booking->vehicle;
+        $vehicle->update(['odometer_reading' => 900]);
+
+        $this->actingAsUser()->put("/admin/bookings/{$booking->id}", [
+            'customer_id' => $booking->customer_id, 'vehicle_id' => $booking->vehicle_id,
+            'rate_per_unit' => '2500.00', 'start_date' => '2026-11-01', 'end_date' => '2026-12-01',
+            'start_odometer' => 100,
+        ])->assertRedirect("/admin/bookings/{$booking->id}/agreement");
+
+        $this->assertSame(150, $booking->fresh()->end_odometer);
+        $this->assertSame(900, $vehicle->fresh()->odometer_reading);
     }
 
     public function test_required_fields_cannot_be_omitted(): void

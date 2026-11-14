@@ -1,4 +1,8 @@
 @include('admin.bookings.table-feedback')
+@php
+    $selectedVehicle = $vehicles->firstWhere('id', old('vehicle_id', $booking->vehicle_id));
+    $startOdometer = old('start_odometer', $booking->start_odometer ?? $selectedVehicle?->odometer_reading);
+@endphp
 <p class="small text-muted">Required fields are marked (required). Return details can be added later.</p>
 <div class="row">
     <div class="col-md-6 mb-3">
@@ -30,7 +34,7 @@
         <select id="vehicle_id" name="vehicle_id" class="form-select mySelect2 @error('vehicle_id') is-invalid @enderror" data-placeholder="Select a vehicle" required aria-describedby="vehicle_id-error">
             <option value=""></option>
             @foreach ($vehicles as $vehicle)
-                <option value="{{ $vehicle->id }}" @selected((string) old('vehicle_id', $booking->vehicle_id) === (string) $vehicle->id)>{{ $vehicle->registration_number }}</option>
+                <option value="{{ $vehicle->id }}" data-odometer-reading="{{ $vehicle->odometer_reading }}" @selected((string) old('vehicle_id', $booking->vehicle_id) === (string) $vehicle->id)>{{ $vehicle->registration_number }}</option>
             @endforeach
         </select>
         @error('vehicle_id') <div id="vehicle_id-error" class="text-danger small">{{ $message }}</div> @enderror
@@ -62,7 +66,7 @@
     @foreach (['start_odometer' => 'Start Odometer', 'end_odometer' => 'End Odometer'] as $field => $label)
         <div class="col-md-6 mb-3">
             <label for="{{ $field }}" class="form-label">{{ $label }} (km) {{ $field === 'end_odometer' ? '(optional)' : '(required)' }}</label>
-            <input type="number" id="{{ $field }}" name="{{ $field }}" class="form-control @error($field) is-invalid @enderror" value="{{ old($field, $booking->{$field}) }}" min="0" max="9223372036854775807" step="1" @required($field === 'start_odometer') aria-describedby="{{ $field }}-error">
+            <input type="number" id="{{ $field }}" name="{{ $field }}" class="form-control @error($field) is-invalid @enderror" value="{{ $field === 'start_odometer' ? $startOdometer : old($field, $booking->{$field}) }}" min="0" max="9223372036854775807" step="1" @required($field === 'start_odometer') aria-describedby="{{ $field }}-error">
             @error($field) <div id="{{ $field }}-error" class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
     @endforeach
@@ -75,3 +79,22 @@
     @endforeach
 </div>
 <div id="booking-customer-added" class="alert alert-success d-none" role="status"></div>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const vehicleSelect = $('#vehicle_id');
+            const startOdometer = document.getElementById('start_odometer');
+            let selectedVehicleId = vehicleSelect.val();
+
+            vehicleSelect.on('change', function () {
+                if (vehicleSelect.val() === selectedVehicleId) {
+                    return;
+                }
+
+                selectedVehicleId = vehicleSelect.val();
+                startOdometer.value = this.selectedOptions[0]?.dataset.odometerReading ?? '';
+            });
+        });
+    </script>
+@endpush

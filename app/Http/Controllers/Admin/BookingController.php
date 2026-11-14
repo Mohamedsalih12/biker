@@ -36,10 +36,12 @@ class BookingController extends Controller
     public function store(BookingFormRequest $request): RedirectResponse
     {
         Gate::authorize('create', Booking::class);
-        $booking = DB::transaction(function () use ($request): Booking {
-            $booking = new Booking($request->validated());
+        $validated = $request->validated();
+        $booking = DB::transaction(function () use ($request, $validated): Booking {
+            $booking = new Booking($validated);
             $booking->user_id = $request->user()->id;
             $booking->save();
+            $this->syncVehicleOdometer($booking, $validated);
 
             return $booking;
         });
@@ -77,7 +79,11 @@ class BookingController extends Controller
     public function update(BookingFormRequest $request, Booking $booking): RedirectResponse
     {
         Gate::authorize('update', $booking);
-        DB::transaction(fn (): bool => $booking->update($request->validated()));
+        $validated = $request->validated();
+        DB::transaction(function () use ($booking, $validated): void {
+            $booking->update($validated);
+            $this->syncVehicleOdometer($booking, $validated);
+        });
 
         return redirect()->route('xpress.bookings.agreement', $booking)->with('message', 'Booking updated successfully.');
     }
@@ -101,6 +107,18 @@ class BookingController extends Controller
         return redirect()->route('xpress.bookings.index')->with('message', 'Booking deleted successfully.');
     }
 
+    /** @param array<string, mixed> $validated */
+    private function syncVehicleOdometer(Booking $booking, array $validated): void
+    {
+        if (! array_key_exists('end_odometer', $validated) || $booking->end_odometer === null) {
+            return;
+        }
+
+        if (! $booking->vehicle()->firstOrFail()->update(['odometer_reading' => $booking->end_odometer])) {
+            throw ValidationException::withMessages(['end_odometer' => 'The vehicle odometer could not be updated.']);
+        }
+    }
+
     /** @return array{booking: Booking, selectedCustomer: ?User, vehicles: Collection<int, Vehicle>} */
     private function formData(Booking $booking): array
     {
@@ -110,7 +128,7 @@ class BookingController extends Controller
         return [
             'booking' => $booking,
             'selectedCustomer' => $customerId ? User::query()->where('role', 'customer')->select(['id', 'name', 'aadhaar'])->find($customerId) : null,
-            'vehicles' => Vehicle::query()->orderBy('registration_number')->get(['id', 'registration_number']),
+            'vehicles' => Vehicle::query()->orderBy('registration_number')->get(['id', 'registration_number', 'odometer_reading']),
         ];
     }
 }
