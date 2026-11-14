@@ -11,7 +11,7 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('xpress.vehicles.update', $vehicle) }}" method="POST">
+                    <form action="{{ route('xpress.vehicles.update', $vehicle) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         @include('admin.vehicles.form', ['vehicle' => $vehicle])

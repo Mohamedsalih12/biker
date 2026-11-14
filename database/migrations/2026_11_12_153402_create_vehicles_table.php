@@ -24,6 +24,8 @@ return new class extends Migration
             $table->decimal('purchase_cost', 12, 2)->nullable();
             $table->string('insurance_policy_number')->nullable();
             $table->date('insurance_expires_at')->nullable()->index();
+            $table->string('image')->nullable();
+            $table->text('damages')->nullable();
             $table->timestamps();
         });
     }

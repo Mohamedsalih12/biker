@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\On;
@@ -59,6 +60,7 @@ class VehicleTable extends PowerGridComponent
         return Vehicle::query()->select([
             'id', 'registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number',
             'odometer_reading', 'status', 'purchase_date', 'purchase_cost', 'insurance_policy_number', 'insurance_expires_at',
+            'image', 'damages',
         ]);
     }
 
@@ -72,6 +74,9 @@ class VehicleTable extends PowerGridComponent
             ->add('purchase_cost')
             ->add('insurance_policy_number')
             ->add('insurance_expires_at_formatted', fn (Vehicle $vehicle): string => $vehicle->insurance_expires_at?->format('Y-m-d') ?? '')
+            ->add('image')
+            ->add('image_preview', fn (Vehicle $vehicle): string => view('admin.vehicles.table-image', compact('vehicle'))->render())
+            ->add('damages')
             ->add('row_actions', fn (Vehicle $vehicle): string => view('admin.vehicles.table-actions', compact('vehicle'))->render());
     }
 
@@ -79,6 +84,7 @@ class VehicleTable extends PowerGridComponent
     {
         return [
             Column::make('ID', 'id')->sortable(),
+            Column::make('Photo', 'image_preview')->visibleInExport(false),
             Column::make('Registration Number', 'registration_number')->sortable()->searchable(),
             Column::make('Brand', 'brand')->sortable()->searchable(),
             Column::make('Model', 'model')->sortable()->searchable(),
@@ -90,6 +96,8 @@ class VehicleTable extends PowerGridComponent
             Column::make('Purchase Cost', 'purchase_cost')->sortable(),
             Column::make('Insurance Policy Number', 'insurance_policy_number')->sortable()->searchable(),
             Column::make('Insurance Expires At', 'insurance_expires_at_formatted', 'insurance_expires_at')->sortable(),
+            Column::make('Image Path', 'image')->hidden()->visibleInExport(true),
+            Column::make('Damages', 'damages')->searchable()->bodyAttribute('text-wrap text-break', 'min-width: 15rem; max-width: 24rem;'),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
         ];
     }
@@ -147,13 +155,40 @@ class VehicleTable extends PowerGridComponent
         }
 
         return $rows->map(function (object $row): object {
-            foreach (['registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number', 'insurance_policy_number'] as $field) {
+            foreach (['registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number', 'insurance_policy_number', 'image', 'damages'] as $field) {
                 $value = html_entity_decode((string) $row->{$field}, ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $row->{$field} = e(Spreadsheet::neutralize($value));
             }
 
             return $row;
         });
+    }
+
+    public function removePhoto(int $vehicleId): void
+    {
+        Gate::authorize('manage-vehicles');
+
+        DB::transaction(function () use ($vehicleId): void {
+            $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($vehicleId);
+            Gate::authorize('update', $vehicle);
+
+            if ($vehicle->image === null) {
+                return;
+            }
+
+            $image = $vehicle->image;
+            $vehicle->image = null;
+
+            if ($vehicle->save() !== true) {
+                throw ValidationException::withMessages(['image' => 'The photo could not be removed. Please try again.']);
+            }
+
+            if (! Storage::disk('public')->delete($image)) {
+                throw ValidationException::withMessages(['image' => 'The photo file could not be deleted. Please try again.']);
+            }
+        });
+
+        session()->flash('image_message', 'Vehicle photo removed successfully.');
     }
 
     #[On('bulkDelete')]

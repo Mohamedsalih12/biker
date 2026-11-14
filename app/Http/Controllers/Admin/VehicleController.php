@@ -10,7 +10,9 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class VehicleController extends Controller
 {
@@ -34,7 +36,7 @@ class VehicleController extends Controller
     public function store(VehicleFormRequest $request): RedirectResponse
     {
         Gate::authorize('create', Vehicle::class);
-        $vehicle = DB::transaction(fn (): Vehicle => Vehicle::create($request->validated()));
+        $vehicle = $this->saveVehicle($request, new Vehicle);
 
         return redirect()->route('xpress.vehicles.edit', $vehicle)->with('message', 'Vehicle created successfully.');
     }
@@ -59,7 +61,7 @@ class VehicleController extends Controller
     public function update(VehicleFormRequest $request, Vehicle $vehicle): RedirectResponse
     {
         Gate::authorize('update', $vehicle);
-        DB::transaction(fn (): bool => $vehicle->update($request->validated()));
+        $this->saveVehicle($request, $vehicle);
 
         return redirect()->route('xpress.vehicles.index')->with('message', 'Vehicle updated successfully.');
     }
@@ -83,5 +85,44 @@ class VehicleController extends Controller
         }
 
         return redirect()->route('xpress.vehicles.index')->with('message', 'Vehicle deleted successfully.');
+    }
+
+    private function saveVehicle(VehicleFormRequest $request, Vehicle $vehicle): Vehicle
+    {
+        $attributes = $request->safe()->except('image');
+        $newImage = null;
+        $oldImage = $vehicle->image;
+
+        if ($request->hasFile('image')) {
+            $newImage = $request->file('image')->store('vehicles', 'public');
+
+            if ($newImage === false) {
+                throw ValidationException::withMessages(['image' => 'The photo could not be stored. Please try again.']);
+            }
+
+            $attributes['image'] = $newImage;
+        }
+
+        try {
+            DB::transaction(function () use ($vehicle, $attributes): void {
+                $vehicle->fill($attributes);
+
+                if ($vehicle->save() !== true) {
+                    throw ValidationException::withMessages(['vehicle' => 'The vehicle could not be saved. Please try again.']);
+                }
+            });
+        } catch (Throwable $exception) {
+            if ($newImage !== null) {
+                Storage::disk('public')->delete($newImage);
+            }
+
+            throw $exception;
+        }
+
+        if ($newImage !== null && $oldImage !== null) {
+            Storage::disk('public')->delete($oldImage);
+        }
+
+        return $vehicle;
     }
 }

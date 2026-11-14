@@ -11,7 +11,7 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('xpress.vehicles.store') }}" method="POST">
+                    <form action="{{ route('xpress.vehicles.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @include('admin.vehicles.form', ['vehicle' => $vehicle])
                         <button type="submit" class="btn btn-primary">Add Vehicle</button>

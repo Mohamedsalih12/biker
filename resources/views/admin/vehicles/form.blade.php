@@ -42,4 +42,19 @@
         <input type="date" class="form-control @error('insurance_expires_at') is-invalid @enderror" id="insurance_expires_at" name="insurance_expires_at" value="{{ old('insurance_expires_at', $vehicle->insurance_expires_at?->format('Y-m-d')) }}">
         @error('insurance_expires_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
+    <div class="col-md-6 mb-3">
+        <label for="image" class="form-label">Vehicle Photo</label>
+        <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/jpeg,image/png,image/webp" aria-describedby="image-help">
+        <div id="image-help" class="form-text">Optional JPG, PNG or WebP, up to 2 MB. Choose a new photo to replace the current one.</div>
+        @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        @if ($vehicle->image)
+            <img src="{{ $vehicle->imageUrl() }}" alt="Current photo of {{ $vehicle->registration_number }}" class="img-thumbnail mt-2" width="160" loading="lazy">
+        @endif
+    </div>
+    <div class="col-12 mb-3">
+        <label for="damages" class="form-label">Damages</label>
+        <textarea class="form-control @error('damages') is-invalid @enderror" id="damages" name="damages" rows="4" maxlength="10000" aria-describedby="damages-help">{{ old('damages', $vehicle->damages) }}</textarea>
+        <div id="damages-help" class="form-text">Describe any existing damage. Leave blank if there is nothing to record.</div>
+        @error('damages') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
 </div>

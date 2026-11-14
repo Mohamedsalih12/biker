@@ -190,7 +190,7 @@ class VehicleTableTest extends TestCase
             $this->assertSame("'".$vehicle->brand, $sheet->getCell('C2')->getFormattedValue());
             $this->assertNotSame(DataType::TYPE_FORMULA, $sheet->getCell('C2')->getDataType());
             $this->assertSame('001234567890123456789', $sheet->getCell('E2')->getFormattedValue());
-            $this->assertSame('L', $sheet->getHighestDataColumn());
+            $this->assertSame('N', $sheet->getHighestDataColumn());
             $workbook->disconnectWorksheets();
         } finally {
             unlink($path);

@@ -23,6 +23,8 @@ class VehicleFactory extends Factory
             'purchase_cost' => fake()->randomFloat(2, 10000, 200000),
             'insurance_policy_number' => fake()->bothify('INS-########'),
             'insurance_expires_at' => '2027-01-01',
+            'image' => null,
+            'damages' => null,
         ];
     }
 }

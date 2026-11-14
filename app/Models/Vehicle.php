@@ -14,6 +14,8 @@ use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
 /**
  * @property Carbon|null $purchase_date
  * @property Carbon|null $insurance_expires_at
+ * @property string|null $image
+ * @property string|null $damages
  */
 class Vehicle extends Model
 {
@@ -26,7 +28,7 @@ class Vehicle extends Model
     protected $fillable = [
         'registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number',
         'odometer_reading', 'status', 'purchase_date', 'purchase_cost',
-        'insurance_policy_number', 'insurance_expires_at',
+        'insurance_policy_number', 'insurance_expires_at', 'image', 'damages',
     ];
 
     /** @return array<string, string> */
@@ -48,5 +50,10 @@ class Vehicle extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function imageUrl(): ?string
+    {
+        return $this->image ? asset('storage/'.$this->image) : null;
     }
 }

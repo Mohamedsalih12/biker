@@ -28,6 +28,8 @@ class VehicleFormRequest extends FormRequest
             'purchase_cost' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
             'insurance_policy_number' => ['nullable', 'string', 'max:255'],
             'insurance_expires_at' => ['nullable', 'date_format:Y-m-d'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'damages' => ['nullable', 'string', 'max:10000'],
         ];
     }
 }
