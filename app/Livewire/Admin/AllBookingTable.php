@@ -61,7 +61,7 @@ class AllBookingTable extends PowerGridComponent
     {
         Gate::authorize('manage-bookings');
 
-        return Booking::query()
+        return Booking::query()->fromSub(Booking::query()->withCurrentPaymentStatus(), 'bookings')
             ->join('users as customers', 'customers.id', '=', 'bookings.customer_id')
             ->join('vehicles as booked_vehicles', 'booked_vehicles.id', '=', 'bookings.vehicle_id')
             ->join('users as creators', 'creators.id', '=', 'bookings.user_id')
@@ -78,7 +78,7 @@ class AllBookingTable extends PowerGridComponent
             ->add('actual_return_date_formatted', fn (Booking $booking): string => $booking->actual_return_date?->format('Y-m-d') ?? '')
             ->add('start_odometer')->add('end_odometer')
             ->add('booking_status', fn (Booking $booking): string => e(ucfirst($booking->booking_status)))
-            ->add('payment_status', fn (Booking $booking): string => e(ucfirst($booking->payment_status)))
+            ->add('payment_status', fn (Booking $booking): string => e(ucfirst($booking->current_payment_status)))
             ->add('handover_notes')->add('return_notes')
             ->add('row_actions', fn (Booking $booking): string => view('admin.bookings.table-actions', compact('booking'))->render());
     }
@@ -99,7 +99,7 @@ class AllBookingTable extends PowerGridComponent
             Column::make('Start Odometer', 'start_odometer', 'bookings.start_odometer')->sortable()->visibleInExport(true),
             Column::make('End Odometer', 'end_odometer', 'bookings.end_odometer')->sortable()->visibleInExport(true),
             Column::make('Booking Status', 'booking_status', 'bookings.booking_status')->sortable()->visibleInExport(true),
-            Column::make('Payment Status', 'payment_status', 'bookings.payment_status')->sortable()->visibleInExport(true),
+            Column::make('Payment Status', 'payment_status', 'bookings.current_payment_status')->sortable()->visibleInExport(true),
             Column::make('Handover Notes', 'handover_notes')->hidden(true, false)->visibleInExport(true),
             Column::make('Return Notes', 'return_notes')->hidden(true, false)->visibleInExport(true),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
@@ -112,8 +112,8 @@ class AllBookingTable extends PowerGridComponent
             Filter::select('booking_status', 'bookings.booking_status')->dataSource(array_map(
                 fn (string $status): array => ['value' => $status, 'label' => ucfirst($status)], Booking::STATUSES,
             ))->optionValue('value')->optionLabel('label'),
-            Filter::select('payment_status', 'bookings.payment_status')->dataSource(array_map(
-                fn (string $status): array => ['value' => $status, 'label' => ucfirst($status)], Booking::PAYMENT_STATUSES,
+            Filter::select('payment_status', 'bookings.current_payment_status')->dataSource(array_map(
+                fn (string $status): array => ['value' => $status, 'label' => ucfirst($status)], Booking::CURRENT_PAYMENT_STATUSES,
             ))->optionValue('value')->optionLabel('label'),
             Filter::select('rental_type', 'bookings.rental_type')->dataSource(array_map(
                 fn (string $type): array => ['value' => $type, 'label' => ucfirst($type)], Booking::RENTAL_TYPES,

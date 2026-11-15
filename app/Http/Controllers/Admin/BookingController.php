@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -40,10 +41,12 @@ class BookingController extends Controller
         Gate::authorize('create', Booking::class);
         $validated = $request->validated();
         $booking = DB::transaction(function () use ($request, $validated): Booking {
+            $this->ensureVehicleAvailable((int) $validated['vehicle_id']);
             $booking = new Booking($validated);
             $booking->user_id = $request->user()->id;
             $booking->save();
             $this->syncVehicleOdometer($booking, $validated);
+            $this->syncCustomerNotes($booking);
 
             return $booking;
         });
@@ -99,8 +102,11 @@ class BookingController extends Controller
         Gate::authorize('update', $booking);
         $validated = $request->validated();
         DB::transaction(function () use ($booking, $validated): void {
+            $this->ensureVehicleAvailable((int) $validated['vehicle_id'], $booking);
+            $booking->refreshForUpdate();
             $booking->update($validated);
             $this->syncVehicleOdometer($booking, $validated);
+            $this->syncCustomerNotes($booking);
         });
 
         return redirect()->route('xpress.bookings.agreement', $booking)->with('message', 'Booking updated successfully.');
@@ -125,6 +131,31 @@ class BookingController extends Controller
         return redirect()->route('xpress.bookings.index')->with('message', 'Booking deleted successfully.');
     }
 
+    private function ensureVehicleAvailable(int $vehicleId, ?Booking $booking = null): void
+    {
+        Vehicle::query()->whereKey($vehicleId)->lockForUpdate()->firstOrFail();
+
+        if (Booking::query()->where('vehicle_id', $vehicleId)->whereIn('booking_status', ['taken', 'reserved'])
+            ->when($booking !== null, fn (Builder $query): Builder => $query->whereKeyNot($booking->id))
+            ->exists()) {
+            throw ValidationException::withMessages(['vehicle_id' => 'This vehicle already has a taken or reserved booking.']);
+        }
+    }
+
+    private function syncCustomerNotes(Booking $booking): void
+    {
+        if (blank($booking->return_notes) || (! $booking->wasRecentlyCreated && ! $booking->wasChanged(['return_notes', 'customer_id']))) {
+            return;
+        }
+
+        $customer = $booking->customer()->lockForUpdate()->firstOrFail();
+        $customer->notes = filled($customer->notes) ? $customer->notes."\n".$booking->return_notes : $booking->return_notes;
+
+        if (! $customer->save()) {
+            throw ValidationException::withMessages(['return_notes' => 'The customer notes could not be updated.']);
+        }
+    }
+
     /** @param array<string, mixed> $validated */
     private function syncVehicleOdometer(Booking $booking, array $validated): void
     {
@@ -146,7 +177,10 @@ class BookingController extends Controller
         return [
             'booking' => $booking,
             'selectedCustomer' => $customerId ? User::query()->where('role', 'customer')->select(['id', 'name', 'aadhaar'])->find($customerId) : null,
-            'vehicles' => Vehicle::query()->orderBy('registration_number')->get(['id', 'registration_number', 'odometer_reading']),
+            'vehicles' => Vehicle::query()->whereDoesntHave('bookings', function (Builder $query) use ($booking): void {
+                $query->whereIn('booking_status', ['taken', 'reserved'])
+                    ->when($booking->exists, fn (Builder $query): Builder => $query->whereKeyNot($booking->id));
+            })->orderBy('registration_number')->get(['id', 'registration_number', 'odometer_reading']),
         ];
     }
 }

@@ -30,7 +30,24 @@ class BookingTest extends TestCase
         $response = $this->actingAsUser()->withSession(['_old_input' => ['vehicle_id' => $vehicle->id]])
             ->get('/admin/bookings/create');
 
-        $response->assertSee('name="start_odometer" class="form-control " value="4321"', false);
+        $response->assertSee('name="start_odometer" class="form-control" value="4321"', false);
+    }
+
+    public function test_booking_form_defaults_rate_to_5500(): void
+    {
+        $response = $this->actingAsUser()->get('/admin/bookings/create');
+
+        $response->assertSee('id="rate_per_unit" name="rate_per_unit" class="form-control " value="5500"', false);
+    }
+
+    public function test_booking_form_defaults_dates_to_today_and_thirty_days_later(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 15)->setTime(12, 0));
+
+        $response = $this->actingAsUser()->get('/admin/bookings/create');
+
+        $response->assertSee('id="start_date" name="start_date" class="form-control " value="2026-11-15"', false);
+        $response->assertSee('id="end_date" name="end_date" class="form-control " value="2026-12-15"', false);
     }
 
     public function test_booking_form_preserves_saved_and_old_start_odometer_values(): void
@@ -39,10 +56,10 @@ class BookingTest extends TestCase
         $booking->vehicle->update(['odometer_reading' => 4321]);
 
         $this->actingAsUser()->get("/admin/bookings/{$booking->id}/edit")
-            ->assertSee('name="start_odometer" class="form-control " value="123"', false);
+            ->assertSee('name="start_odometer" class="form-control" value="123"', false);
         $this->withSession(['_old_input' => ['start_odometer' => 0]])
             ->get("/admin/bookings/{$booking->id}/edit")
-            ->assertSee('name="start_odometer" class="form-control " value="0"', false);
+            ->assertSee('name="start_odometer" class="form-control" value="0"', false);
     }
 
     public function test_factory_creates_bookings_with_model_events_disabled(): void
@@ -61,7 +78,7 @@ class BookingTest extends TestCase
         $response = $this->actingAsUser()->post('/admin/bookings', $payload + ['booking_code' => 'SPOOFED', 'user_id' => $this->otherUser->id]);
         $first = Booking::query()->sole();
         $response->assertRedirect("/admin/bookings/{$first->id}/agreement");
-        $this->post('/admin/bookings', $payload)->assertRedirect();
+        $this->post('/admin/bookings', array_replace($payload, ['vehicle_id' => Vehicle::factory()->create()->id]))->assertRedirect();
 
         $this->assertSame('10000', $first->booking_code);
         $this->assertSame(['10000', '10001'], Booking::query()->orderBy('id')->pluck('booking_code')->all());
@@ -150,6 +167,65 @@ class BookingTest extends TestCase
             'customer_id', 'vehicle_id', 'rate_per_unit', 'start_date', 'end_date', 'start_odometer',
         ]);
         $this->assertDatabaseCount('bookings', 0);
+    }
+
+    #[DataProvider('emptyEndOdometers')]
+    public function test_returning_a_booking_requires_an_end_odometer(array $returnDetails): void
+    {
+        $booking = Booking::factory()->create(['booking_status' => 'taken', 'end_odometer' => null]);
+        $payload = $this->payload() + ['booking_status' => 'returned'] + $returnDetails;
+
+        $this->actingAsUser()->put("/admin/bookings/{$booking->id}", $payload)
+            ->assertSessionHasErrors('end_odometer');
+
+        $this->assertSame('taken', $booking->fresh()->booking_status);
+        $this->assertNull($booking->fresh()->end_odometer);
+    }
+
+    public static function emptyEndOdometers(): array
+    {
+        return [
+            'omitted' => [[]],
+            'null' => [['end_odometer' => null]],
+            'empty' => [['end_odometer' => '']],
+        ];
+    }
+
+    public function test_creating_a_returned_booking_requires_an_end_odometer(): void
+    {
+        $this->actingAsUser()->post('/admin/bookings', $this->payload() + ['booking_status' => 'returned'])
+            ->assertSessionHasErrors('end_odometer');
+
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
+    #[DataProvider('nonReturnedStatuses')]
+    public function test_end_odometer_remains_optional_for_non_returned_bookings(string $status): void
+    {
+        $payload = $this->payload() + ['booking_status' => $status, 'end_odometer' => null];
+
+        $this->actingAsUser()->post('/admin/bookings', $payload)->assertSessionHasNoErrors();
+
+        $booking = Booking::query()->sole();
+        $this->assertSame($status, $booking->booking_status);
+        $this->assertNull($booking->end_odometer);
+    }
+
+    public static function nonReturnedStatuses(): array
+    {
+        return [['reserved'], ['taken'], ['cancelled']];
+    }
+
+    public function test_returned_booking_accepts_zero_end_odometer_when_start_is_zero(): void
+    {
+        $payload = array_replace($this->payload(), ['booking_status' => 'returned', 'start_odometer' => 0, 'end_odometer' => 0]);
+
+        $this->actingAsUser()->post('/admin/bookings', $payload)->assertSessionHasNoErrors();
+
+        $booking = Booking::query()->sole();
+        $this->assertSame('returned', $booking->booking_status);
+        $this->assertSame(0, $booking->end_odometer);
+        $this->assertSame(0, $booking->vehicle->odometer_reading);
     }
 
     #[DataProvider('invalidValues')]

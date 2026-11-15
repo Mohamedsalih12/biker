@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Database\Factories\BookingFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +21,7 @@ use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
  * @property Carbon|null $start_date
  * @property Carbon|null $end_date
  * @property Carbon|null $actual_return_date
+ * @property-read string $current_payment_status
  */
 class Booking extends Model
 {
@@ -30,6 +33,8 @@ class Booking extends Model
     public const array STATUSES = ['reserved', 'taken', 'returned', 'cancelled'];
 
     public const array PAYMENT_STATUSES = ['pending', 'paid', 'overdue'];
+
+    public const array CURRENT_PAYMENT_STATUSES = ['paid', 'unpaid'];
 
     /** @var list<string> */
     protected $fillable = [
@@ -90,6 +95,35 @@ class Booking extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /** @param Builder<static> $query */
+    #[Scope]
+    protected function withCurrentPaymentStatus(Builder $query): void
+    {
+        $start = 'bookings.start_date';
+        $end = 'COALESCE(bookings.actual_return_date, bookings.end_date)';
+
+        if ($query->getModel()->getConnection()->getDriverName() === 'sqlite') {
+            $days = "CAST(julianday($end) - julianday($start) AS INTEGER)";
+            $weeks = "CAST((($days) + 6) / 7 AS INTEGER)";
+            $months = "((strftime('%Y', $end) - strftime('%Y', $start)) * 12 + strftime('%m', $end) - strftime('%m', $start))";
+            $partialMonth = "strftime('%d', $end) > strftime('%d', $start)";
+        } else {
+            $days = "DATEDIFF($end, $start)";
+            $weeks = "CEIL(($days) / 7.0)";
+            $months = "((YEAR($end) - YEAR($start)) * 12 + MONTH($end) - MONTH($start))";
+            $partialMonth = "DAY($end) > DAY($start)";
+        }
+
+        $units = "CASE bookings.rental_type WHEN 'daily' THEN $days WHEN 'weekly' THEN $weeks ELSE $months + CASE WHEN $partialMonth THEN 1 ELSE 0 END END";
+        $charges = static::query()->select('bookings.*')
+            ->selectRaw("(CASE WHEN ($units) < 1 THEN 1 ELSE ($units) END) * ROUND(bookings.rate_per_unit * 100) AS rental_charge_cents")
+            ->selectSub(Payment::query()->selectRaw('COALESCE(SUM(ROUND(amount_received * 100)), 0)')
+                ->whereColumn('payments.booking_id', 'bookings.id'), 'received_cents');
+
+        $query->fromSub($charges, 'bookings')->select('bookings.*')
+            ->selectRaw("CASE WHEN received_cents >= rental_charge_cents THEN 'paid' ELSE 'unpaid' END AS current_payment_status");
     }
 
     /** @return BelongsTo<Vehicle, $this> */

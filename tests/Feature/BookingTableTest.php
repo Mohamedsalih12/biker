@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Livewire\Admin\BookingTable;
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,7 @@ class BookingTableTest extends TestCase
         $reserved = Booking::factory()->create(['booking_status' => 'reserved', 'payment_status' => 'paid']);
         $taken = Booking::factory()->create(['booking_status' => 'taken', 'payment_status' => 'paid']);
         $returnedPaid = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'paid']);
+        Payment::factory()->for($returnedPaid)->create(['amount_received' => '2500.00']);
         $returnedPending = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'pending']);
         $returnedOverdue = Booking::factory()->create(['booking_status' => 'returned', 'payment_status' => 'overdue']);
         $cancelled = Booking::factory()->create(['booking_status' => 'cancelled', 'payment_status' => 'paid']);

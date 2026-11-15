@@ -191,7 +191,7 @@
                 <button class="save-button action-button" type="button" onclick="window.print()">Print</button>
                 <a class="save-button action-button" href="{{ route('xpress.bookings.agreement.pdf', $booking) }}">Download as PDF</a>
                 @can('manage-payments')
-                    <button class="save-button action-button" type="submit" form="agreement-payment">Save</button>
+                    <button class="save-button action-button" type="submit" form="agreement-payment">Pay</button>
                 @endcan
             </div>
         @if (session('message'))

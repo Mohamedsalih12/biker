@@ -6,7 +6,6 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Vehicle;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\ViewErrorBag;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -69,14 +68,14 @@ class BookingAgreementTest extends TestCase
         $this->actingAsUser()->get('/admin/bookings/999999/agreement/pdf')->assertNotFound();
     }
 
-    public function test_agreement_displays_payment_inputs_and_save_button(): void
+    public function test_agreement_displays_payment_inputs_and_pay_button(): void
     {
         $booking = Booking::factory()->create();
 
         $this->actingAsUser()->get("/admin/bookings/{$booking->id}/agreement")
             ->assertSee('name="amount_received"', false)
             ->assertSee('name="payment_method"', false)
-            ->assertSeeText('Save')->assertSeeText('Cash')->assertSeeText('UPI')->assertSeeText('Other')
+            ->assertSeeText('Pay')->assertSeeText('Cash')->assertSeeText('UPI')->assertSeeText('Other')
             ->assertDontSee('value="bank"', false);
     }
 
