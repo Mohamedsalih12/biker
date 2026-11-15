@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -85,6 +86,10 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($ability === 'manage-bookings' || $subject === Booking::class || $subject instanceof Booking) {
+                return $user instanceof User && $user->role === 'admin';
+            }
+
+            if ($ability === 'manage-payments' || $subject === Payment::class || $subject instanceof Payment) {
                 return $user instanceof User && $user->role === 'admin';
             }
 

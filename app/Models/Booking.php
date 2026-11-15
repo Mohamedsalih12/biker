@@ -6,6 +6,7 @@ use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -80,11 +81,18 @@ class Booking extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /** @return BelongsTo<Vehicle, $this> */
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);

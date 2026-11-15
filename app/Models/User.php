@@ -3,7 +3,6 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\Xpress\Warehouse;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,11 +38,6 @@ class User extends Authenticatable
         'phone',
         'address',
     ];
-
-    public function warehouse(): HasOne
-    {
-        return $this->hasOne(Warehouse::class, 'user_id', 'id');
-    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -89,5 +83,15 @@ class User extends Authenticatable
     public function createdBookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'user_id');
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'customer_id');
+    }
+
+    public function createdPayments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'user_id');
     }
 }

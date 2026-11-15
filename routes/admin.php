@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AllBookingController;
 use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\BookingCustomerController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserPasswordResetController;
@@ -53,6 +54,17 @@ Route::middleware(['auth', '2fa', 'force.password.change'])->group(function () {
         Route::get('vehicles/{vehicle}/edit', 'edit')->name('xpress.vehicles.edit');
         Route::put('vehicles/{vehicle}', 'update')->name('xpress.vehicles.update');
         Route::delete('vehicles/{vehicle}/delete', 'destroy')->name('xpress.vehicles.destroy');
+    });
+
+    Route::controller(PaymentController::class)->middleware('can:manage-payments')->group(function () {
+        Route::get('payments', 'index')->name('xpress.payments.index');
+        Route::get('payments/bookings', 'bookings')->name('xpress.payments.bookings');
+        Route::get('payments/create', 'create')->name('xpress.payments.create');
+        Route::post('payments', 'store')->name('xpress.payments.store');
+        Route::get('payments/{payment}', 'show')->name('xpress.payments.show');
+        Route::get('payments/{payment}/edit', 'edit')->name('xpress.payments.edit');
+        Route::put('payments/{payment}', 'update')->name('xpress.payments.update');
+        Route::delete('payments/{payment}/delete', 'destroy')->name('xpress.payments.destroy');
     });
 
     Route::post('users/{user}/reset-password', [UserPasswordResetController::class, 'store'])->middleware('can:manage-users')->name('users.reset-password.store');

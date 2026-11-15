@@ -102,6 +102,15 @@
                                 </ul>
                             </li>
                             @endcan
+                            @can('manage-payments')
+                            <li class="dropdown-submenu">
+                                <a class="dropdown-item dropdown-toggle" href="#">Payments</a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <li><a class="dropdown-item" href="{{ route('xpress.payments.index') }}">View Payments</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('xpress.payments.create') }}">Add Payment</a></li>
+                                </ul>
+                            </li>
+                            @endcan
                             <li><a class="dropdown-item" href="{{ route('settings') }}">Settings</a></li>
                         </ul>
                         </li>
@@ -210,6 +219,16 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ Request::is('admin/all-bookings') ? 'active' : '' }}" href="{{ route('xpress.all-bookings.index') }}">All Bookings</a>
+                                </li>
+                            </x-sidebar-collapse-item>
+                            @endcan
+                            @can('manage-payments')
+                            <x-sidebar-collapse-item id="payments" title="Payments" icon="fa fa-money-bill" :patterns="['admin/payments', 'admin/payments/*']">
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/payments') ? 'active' : '' }}" href="{{ route('xpress.payments.index') }}">View Payments</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/payments/create') ? 'active' : '' }}" href="{{ route('xpress.payments.create') }}">Add Payment</a>
                                 </li>
                             </x-sidebar-collapse-item>
                             @endcan
