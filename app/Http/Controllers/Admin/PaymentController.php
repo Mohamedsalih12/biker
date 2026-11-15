@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AgreementPaymentFormRequest;
 use App\Http\Requests\PaymentFormRequest;
 use App\Models\Booking;
 use App\Models\Payment;
@@ -40,6 +41,15 @@ class PaymentController extends Controller
         $this->savePayment($request, new Payment);
 
         return redirect()->route('xpress.payments.index')->with('message', 'Payment created successfully.');
+    }
+
+    public function storeAgreement(AgreementPaymentFormRequest $request, Booking $booking): RedirectResponse
+    {
+        Gate::authorize('view', $booking);
+        Gate::authorize('create', Payment::class);
+        $this->savePayment($request, new Payment);
+
+        return redirect()->route('xpress.bookings.agreement', $booking)->with('message', 'Payment saved successfully.');
     }
 
     public function show(Payment $payment): View

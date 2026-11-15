@@ -135,11 +135,23 @@
             color: var(--muted);
         }
         .footer-note { margin-top: 2rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+        .payment-toolbar { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+        .save-button { background: var(--primary); color: #fff; border: 0; border-radius: 4px; padding: 0.65rem 1.5rem; font: inherit; cursor: pointer; }
+        .save-button:hover { background: var(--accent); }
+        .payment-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+        .payment-field { display: block; min-width: 0; font-size: 0.93rem; }
+        .payment-field label { display: block; color: var(--muted); font-weight: 600; margin-bottom: 0.25rem; }
+        .payment-field input, .payment-field select { width: 100%; max-width: 320px; min-height: 44px; padding: 0.5rem 0.65rem; border: 1px solid var(--border); border-radius: 4px; background: #fff; color: var(--text); font: inherit; }
+        .save-button:focus-visible, .payment-field input:focus-visible, .payment-field select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+        .payment-feedback { padding: 0.75rem; margin-bottom: 1rem; background: var(--bg-light); border: 1px solid var(--border); border-radius: 4px; }
+        .payment-error { display: block; color: #9b1c1c; font-size: 0.85rem; }
         @media (max-width: 600px) {
             .parties, .signatures { grid-template-columns: 1fr; }
+            .payment-form { grid-template-columns: 1fr; }
             .document { padding: 1.5rem 1rem; }
         }
         @media print {
+            .payment-toolbar, .payment-feedback, .payment-form { display: none; }
             body { background: #fff; padding: 0; }
             .document { box-shadow: none; padding: 1.5rem; }
             .party-box, .sig-box { break-inside: avoid; }
@@ -148,6 +160,22 @@
 </head>
 <body>
     <main class="document">
+        @can('manage-payments')
+            <div class="payment-toolbar">
+                <button class="save-button" type="submit" form="agreement-payment">Save</button>
+            </div>
+        @endcan
+        @if (session('message'))
+            <p class="payment-feedback" role="status">{{ session('message') }}</p>
+        @endif
+        @if ($errors->any())
+            <div class="payment-feedback" role="alert">
+                <p>The payment was not saved. Please correct the following:</p>
+                @foreach ($errors->all() as $error)
+                    <p class="payment-error">{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
         <div class="header">
             <h1>Electric Vehicle Rental Agreement</h1>
             <p>Draft · Booking {{ $booking->booking_code }}</p>
@@ -195,6 +223,30 @@
                 <li><strong>Rental Term:</strong> From {{ $booking->start_date->format('d-M-Y') }} to {{ $booking->end_date->format('d-M-Y') }}</li>
                 <li><strong>{{ ucfirst($booking->rental_type) }} Rental Fee:</strong> ₹{{ number_format((float) $booking->rate_per_unit, 2) }} / {{ ['daily' => 'day', 'weekly' => 'week', 'monthly' => 'month'][$booking->rental_type] }} (payable in advance upon vehicle handover)</li>
             </ul>
+            @can('manage-payments')
+                <form id="agreement-payment" class="payment-form" method="POST" action="{{ route('xpress.bookings.agreement.payments.store', $booking) }}">
+                    @csrf
+                    <div class="payment-field">
+                        <label for="amount_received">Amount Received (₹)</label>
+                        <input type="number" id="amount_received" name="amount_received" value="{{ old('amount_received') }}" min="0.01" max="9999999999.99" step="0.01" required @error('amount_received') aria-invalid="true" aria-describedby="amount-received-error" @enderror>
+                        @error('amount_received')
+                            <span id="amount-received-error" class="payment-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="payment-field">
+                        <label for="payment_method">Payment Method</label>
+                        <select id="payment_method" name="payment_method" required @error('payment_method') aria-invalid="true" aria-describedby="payment-method-error" @enderror>
+                            <option value="">Select payment method</option>
+                            @foreach (\App\Models\Payment::METHODS as $method)
+                                <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ $method === 'upi' ? 'UPI' : ucfirst($method) }}</option>
+                            @endforeach
+                        </select>
+                        @error('payment_method')
+                            <span id="payment-method-error" class="payment-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </form>
+            @endcan
         </section>
 
         <section class="section">

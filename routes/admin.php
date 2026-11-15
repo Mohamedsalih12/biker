@@ -42,6 +42,7 @@ Route::middleware(['auth', '2fa', 'force.password.change'])->group(function () {
         Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('xpress.bookings.show');
         Route::get('bookings/{booking}/edit', [BookingController::class, 'edit'])->name('xpress.bookings.edit');
         Route::get('bookings/{booking}/agreement', [BookingController::class, 'agreement'])->name('xpress.bookings.agreement');
+        Route::post('bookings/{booking}/agreement/payments', [PaymentController::class, 'storeAgreement'])->middleware('can:manage-payments')->name('xpress.bookings.agreement.payments.store');
         Route::put('bookings/{booking}', [BookingController::class, 'update'])->name('xpress.bookings.update');
         Route::delete('bookings/{booking}/delete', [BookingController::class, 'destroy'])->name('xpress.bookings.destroy');
     });

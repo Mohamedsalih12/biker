@@ -1,6 +1,6 @@
 # Testing Reference
 
-Use the project's existing PHPUnit conventions, factories, test helpers and use WarehouseTest as reference. Do not weaken application security or validation to make a test pass.
+Use the project's existing PHPUnit conventions, factories, test helpers. Do not weaken application security or validation to make a test pass.
 
 ## Authentication
 

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\Vehicle;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -10,6 +11,77 @@ use Tests\TestCase;
 
 class BookingAgreementTest extends TestCase
 {
+    public function test_agreement_displays_payment_inputs_and_save_button(): void
+    {
+        $booking = Booking::factory()->create();
+
+        $this->actingAsUser()->get("/admin/bookings/{$booking->id}/agreement")
+            ->assertSee('name="amount_received"', false)
+            ->assertSee('name="payment_method"', false)
+            ->assertSeeText('Save')->assertSeeText('Cash')->assertSeeText('UPI')->assertSeeText('Other')
+            ->assertDontSee('value="bank"', false);
+    }
+
+    public function test_agreement_payment_uses_booking_details_today_and_logged_in_user(): void
+    {
+        $this->travelTo('2026-11-15 12:00:00');
+        $booking = Booking::factory()->create();
+        $other = Booking::factory()->create();
+
+        $this->actingAsUser()->post("/admin/bookings/{$booking->id}/agreement/payments", [
+            'amount_received' => '1250.50', 'payment_method' => 'upi',
+            'booking_id' => $other->id, 'customer_id' => $other->customer_id,
+            'vehicle_id' => $other->vehicle_id, 'user_id' => $this->otherUser->id,
+            'payment_date' => '2020-01-01',
+        ])->assertRedirect("/admin/bookings/{$booking->id}/agreement")
+            ->assertSessionHas('message', 'Payment saved successfully.');
+
+        $payment = Payment::query()->sole();
+        $this->assertSame($booking->id, $payment->booking_id);
+        $this->assertSame($booking->customer_id, $payment->customer_id);
+        $this->assertSame($booking->vehicle_id, $payment->vehicle_id);
+        $this->assertSame($this->user->id, $payment->user_id);
+        $this->assertSame('2026-11-15', $payment->payment_date->format('Y-m-d'));
+        $this->assertSame('1250.50', $payment->amount_received);
+        $this->assertSame('upi', $payment->payment_method);
+        $this->assertDatabaseHas('activity_log', ['log_name' => 'payment', 'event' => 'created', 'subject_id' => $payment->id]);
+        $this->get("/admin/bookings/{$booking->id}/agreement")->assertSeeText('Payment saved successfully.');
+    }
+
+    public function test_agreement_rejects_invalid_payment_and_preserves_input(): void
+    {
+        $booking = Booking::factory()->create();
+        $url = "/admin/bookings/{$booking->id}/agreement";
+
+        $this->actingAsUser()->from($url)->post("{$url}/payments", [
+            'amount_received' => '-1', 'payment_method' => 'bank',
+        ])->assertRedirect($url)->assertSessionHasErrors(['amount_received', 'payment_method'])
+            ->assertSessionHasInput('amount_received', '-1');
+
+        $this->assertDatabaseCount('payments', 0);
+        $this->get($url)->assertSee('value="-1"', false)->assertSeeText('The amount received field must be greater than 0.');
+    }
+
+    public function test_agreement_payment_requires_authentication_and_admin_access(): void
+    {
+        $booking = Booking::factory()->create();
+        $url = "/admin/bookings/{$booking->id}/agreement/payments";
+
+        $this->post($url, [])->assertRedirect('/login');
+        $this->actingAs($this->otherUser)->withSession(['otp_verified' => true])->post($url, [])->assertForbidden();
+
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    public function test_agreement_payment_for_missing_booking_returns_not_found(): void
+    {
+        $this->actingAsUser()->post('/admin/bookings/999999/agreement/payments', [
+            'amount_received' => '100', 'payment_method' => 'cash',
+        ])->assertNotFound();
+
+        $this->assertDatabaseCount('payments', 0);
+    }
+
     #[DataProvider('rentalTypes')]
     public function test_agreement_draft_displays_customer_vehicle_and_booking_terms(string $rentalType, string $feeLabel, string $unit): void
     {

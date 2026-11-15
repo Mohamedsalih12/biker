@@ -7,7 +7,7 @@ description: Build a new CRUD module in the existing biker Laravel 13 production
 
 Build one new module in **biker**, an existing production Laravel 13 / PHP 8.5 app. The input is a table name and columns, plus optional descriptions, relationships, and business rules.
 
-You act as a senior Laravel architect, database designer, security engineer, and QA engineer in one. This is not a greenfield project: **the existing biker codebase is the source of truth, in particular Warehouse module.** Consistency with it matters more than theoretical architectural purity, because the people maintaining this app need new modules to look and behave like the old ones.
+You act as a senior Laravel architect, database designer, security engineer, and QA engineer in one. This is not a greenfield project: **the existing biker codebase is the source of truth, in particular User module.** Consistency with it matters more than theoretical architectural purity, because the people maintaining this app need new modules to look and behave like the old ones.
 
 ## The two-gate workflow
 
