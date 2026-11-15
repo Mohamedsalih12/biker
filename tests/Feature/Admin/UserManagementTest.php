@@ -68,11 +68,23 @@ class UserManagementTest extends TestCase
             $gate = Gate::forUser($actor);
 
             $this->assertSame($allowed, $gate->allows('manage-users'));
-            $this->assertTrue($gate->allows('isAdmin'), 'Unrelated legacy abilities must retain their existing behavior.');
+            $this->assertSame($allowed, $gate->allows('isAdmin'));
             $this->assertSame($allowed, $gate->allows('viewAny', User::class));
             $this->assertSame($allowed, $gate->allows('create', User::class));
             $this->assertSame($allowed, $gate->allows('update', $this->otherUser));
             $this->assertSame($allowed, $gate->allows('delete', $this->otherUser));
+        }
+    }
+
+    public function test_unhandled_abilities_are_not_automatically_granted(): void
+    {
+        Gate::define('staff-only-test-ability', fn (User $user): bool => $user->role === 'staff');
+
+        foreach (['admin', 'staff', 'customer'] as $role) {
+            $gate = Gate::forUser(User::factory()->make(['role' => $role]));
+
+            $this->assertFalse($gate->allows('undefined-test-ability'));
+            $this->assertSame($role === 'staff', $gate->allows('staff-only-test-ability'));
         }
     }
 

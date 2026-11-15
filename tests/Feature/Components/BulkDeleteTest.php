@@ -11,7 +11,7 @@ class BulkDeleteTest extends TestCase
         $this->actingAsUser();
 
         $this->blade(
-            '<x-bulk-delete table-name="warehouse-table" event-name="deleteWarehouses" :model="\App\Models\Xpress\Warehouse::class" />',
+            '<x-bulk-delete table-name="warehouse-table" event-name="deleteWarehouses" :model="\App\Models\Vehicle::class" />',
         )
             ->assertSee('id="warehouse-table-bulk-delete"', false)
             ->assertSee("tableName: 'warehouse-table'", false)

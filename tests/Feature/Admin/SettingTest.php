@@ -20,6 +20,44 @@ class SettingTest extends TestCase
      */
     private const DATA_URL_PAYLOAD = 'data://text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==';
 
+    #[DataProvider('nonAdminSettingsRequests')]
+    public function test_non_admin_cannot_manage_settings(string $role, string $method, bool $settingsExist): void
+    {
+        config(['google2fa.enabled' => true, 'google2fa.lifetime' => 0]);
+        $this->user->forceFill(['role' => $role, 'google2fa_secret' => 'JBSWY3DPEHPK3PXP']);
+
+        if ($settingsExist) {
+            Setting::create(['website_name' => 'Original website']);
+        }
+
+        $this->actingAsUser()->withSession([
+            'google2fa.auth_passed' => true,
+            'google2fa.auth_time' => now()->toIso8601String(),
+        ]);
+
+        $route = $method === 'get' ? 'settings' : 'settings.store';
+        $this->{$method}(route($route), ['website_name' => 'Unauthorized change'])->assertForbidden();
+
+        $this->assertDatabaseCount('settings', $settingsExist ? 1 : 0);
+
+        if ($settingsExist) {
+            $this->assertDatabaseHas('settings', ['website_name' => 'Original website']);
+        }
+    }
+
+    /** @return array<string, array{0: string, 1: string, 2: bool}> */
+    public static function nonAdminSettingsRequests(): array
+    {
+        return [
+            'staff cannot view' => ['staff', 'get', true],
+            'staff cannot create' => ['staff', 'post', false],
+            'staff cannot update' => ['staff', 'post', true],
+            'customer cannot view' => ['customer', 'get', true],
+            'customer cannot create' => ['customer', 'post', false],
+            'customer cannot update' => ['customer', 'post', true],
+        ];
+    }
+
     public function test_settings_page_loads_for_an_authenticated_user(): void
     {
         Setting::create(['website_name' => 'Field Visit', 'website_url' => 'https://example.com']);

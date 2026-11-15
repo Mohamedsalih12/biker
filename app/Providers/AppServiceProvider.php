@@ -77,7 +77,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(static function (?Authenticatable $user, string $ability, array $arguments): ?bool {
             $subject = $arguments[0] ?? null;
 
-            if ($ability === 'manage-users' || $subject === User::class || $subject instanceof User) {
+            if ($ability === 'isAdmin' || $ability === 'manage-users' || $subject === User::class || $subject instanceof User) {
                 return $user instanceof User && $user->role === 'admin';
             }
 
@@ -93,7 +93,7 @@ class AppServiceProvider extends ServiceProvider
                 return $user instanceof User && $user->role === 'admin';
             }
 
-            return $user === null ? null : true;
+            return null;
         });
 
         Password::defaults(fn (): ?Password => app()->isProduction()
