@@ -3,6 +3,7 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Livewire\Admin\UserTable;
+use App\Models\Payment;
 use App\Models\User;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -10,6 +11,22 @@ use Tests\TestCase;
 
 class UserTableTest extends TestCase
 {
+    public function test_grid_totals_payments_from_each_customer_not_payments_they_collected(): void
+    {
+        $customer = User::factory()->create(['name' => 'Earnings customer']);
+        $unpaid = User::factory()->create(['name' => 'Earnings unpaid']);
+        Payment::factory()->count(2)->sequence(
+            ['amount_received' => '120.25'],
+            ['amount_received' => '30.50'],
+        )->create(['customer_id' => $customer->id, 'user_id' => $unpaid->id]);
+
+        Livewire::actingAs($this->user)->test(UserTable::class)
+            ->set('search', 'Earnings')
+            ->call('sortBy', 'total_amount_earned', 'desc')
+            ->assertSee('Total Amount Earned')
+            ->assertSeeInOrder([$customer->name, '151', $unpaid->name, '0']);
+    }
+
     public function test_user_index_renders_powergrid_and_keeps_temporary_password_notice(): void
     {
         $this->actingAsUser()->withSession(['reset_password_once' => [

@@ -23,9 +23,10 @@ class PaymentTableTest extends TestCase
             $grid->set('search', $term)->assertSee('Unique receipt')->assertDontSee('Excluded receipt');
         }
         $grid->set('filters.select.payments.payment_method', 'other')->assertDontSee('Unique receipt');
-        Payment::factory()->count(17)->sequence(fn ($sequence): array => ['amount_received' => 100 + $sequence->index])->create();
+        $payments = Payment::factory()->count(17)->sequence(fn ($sequence): array => ['amount_received' => 100 + $sequence->index])->create();
         Livewire::actingAs($this->user)->test(PaymentTable::class)->call('sortBy', 'payments.amount_received', 'asc')
-            ->assertSee('100.00')->assertDontSee('116.00')->call('gotoPage', 2)->assertSee('116.00');
+            ->assertSee($payments->first()->booking->booking_code)->assertDontSee($payments->last()->booking->booking_code)
+            ->call('gotoPage', 2)->assertSee($payments->last()->booking->booking_code);
     }
 
     public function test_grid_escapes_notes_and_customer_names(): void

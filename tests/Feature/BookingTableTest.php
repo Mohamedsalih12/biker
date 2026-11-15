@@ -63,11 +63,11 @@ class BookingTableTest extends TestCase
     public function test_grid_sorts_paginates_and_escapes_customer_content(): void
     {
         $customer = User::factory()->create(['name' => '<script>customer</script>', 'aadhaar' => '123456789012']);
-        Booking::factory()->count(17)->for($customer, 'customer')->sequence(fn ($sequence): array => ['rate_per_unit' => 100 + $sequence->index])->create();
+        $bookings = Booking::factory()->count(17)->for($customer, 'customer')->sequence(fn ($sequence): array => ['rate_per_unit' => 100 + $sequence->index])->create();
         Livewire::actingAs($this->user)->test(BookingTable::class)
             ->assertSee($customer->name)->assertDontSee($customer->name, false)->assertDontSee('123456789012')
-            ->call('sortBy', 'rate_per_unit', 'desc')->assertSee('116.00')->assertDontSee('100.00')
-            ->call('gotoPage', 2)->assertSee('100.00')->assertDontSee('116.00');
+            ->call('sortBy', 'rate_per_unit', 'desc')->assertSee($bookings->last()->booking_code)->assertDontSee($bookings->first()->booking_code)
+            ->call('gotoPage', 2)->assertSee($bookings->first()->booking_code)->assertDontSee($bookings->last()->booking_code);
     }
 
     public function test_guest_and_non_admin_cannot_mount_the_grid(): void

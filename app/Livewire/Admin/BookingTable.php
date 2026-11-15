@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Booking;
+use App\Support\IndexNumberColumn;
 use App\Support\Spreadsheet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -96,12 +97,12 @@ class BookingTable extends PowerGridComponent
             Column::make('Vehicle Registration', 'vehicle_registration', 'booked_vehicles.registration_number')->sortable()->searchable()->visibleInExport(true),
             Column::make('Created By', 'creator_name', 'creators.name')->sortable()->visibleInExport(true),
             Column::make('Rental Type', 'rental_type', 'bookings.rental_type')->sortable()->visibleInExport(true),
-            Column::make('Rate per Unit', 'rate_per_unit', 'bookings.rate_per_unit')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('Rate per Unit', 'rate_per_unit', 'bookings.rate_per_unit')->sortable()->visibleInExport(true),
             Column::make('Start Date', 'start_date_formatted', 'bookings.start_date')->sortable()->visibleInExport(true),
             Column::make('End Date', 'end_date_formatted', 'bookings.end_date')->sortable()->visibleInExport(true),
             Column::make('Actual Return Date', 'actual_return_date_formatted', 'bookings.actual_return_date')->sortable()->visibleInExport(true),
-            Column::make('Start Odometer', 'start_odometer', 'bookings.start_odometer')->sortable()->visibleInExport(true),
-            Column::make('End Odometer', 'end_odometer', 'bookings.end_odometer')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('Start Odometer', 'start_odometer', 'bookings.start_odometer')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('End Odometer', 'end_odometer', 'bookings.end_odometer')->sortable()->visibleInExport(true),
             Column::make('Booking Status', 'booking_status', 'bookings.booking_status')->sortable()->visibleInExport(true),
             Column::make('Payment Status', 'payment_status', 'bookings.current_payment_status')->sortable()->visibleInExport(true),
             Column::make('Handover Notes', 'handover_notes')->hidden(true, false)->visibleInExport(true),

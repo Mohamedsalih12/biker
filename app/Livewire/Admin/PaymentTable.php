@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Payment;
+use App\Support\IndexNumberColumn;
 use App\Support\Spreadsheet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -85,7 +86,7 @@ class PaymentTable extends PowerGridComponent
             Column::make('ID', 'id', 'payments.id')->sortable()->visibleInExport(true),
             Column::make('Booking Code', 'booking_code', 'paid_bookings.booking_code')->sortable()->searchable()->visibleInExport(true),
             Column::make('Payment Date', 'payment_date_formatted', 'payments.payment_date')->sortable()->visibleInExport(true),
-            Column::make('Amount Received', 'amount_received', 'payments.amount_received')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('Amount Received', 'amount_received', 'payments.amount_received')->sortable()->visibleInExport(true),
             Column::make('Payment Method', 'payment_method', 'payments.payment_method')->sortable()->visibleInExport(true),
             Column::make('Customer', 'customer_name', 'customers.name')->sortable()->searchable()->visibleInExport(true),
             Column::make('Vehicle Registration', 'vehicle_registration', 'paid_vehicles.registration_number')->sortable()->searchable()->visibleInExport(true),

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
+use App\Support\IndexNumberColumn;
 use App\Support\Spreadsheet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -57,7 +58,11 @@ class UserTable extends PowerGridComponent
     {
         Gate::authorize('manage-users');
 
-        return User::query()->select(['id', 'name', 'email', 'phone', 'role', 'active_status']);
+        return User::query()->fromSub(
+            User::query()->select(['id', 'name', 'email', 'phone', 'role', 'active_status'])
+                ->withSum('payments as total_amount_earned', 'amount_received'),
+            'users',
+        );
     }
 
     public function fields(): PowerGridFields
@@ -69,6 +74,7 @@ class UserTable extends PowerGridComponent
             ->add('phone')
             ->add('role', fn (User $user): string => e(ucfirst($user->role)))
             ->add('active_status', fn (User $user): string => $user->active_status ? 'Active' : 'Inactive')
+            ->add('total_amount_earned', fn (User $user): mixed => $user->total_amount_earned ?? 0)
             ->add('row_actions', fn (User $user): string => view('admin.users.table-actions', ['user' => $user, 'type' => 'edit-delete'])->render())
             ->add('reset_password', fn (User $user): string => view('admin.users.table-actions', ['user' => $user, 'type' => 'reset-password'])->render())
             ->add('reset_2fa', fn (User $user): string => view('admin.users.table-actions', ['user' => $user, 'type' => 'reset-2fa'])->render());
@@ -83,6 +89,7 @@ class UserTable extends PowerGridComponent
             Column::make('Phone', 'phone')->sortable()->searchable()->visibleInExport(true),
             Column::make('Role', 'role')->sortable()->visibleInExport(true),
             Column::make('Active Status', 'active_status')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('Total Amount Earned', 'total_amount_earned')->sortable()->visibleInExport(false),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
             Column::make('Reset Password', 'reset_password')->visibleInExport(false),
             Column::make('Reset 2FA', 'reset_2fa')->visibleInExport(false),

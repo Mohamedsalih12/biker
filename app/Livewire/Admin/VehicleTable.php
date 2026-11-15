@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Vehicle;
+use App\Support\IndexNumberColumn;
 use App\Support\Spreadsheet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -58,10 +59,13 @@ class VehicleTable extends PowerGridComponent
     {
         Gate::authorize('manage-vehicles');
 
-        return Vehicle::query()->fromSub(Vehicle::query()->withCurrentStatus(), 'vehicles')->select([
+        return Vehicle::query()->fromSub(
+            Vehicle::query()->withCurrentStatus()->withSum('payments as total_amount_earned', 'amount_received'),
+            'vehicles',
+        )->select([
             'id', 'registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number',
             'odometer_reading', 'status', 'purchase_date', 'purchase_cost', 'insurance_policy_number', 'insurance_expires_at',
-            'image', 'damages', 'current_status',
+            'image', 'damages', 'current_status', 'total_amount_earned',
         ]);
     }
 
@@ -78,6 +82,7 @@ class VehicleTable extends PowerGridComponent
             ->add('image')
             ->add('image_preview', fn (Vehicle $vehicle): string => view('admin.vehicles.table-image', compact('vehicle'))->render())
             ->add('damages')
+            ->add('total_amount_earned', fn (Vehicle $vehicle): mixed => $vehicle->total_amount_earned ?? 0)
             ->add('row_actions', fn (Vehicle $vehicle): string => view('admin.vehicles.table-actions', compact('vehicle'))->render());
     }
 
@@ -91,14 +96,15 @@ class VehicleTable extends PowerGridComponent
             Column::make('Model', 'model')->sortable()->searchable()->visibleInExport(true),
             Column::make('Chassis Number', 'chassis_number')->sortable()->searchable()->visibleInExport(true),
             Column::make('Battery Serial Number', 'battery_serial_number')->sortable()->searchable()->visibleInExport(true),
-            Column::make('Odometer Reading', 'odometer_reading')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('Odometer Reading', 'odometer_reading')->sortable()->visibleInExport(true),
             Column::make('Status', 'status', 'current_status')->sortable()->visibleInExport(true),
             Column::make('Purchase Date', 'purchase_date_formatted', 'purchase_date')->sortable()->visibleInExport(true),
-            Column::make('Purchase Cost', 'purchase_cost')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('Purchase Cost', 'purchase_cost')->sortable()->visibleInExport(true),
             Column::make('Insurance Policy Number', 'insurance_policy_number')->sortable()->searchable()->visibleInExport(true),
             Column::make('Insurance Expires At', 'insurance_expires_at_formatted', 'insurance_expires_at')->sortable()->visibleInExport(true),
             Column::make('Image Path', 'image')->hidden()->visibleInExport(true),
             Column::make('Damages', 'damages')->searchable()->bodyAttribute('text-wrap text-break', 'min-width: 15rem; max-width: 24rem;')->visibleInExport(true),
+            IndexNumberColumn::make('Total Amount Earned', 'total_amount_earned')->sortable()->visibleInExport(false),
             Column::make('Actions', 'row_actions')->visibleInExport(false),
         ];
     }

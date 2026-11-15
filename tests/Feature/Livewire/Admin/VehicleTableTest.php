@@ -3,6 +3,7 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Livewire\Admin\VehicleTable;
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,6 +17,22 @@ use Tests\TestCase;
 
 class VehicleTableTest extends TestCase
 {
+    public function test_grid_totals_payments_for_each_vehicle_and_shows_zero_without_payments(): void
+    {
+        $vehicle = Vehicle::factory()->create(['registration_number' => 'EARNINGS-PAID']);
+        $unpaid = Vehicle::factory()->create(['registration_number' => 'EARNINGS-UNPAID']);
+        Payment::factory()->count(2)->sequence(
+            ['amount_received' => '220.25'],
+            ['amount_received' => '40.50'],
+        )->create(['vehicle_id' => $vehicle->id]);
+
+        Livewire::actingAs($this->user)->test(VehicleTable::class)
+            ->set('search', 'EARNINGS-')
+            ->call('sortBy', 'total_amount_earned', 'desc')
+            ->assertSee('Total Amount Earned')
+            ->assertSeeInOrder([$vehicle->registration_number, '261', $unpaid->registration_number, '0']);
+    }
+
     public function test_select_all_selects_the_visible_page_and_can_clear_selection(): void
     {
         $vehicles = Vehicle::factory()->count(2)->create();
