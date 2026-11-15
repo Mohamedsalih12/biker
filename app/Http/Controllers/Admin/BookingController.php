@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BookingFormRequest;
+use App\Jobs\SendBookingTelegramNotification;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -17,6 +18,8 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
+use Throwable;
 
 class BookingController extends Controller
 {
@@ -47,6 +50,7 @@ class BookingController extends Controller
             $booking->save();
             $this->syncVehicleOdometer($booking, $validated);
             $this->syncCustomerNotes($booking);
+            $this->notifyAdmin($booking->refresh(), 'created');
 
             return $booking;
         });
@@ -105,8 +109,13 @@ class BookingController extends Controller
             $this->ensureVehicleAvailable((int) $validated['vehicle_id'], $booking);
             $booking->refreshForUpdate();
             $booking->update($validated);
+            $bookingChanged = $booking->wasChanged(array_keys($validated));
             $this->syncVehicleOdometer($booking, $validated);
             $this->syncCustomerNotes($booking);
+
+            if ($bookingChanged) {
+                $this->notifyAdmin($booking, 'updated');
+            }
         });
 
         return redirect()->route('xpress.bookings.agreement', $booking)->with('message', 'Booking updated successfully.');
@@ -129,6 +138,23 @@ class BookingController extends Controller
         }
 
         return redirect()->route('xpress.bookings.index')->with('message', 'Booking deleted successfully.');
+    }
+
+    private function notifyAdmin(Booking $booking, string $event): void
+    {
+        if (blank(config('services.telegram.bot_token')) || blank(config('services.telegram.admin_chat_id'))) {
+            return;
+        }
+
+        $job = new SendBookingTelegramNotification($booking, $event, auth()->user()->name);
+
+        DB::afterCommit(function () use ($job): void {
+            try {
+                dispatch($job);
+            } catch (Throwable) {
+                report(new RuntimeException('Booking saved, but the Telegram notification could not be queued.'));
+            }
+        });
     }
 
     private function ensureVehicleAvailable(int $vehicleId, ?Booking $booking = null): void
