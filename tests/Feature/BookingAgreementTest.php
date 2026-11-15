@@ -6,11 +6,69 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Vehicle;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\ViewErrorBag;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class BookingAgreementTest extends TestCase
 {
+    public function test_agreement_displays_print_pdf_and_back_actions(): void
+    {
+        $booking = Booking::factory()->create();
+
+        $this->actingAsUser()->get("/admin/bookings/{$booking->id}/agreement")
+            ->assertSeeText('Print')->assertSee('window.print()', false)
+            ->assertSeeText('Download as PDF')
+            ->assertSee('href="'.url("/admin/bookings/{$booking->id}/agreement/pdf").'"', false)
+            ->assertSeeText('Back')
+            ->assertSee('href="'.route('xpress.bookings.index').'"', false);
+    }
+
+    public function test_agreement_downloads_a_pdf(): void
+    {
+        $booking = Booking::factory()->create();
+
+        $response = $this->actingAsUser()->get("/admin/bookings/{$booking->id}/agreement/pdf")
+            ->assertOk()->assertHeader('Content-Type', 'application/pdf')
+            ->assertDownload("agreement-{$booking->booking_code}.pdf");
+
+        $this->assertStringStartsWith('%PDF-', $response->getContent());
+        $this->assertDatabaseHas('activity_log', [
+            'log_name' => 'booking', 'subject_id' => $booking->id,
+            'description' => 'Booking agreement PDF downloaded',
+        ]);
+    }
+
+    public function test_pdf_template_excludes_interactive_controls_and_feedback(): void
+    {
+        $booking = Booking::factory()->create();
+        $this->actingAsUser()->withSession(['message' => 'Payment saved successfully.']);
+
+        $this->view('admin.agreement.agreement', [
+            'booking' => $booking, 'isPdf' => true, 'errors' => new ViewErrorBag,
+        ])
+            ->assertSeeText($booking->booking_code)
+            ->assertSeeText($booking->customer->name)
+            ->assertSeeText($booking->vehicle->registration_number)
+            ->assertDontSee('<button', false)->assertDontSee('<form', false)
+            ->assertDontSee('<a ', false)->assertDontSeeText('Payment saved successfully.');
+    }
+
+    public function test_agreement_pdf_requires_authentication_and_admin_access(): void
+    {
+        $booking = Booking::factory()->create();
+        $url = "/admin/bookings/{$booking->id}/agreement/pdf";
+
+        $this->get($url)->assertRedirect('/login');
+        $this->actingAs($this->otherUser)->withSession(['otp_verified' => true])->get($url)->assertForbidden();
+    }
+
+    public function test_missing_booking_pdf_returns_not_found(): void
+    {
+        $this->actingAsUser()->get('/admin/bookings/999999/agreement/pdf')->assertNotFound();
+    }
+
     public function test_agreement_displays_payment_inputs_and_save_button(): void
     {
         $booking = Booking::factory()->create();

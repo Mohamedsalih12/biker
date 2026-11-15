@@ -14,7 +14,8 @@
             --muted: #4a5568;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; }
+        body, body * { margin: 0; padding: 0; }
         body {
             font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
             line-height: 1.6;
@@ -135,8 +136,11 @@
             color: var(--muted);
         }
         .footer-note { margin-top: 2rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
-        .payment-toolbar { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+        .payment-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; margin-bottom: 1rem; }
         .save-button { background: var(--primary); color: #fff; border: 0; border-radius: 4px; padding: 0.65rem 1.5rem; font: inherit; cursor: pointer; }
+        .action-button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; text-decoration: none; }
+        .back-button { margin-right: auto; background: var(--bg-light); color: var(--primary); border: 1px solid var(--border); }
+        .back-button:hover { color: #fff; }
         .save-button:hover { background: var(--accent); }
         .payment-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
         .payment-field { display: block; min-width: 0; font-size: 0.93rem; }
@@ -154,17 +158,42 @@
             .payment-toolbar, .payment-feedback, .payment-form { display: none; }
             body { background: #fff; padding: 0; }
             .document { box-shadow: none; padding: 1.5rem; }
-            .party-box, .sig-box { break-inside: avoid; }
+            .party-box, .sig-box, .terms-list li { break-inside: avoid; }
+            .section h2 { break-after: avoid; }
         }
     </style>
+    @if ($isPdf ?? false)
+        <style>
+            @page { margin: 30px; }
+            html { font-size: 12px; }
+            body { font-family: "DejaVu Sans", sans-serif; color: #1a202c; background: #fff; padding: 0; }
+            .document { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+            .header { border-color: #1a365d; }
+            .header h1, .intro strong, .section h2, .terms-list li strong, .witnesses h4 { color: #1a365d; }
+            .parties, .signatures { display: table; width: 100%; table-layout: fixed; border-spacing: 8px 0; }
+            .party-box, .sig-box { display: table-cell; width: 50%; vertical-align: top; border-color: #cbd5e0; page-break-inside: avoid; overflow-wrap: break-word; }
+            .party-box { background: #f7fafc; }
+            .party-box h3 { color: #2b6cb0; border-color: #cbd5e0; }
+            .party-box .label, .vehicle-details strong, .rental-terms strong, .sig-box h4, .witness-line, .footer-note { color: #4a5568; }
+            .section h2 { border-color: #2b6cb0; page-break-after: avoid; }
+            .terms-list { list-style: decimal; padding-left: 1.5rem; }
+            .terms-list li { padding-left: 0.4rem; page-break-inside: avoid; }
+            .terms-list li::before { content: none; display: none; }
+            .signature-section { border-color: #cbd5e0; }
+        </style>
+    @endif
 </head>
 <body>
     <main class="document">
-        @can('manage-payments')
+        @if (! ($isPdf ?? false))
             <div class="payment-toolbar">
-                <button class="save-button" type="submit" form="agreement-payment">Save</button>
+                <a class="save-button action-button back-button" href="{{ route('xpress.bookings.index') }}">Back</a>
+                <button class="save-button action-button" type="button" onclick="window.print()">Print</button>
+                <a class="save-button action-button" href="{{ route('xpress.bookings.agreement.pdf', $booking) }}">Download as PDF</a>
+                @can('manage-payments')
+                    <button class="save-button action-button" type="submit" form="agreement-payment">Save</button>
+                @endcan
             </div>
-        @endcan
         @if (session('message'))
             <p class="payment-feedback" role="status">{{ session('message') }}</p>
         @endif
@@ -175,6 +204,7 @@
                     <p class="payment-error">{{ $error }}</p>
                 @endforeach
             </div>
+        @endif
         @endif
         <div class="header">
             <h1>Electric Vehicle Rental Agreement</h1>
@@ -223,6 +253,7 @@
                 <li><strong>Rental Term:</strong> From {{ $booking->start_date->format('d-M-Y') }} to {{ $booking->end_date->format('d-M-Y') }}</li>
                 <li><strong>{{ ucfirst($booking->rental_type) }} Rental Fee:</strong> ₹{{ number_format((float) $booking->rate_per_unit, 2) }} / {{ ['daily' => 'day', 'weekly' => 'week', 'monthly' => 'month'][$booking->rental_type] }} (payable in advance upon vehicle handover)</li>
             </ul>
+            @if (! ($isPdf ?? false))
             @can('manage-payments')
                 <form id="agreement-payment" class="payment-form" method="POST" action="{{ route('xpress.bookings.agreement.payments.store', $booking) }}">
                     @csrf
@@ -247,6 +278,7 @@
                     </div>
                 </form>
             @endcan
+            @endif
         </section>
 
         <section class="section">

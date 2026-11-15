@@ -7,10 +7,12 @@ use App\Http\Requests\BookingFormRequest;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Vehicle;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -74,6 +76,22 @@ class BookingController extends Controller
             ->withProperties(['action' => 'view'])->log('Booking agreement draft viewed');
 
         return view('admin.agreement.agreement', compact('booking'));
+    }
+
+    public function downloadAgreement(Booking $booking): Response
+    {
+        Gate::authorize('view', $booking);
+        $booking->load(['customer:id,name,aadhaar,address,phone', 'vehicle:id,brand,model,registration_number']);
+
+        $response = Pdf::loadView('admin.agreement.agreement', ['booking' => $booking, 'isPdf' => true])
+            ->setPaper('a4')
+            ->setOption(['isRemoteEnabled' => false, 'isJavascriptEnabled' => false])
+            ->download("agreement-{$booking->booking_code}.pdf");
+
+        activity('booking')->causedBy(auth()->user())->performedOn($booking)->event('download')
+            ->withProperties(['action' => 'download'])->log('Booking agreement PDF downloaded');
+
+        return $response;
     }
 
     public function update(BookingFormRequest $request, Booking $booking): RedirectResponse
