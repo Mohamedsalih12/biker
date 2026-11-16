@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('insurance_policy_number')->nullable();
             $table->date('insurance_expires_at')->nullable()->index();
             $table->string('image')->nullable();
+            $table->json('images')->nullable();
             $table->text('damages')->nullable();
             $table->timestamps();
         });

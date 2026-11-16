@@ -28,6 +28,13 @@
     </section>
 
     <section id="fleet" class="fleet-catalog container" aria-labelledby="fleet-title">
+        @if (session('fleet_booking_code'))
+            <div class="alert alert-success fleet-booking-confirmation" role="status">
+                <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
+                <strong>Reservation received.</strong> Your booking reference is
+                <strong>{{ session('fleet_booking_code') }}</strong>. Visit our office to pay within 48 hours, otherwise the booking will be cancelled.
+            </div>
+        @endif
         <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
             <div>
                 <h2 id="fleet-title">Meet your next ride<span class="fleet-heading-dot">.</span></h2>
@@ -115,12 +122,12 @@
                                 @endif
                             </div>
                             @if ($bike['available'])
-                                <button type="button" class="btn btn-primary fleet-book-button w-100" @click="$dispatch('fleet-booking-placeholder')" aria-describedby="booking-placeholder-note">
+                                <a class="btn btn-primary fleet-book-button w-100" href="{{ route('fleet.bookings.create', $bike['id']) }}">
                                     Book Now <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
-                                </button>
+                                </a>
                             @else
                                 <button type="button" class="btn fleet-prebook-button w-100" disabled>
-                                    {{ $bike['prebook_date'] ? 'Pre-Book from '.$bike['prebook_date'] : 'Awaiting return date' }}
+                                    {{ $bike['prebook_date'] ? 'Visit us to pre-book from '.$bike['prebook_date'] : 'Awaiting return date' }}
                                 </button>
                             @endif
                         </div>
@@ -142,14 +149,6 @@
                 <p class="fleet-muted">Try another brand, model, or availability filter.</p>
                 <button type="button" class="btn fleet-signin" @click="search = ''; filter = 'all'">Show all bikes</button>
             </div>
-            <p id="booking-placeholder-note" class="fleet-booking-note"><i class="fas fa-info-circle me-2" aria-hidden="true"></i> Online booking is coming soon. For now, explore the fleet.</p>
         @endif
-        <div class="fleet-placeholder-notice" role="status"
-            x-data="{ visible: false, timer: null }"
-            @fleet-booking-placeholder.window="visible = true; clearTimeout(timer); timer = setTimeout(() => visible = false, 4500)"
-            x-show="visible" x-cloak x-transition.opacity>
-            <i class="fas fa-info-circle me-2" aria-hidden="true"></i> Online booking is coming soon.
-            <button type="button" @click="visible = false" aria-label="Dismiss booking notice"><i class="fas fa-times" aria-hidden="true"></i></button>
-        </div>
     </section>
 </div>

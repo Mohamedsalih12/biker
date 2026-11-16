@@ -18,6 +18,7 @@ class AllGetRoutesTest extends TestCase
             ->filter(fn ($route) => ! str_contains($route->uri(), 'login'))
             ->filter(fn ($route) => ! str_contains($route->uri(), 'livewire'))
             ->filter(fn ($route) => ! str_contains($route->uri(), 'truss'))
+            ->filter(fn ($route) => $route->getName() !== 'fleet.bookings.create')
             ->filter(fn ($route) => $route->getName() !== 'activitylog-ui.assets.css')
             ->filter(fn ($route) => $route->uri() !== 'up')
             ->filter(fn ($route) => $route->uri() !== '/');

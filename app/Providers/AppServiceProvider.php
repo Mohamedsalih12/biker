@@ -74,6 +74,13 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('fleet-bookings', function (Request $request): array {
+            return [
+                Limit::perMinute(5)->by('minute:'.$request->ip()),
+                Limit::perHour(20)->by('hour:'.$request->ip()),
+            ];
+        });
+
         Gate::before(static function (?Authenticatable $user, string $ability, array $arguments): ?bool {
             $subject = $arguments[0] ?? null;
 

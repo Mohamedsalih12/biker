@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\ForcedPasswordChangeController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Frontend\FleetBookingController;
 use App\Http\Controllers\Frontend\UserController as FrontendUserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TwoFactorController;
@@ -11,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/login', [LoginController::class, 'loginIndex'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('throttle:login');
 Route::get('/', FleetDashboard::class)->name('frontend.index');
+Route::get('/bikes/{vehicle}/book', [FleetBookingController::class, 'create'])->name('fleet.bookings.create');
+Route::post('/bikes/{vehicle}/book', [FleetBookingController::class, 'store'])
+    ->middleware('throttle:fleet-bookings')->name('fleet.bookings.store');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {

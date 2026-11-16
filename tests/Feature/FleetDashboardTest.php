@@ -53,7 +53,7 @@ class FleetDashboardTest extends TestCase
 
         Livewire::test(FleetDashboard::class)
             ->assertSee('Not Available')->assertSee('Next Available:')
-            ->assertSee('01 Dec 2026')->assertSee('Pre-Book from 01 Dec')
+            ->assertSee('01 Dec 2026')->assertSee('Visit us to pre-book from 01 Dec')
             ->assertDontSee('Book Now');
     }
 
@@ -84,7 +84,7 @@ class FleetDashboardTest extends TestCase
         Booking::factory()->create(['end_date' => '2026-11-24']);
 
         Livewire::test(FleetDashboard::class)->assertSee('Return date to be confirmed')
-            ->assertDontSee('Pre-Book from 25 Nov');
+            ->assertDontSee('Visit us to pre-book from 25 Nov');
     }
 
     public function test_a_bike_expected_back_today_shows_today_without_becoming_bookable(): void

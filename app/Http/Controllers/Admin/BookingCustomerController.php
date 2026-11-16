@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class BookingCustomerController extends Controller
 {
@@ -37,6 +38,17 @@ class BookingCustomerController extends Controller
     {
         Gate::authorize('create', User::class);
         $customer = DB::transaction(function () use ($request): User {
+            // Public reservations hold this same lock until their customer and booking commit.
+            DB::table('booking_code_sequences')->where('id', 1)->lockForUpdate()->first();
+
+            if (User::query()
+                ->whereRaw("REPLACE(REPLACE(aadhaar, ' ', ''), '-', '') = ?", [$request->validated('aadhaar')])
+                ->lockForUpdate()->first(['id']) !== null) {
+                throw ValidationException::withMessages([
+                    'aadhaar' => 'A customer with this Aadhaar already exists. Search for the existing customer.',
+                ]);
+            }
+
             $customer = new User($request->safe()->only(['name', 'phone']));
             $customer->aadhaar = $request->validated('aadhaar');
             $customer->role = 'customer';

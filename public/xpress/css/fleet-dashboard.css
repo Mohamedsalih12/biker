@@ -86,12 +86,36 @@
 .fleet-book-button, .fleet-prebook-button { min-height: 48px; border-radius: 8px; font-size: .9rem; font-weight: 650; }
 .fleet-book-button { --bs-btn-bg: #087b51; --bs-btn-border-color: #087b51; --bs-btn-hover-bg: #065b3c; --bs-btn-hover-border-color: #065b3c; --bs-btn-active-bg: #064c33; --bs-btn-active-border-color: #064c33; }
 .fleet-prebook-button:disabled { background: #edf0ed; border-color: #edf0ed; color: #5b685f; opacity: 1; }
-.fleet-booking-note { text-align: center; color: var(--fleet-muted); margin: 30px 0 0; font-size: .8rem; line-height: 1.7; }
 .fleet-empty { text-align: center; padding: 70px 20px; }
 .fleet-empty > i { font-size: 2.5rem; color: var(--fleet-green); margin-bottom: 20px; }
 .fleet-empty h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
-.fleet-placeholder-notice { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10; background: #173e30; color: #fff; padding: 14px 18px; border-radius: 10px; box-shadow: 0 8px 28px #173e3033; width: max-content; max-width: calc(100% - 32px); font-size: .9rem; }
-.fleet-placeholder-notice button { color: #fff; background: transparent; border: 0; width: 36px; height: 36px; margin: -6px -6px -6px 12px; }
+.fleet-book-button { display: inline-flex; align-items: center; justify-content: center; }
+.fleet-booking-confirmation { line-height: 1.7; margin-bottom: 24px; border-radius: 10px; }
+.fleet-reservation { padding-top: 32px; padding-bottom: 64px; }
+.fleet-back-link { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 24px; color: var(--fleet-green); text-decoration: none; font-size: .9rem; font-weight: 600; }
+.fleet-back-link:hover { color: var(--fleet-ink); text-decoration: underline; text-underline-offset: 4px; }
+.fleet-reservation h1 { font-size: clamp(2.2rem, 4vw, 3.2rem); line-height: 1.12; font-weight: 750; letter-spacing: -.035em; margin-bottom: 16px; }
+.fleet-reservation-intro { line-height: 1.7; margin-bottom: 28px; }
+.fleet-reservation-form { background: #fff; border: 1px solid #d8e3da; padding: 28px; border-radius: 14px; }
+.fleet-reservation h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 22px; }
+.fleet-reservation .form-label { font-size: .875rem; font-weight: 600; }
+.fleet-reservation .form-control { min-height: 48px; border-color: #b7cbc0; border-radius: 8px; color: var(--fleet-ink); caret-color: var(--fleet-green); }
+.fleet-reservation .form-control::placeholder { color: #65786a; }
+.fleet-reservation .form-control:focus { border-color: var(--fleet-green); box-shadow: none; outline: 2px solid var(--fleet-green); outline-offset: 2px; }
+.fleet-reservation .form-control.is-invalid { border-color: #b53732; }
+.fleet-form-note { color: var(--fleet-muted); font-size: .8rem; line-height: 1.65; }
+.fleet-reservation .fleet-dates-heading { margin-top: 32px; padding-top: 24px; border-top: 1px solid #dce5df; }
+.fleet-reservation-summary { background: #163f31; color: #fff; border-radius: 14px; padding: 36px; position: sticky; top: 24px; }
+.fleet-reservation-bike-icon { color: #c3ed91; font-size: 3.2rem; margin-bottom: 32px; }
+.fleet-selected-label { color: #d0e1d6; font-size: .85rem; margin-bottom: 8px; }
+.fleet-reservation-summary h2 { font-size: 1.8rem; line-height: 1.25; margin-bottom: 16px; overflow-wrap: anywhere; }
+.fleet-reservation-odometer { color: #d0e1d6; font-size: .85rem; }
+.fleet-reservation-price { margin-top: 28px; padding-top: 24px; padding-bottom: 24px; border-top: 1px solid #547564; }
+.fleet-reservation-price strong { font-size: 2rem; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.fleet-reservation-price > span { color: #d0e1d6; font-size: .9rem; }
+.fleet-summary-note { color: #d0e1d6; font-size: .8rem; line-height: 1.7; }
+.fleet-reservation-unavailable { padding: 28px 0; }
+.fleet-reservation-unavailable > i { font-size: 2rem; color: #805026; }
 .fleet-footer { border-top: 1px solid #dce5df; background: #edf2ec; color: #536b59; padding: 24px 0; font-size: .85rem; }
 .fleet-footer-brand { font-size: 1.4rem; }
 .fleet-footer-brand > i { font-size: 1rem; }
@@ -118,7 +142,8 @@
     .fleet-card .card-body { padding: 22px; }
     .fleet-results-note { font-size: .75rem; }
     .fleet-footer .container { justify-content: center !important; }
-    .fleet-placeholder-notice { width: calc(100% - 32px); font-size: .8rem; }
+    .fleet-reservation-form, .fleet-reservation-summary { padding: 22px; }
+    .fleet-reservation-summary { position: static; }
 }
 @media (prefers-reduced-motion: reduce) {
     .fleet-page *, .fleet-page *::before, .fleet-page *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }

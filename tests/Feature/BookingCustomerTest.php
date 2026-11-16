@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\BookingCustomerFormRequest;
 use App\Models\User;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -32,6 +33,21 @@ class BookingCustomerTest extends TestCase
         $this->actingAsUser()->postJson('/admin/booking-customers', ['name' => 'Duplicate', 'phone' => '9876543210', 'aadhaar' => '1234 5678 9012'])
             ->assertUnprocessable()->assertJsonValidationErrors('aadhaar');
         $this->assertDatabaseCount('users', $count);
+    }
+
+    public function test_customer_created_after_validation_is_not_duplicated_by_staff(): void
+    {
+        $count = User::query()->count();
+        app()->afterResolving(BookingCustomerFormRequest::class, function (): void {
+            User::factory()->create(['aadhaar' => '123456789012', 'name' => 'Concurrent Customer']);
+        });
+
+        $this->actingAsUser()->postJson('/admin/booking-customers', [
+            'name' => 'Duplicate', 'phone' => '9876543210', 'aadhaar' => '1234 5678 9012',
+        ])->assertUnprocessable()->assertJsonValidationErrors('aadhaar');
+
+        $this->assertDatabaseCount('users', $count + 1);
+        $this->assertDatabaseHas('users', ['aadhaar' => '123456789012', 'name' => 'Concurrent Customer']);
     }
 
     #[DataProvider('invalidValues')]
