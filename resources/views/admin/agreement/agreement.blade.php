@@ -6,12 +6,12 @@
     <title>Agreement Draft — {{ $booking->booking_code }}</title>
     <style>
         :root {
-            --primary: #1a365d;
-            --accent: #2b6cb0;
-            --border: #cbd5e0;
-            --bg-light: #f7fafc;
-            --text: #1a202c;
-            --muted: #4a5568;
+            --primary: #163f31;
+            --accent: #087b51;
+            --border: #dce5df;
+            --bg-light: #f4f7f4;
+            --text: #18372e;
+            --muted: #5b6c65;
         }
 
         * { box-sizing: border-box; }
@@ -20,7 +20,7 @@
             font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
             line-height: 1.6;
             color: var(--text);
-            background: #edf2f7;
+            background: #f4f7f4;
             padding: 2rem 1rem;
         }
         .document {
@@ -82,7 +82,7 @@
         .vehicle-details, .rental-terms { list-style: none; }
         .vehicle-details li, .rental-terms li {
             padding: 0.4rem 0;
-            border-bottom: 1px dashed #e2e8f0;
+            border-bottom: 1px dashed #dce5df;
             font-size: 0.93rem;
         }
         .vehicle-details li:last-child, .rental-terms li:last-child { border-bottom: none; }
@@ -95,7 +95,7 @@
         .terms-list li {
             position: relative;
             padding: 0.65rem 0 0.65rem 2.2rem;
-            border-bottom: 1px solid #edf2f7;
+            border-bottom: 1px solid #e6ece6;
             font-size: 0.92rem;
         }
         .terms-list li:last-child { border-bottom: none; }
@@ -129,7 +129,7 @@
         .witnesses { margin-top: 1.5rem; }
         .witnesses h4 { font-size: 0.9rem; color: var(--primary); margin-bottom: 0.75rem; }
         .witness-line {
-            border-bottom: 1px solid #a0aec0;
+            border-bottom: 1px solid #b7cbc0;
             min-height: 2rem;
             margin-bottom: 1rem;
             font-size: 0.85rem;
@@ -166,20 +166,20 @@
         <style>
             @page { margin: 30px; }
             html { font-size: 12px; }
-            body { font-family: "DejaVu Sans", sans-serif; color: #1a202c; background: #fff; padding: 0; }
+            body { font-family: "DejaVu Sans", sans-serif; color: #18372e; background: #fff; padding: 0; }
             .document { max-width: none; margin: 0; padding: 0; box-shadow: none; }
-            .header { border-color: #1a365d; }
-            .header h1, .intro strong, .section h2, .terms-list li strong, .witnesses h4 { color: #1a365d; }
+            .header { border-color: #163f31; }
+            .header h1, .intro strong, .section h2, .terms-list li strong, .witnesses h4 { color: #163f31; }
             .parties, .signatures { display: table; width: 100%; table-layout: fixed; border-spacing: 8px 0; }
-            .party-box, .sig-box { display: table-cell; width: 50%; vertical-align: top; border-color: #cbd5e0; page-break-inside: avoid; overflow-wrap: break-word; }
-            .party-box { background: #f7fafc; }
-            .party-box h3 { color: #2b6cb0; border-color: #cbd5e0; }
-            .party-box .label, .vehicle-details strong, .rental-terms strong, .sig-box h4, .witness-line, .footer-note { color: #4a5568; }
-            .section h2 { border-color: #2b6cb0; page-break-after: avoid; }
+            .party-box, .sig-box { display: table-cell; width: 50%; vertical-align: top; border-color: #dce5df; page-break-inside: avoid; overflow-wrap: break-word; }
+            .party-box { background: #f4f7f4; }
+            .party-box h3 { color: #087b51; border-color: #dce5df; }
+            .party-box .label, .vehicle-details strong, .rental-terms strong, .sig-box h4, .witness-line, .footer-note { color: #5b6c65; }
+            .section h2 { border-color: #087b51; page-break-after: avoid; }
             .terms-list { list-style: decimal; padding-left: 1.5rem; }
             .terms-list li { padding-left: 0.4rem; page-break-inside: avoid; }
             .terms-list li::before { content: none; display: none; }
-            .signature-section { border-color: #cbd5e0; }
+            .signature-section { border-color: #dce5df; }
         </style>
     @endif
 </head>

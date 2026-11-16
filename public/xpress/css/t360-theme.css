@@ -1,24 +1,24 @@
 /*
-| Fieldt360 brand theme — layered AFTER custom.css (loaded last).
-| Palette derived from the GULF MB logo: crimson red + charcoal.
+| Application theme — layered AFTER custom.css.
+| Palette matched to the public fleet: emerald + forest green.
 | Non-invasive: colors / radius / focus / hover only. No layout widths touched.
 */
 
 :root {
-    --t360-red: #d31145;
-    --t360-red-hover: #b30d3a;
-    --t360-red-soft: rgba(211, 17, 69, .12);
-    --t360-surface: #f3f5f9;
-    --t360-ink: #16191f;
-    --t360-ink-2: #1d222b;
-    --t360-line: #e7eaf1;
-    --t360-muted: #6b7280;
+    --t360-red: #087b51;
+    --t360-red-hover: #065b3c;
+    --t360-red-soft: rgba(8, 123, 81, .12);
+    --t360-surface: #f4f7f4;
+    --t360-ink: #18372e;
+    --t360-ink-2: #163f31;
+    --t360-line: #dce5df;
+    --t360-muted: #5b6c65;
 }
 
 /* ---------- Type & canvas ---------- */
 body {
     background:
-        radial-gradient(1200px 500px at 85% -10%, rgba(211, 17, 69, .05), transparent 60%),
+        radial-gradient(1200px 500px at 85% -10%, rgba(8, 123, 81, .05), transparent 60%),
         var(--t360-surface) !important;
     font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -31,7 +31,7 @@ h1, h2, h3, h4, h5, h6, .h4, .section-title {
 .section-title {
     font-size: 19px;
     font-weight: 700;
-    color: #1f2430;
+    color: #18372e;
     border-bottom: 2px solid var(--t360-line);
     padding-bottom: 8px;
 }
@@ -51,10 +51,10 @@ button:focus-visible,
 .form-control:focus,
 .form-select:focus {
     box-shadow: 0 0 0 .2rem var(--t360-red-soft);
-    border-color: #e98da6;
+    border-color: #087b51;
 }
 
-.form-control:focus { border-color: #e26a8b; }
+.form-control:focus { border-color: #087b51; }
 
 /* ---------- Top navigation ---------- */
 .sb-topnav {
@@ -185,7 +185,7 @@ button:focus-visible,
 /* ---------- Buttons & badges ---------- */
 .btn { border-radius: .575rem; font-weight: 500; }
 .btn-sm { border-radius: .5rem; }
-.btn-primary { box-shadow: 0 6px 16px -8px rgba(13, 110, 253, .55); }
+.btn-primary { box-shadow: 0 6px 16px -8px rgba(8, 123, 81, .55); }
 
 .badge { border-radius: 6px; font-weight: 600; letter-spacing: .02em; }
 
