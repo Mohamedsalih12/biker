@@ -5,11 +5,12 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Frontend\UserController as FrontendUserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TwoFactorController;
+use App\Livewire\FleetDashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', [LoginController::class, 'loginIndex'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('throttle:login');
-Route::get('/', [LoginController::class, 'loginIndex'])->name('frontend.index');
+Route::get('/', FleetDashboard::class)->name('frontend.index');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {

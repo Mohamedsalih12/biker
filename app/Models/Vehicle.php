@@ -33,7 +33,7 @@ class Vehicle extends Model
     protected $fillable = [
         'registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number',
         'odometer_reading', 'rate_per_unit', 'status', 'purchase_date', 'purchase_cost',
-        'insurance_policy_number', 'insurance_expires_at', 'image', 'damages',
+        'insurance_policy_number', 'insurance_expires_at', 'image', 'images', 'damages',
     ];
 
     /** @return array<string, string> */
@@ -45,6 +45,7 @@ class Vehicle extends Model
             'rate_per_unit' => 'decimal:2',
             'purchase_date' => 'date',
             'insurance_expires_at' => 'date',
+            'images' => 'array',
         ];
     }
 
