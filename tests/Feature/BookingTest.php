@@ -33,11 +33,15 @@ class BookingTest extends TestCase
         $response->assertSee('name="start_odometer" class="form-control" value="4321"', false);
     }
 
-    public function test_booking_form_defaults_rate_to_5500(): void
+    public function test_booking_form_defaults_rate_to_selected_vehicle_rate(): void
     {
-        $response = $this->actingAsUser()->get('/admin/bookings/create');
+        $vehicle = Vehicle::factory()->create(['rate_per_unit' => '1250.50']);
 
-        $response->assertSee('id="rate_per_unit" name="rate_per_unit" class="form-control " value="5500"', false);
+        $response = $this->actingAsUser()->withSession(['_old_input' => ['vehicle_id' => $vehicle->id]])
+            ->get('/admin/bookings/create');
+
+        $response->assertSee('data-rate-per-unit="1250.50"', false);
+        $response->assertSee('id="rate_per_unit" name="rate_per_unit" class="form-control " value="1250.50"', false);
     }
 
     public function test_booking_form_defaults_dates_to_today_and_thirty_days_later(): void

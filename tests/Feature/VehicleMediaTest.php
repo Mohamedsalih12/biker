@@ -218,10 +218,10 @@ class VehicleMediaTest extends TestCase
             $workbook = IOFactory::load($path);
             $sheet = $workbook->getActiveSheet();
             $this->assertSame(2, $sheet->getHighestDataRow());
-            $this->assertSame('Image Path', $sheet->getCell('M1')->getFormattedValue());
-            $this->assertSame('vehicles/photo.jpg', $sheet->getCell('M2')->getFormattedValue());
-            $this->assertSame('Damages', $sheet->getCell('N1')->getFormattedValue());
-            $this->assertSame("'=DANGER()", $sheet->getCell('N2')->getFormattedValue());
+            $this->assertSame('Image Path', $sheet->getCell('N1')->getFormattedValue());
+            $this->assertSame('vehicles/photo.jpg', $sheet->getCell('N2')->getFormattedValue());
+            $this->assertSame('Damages', $sheet->getCell('O1')->getFormattedValue());
+            $this->assertSame("'=DANGER()", $sheet->getCell('O2')->getFormattedValue());
             $workbook->disconnectWorksheets();
         } finally {
             unlink($path);

@@ -64,7 +64,7 @@ class VehicleTable extends PowerGridComponent
             'vehicles',
         )->select([
             'id', 'registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number',
-            'odometer_reading', 'status', 'purchase_date', 'purchase_cost', 'insurance_policy_number', 'insurance_expires_at',
+            'odometer_reading', 'rate_per_unit', 'status', 'purchase_date', 'purchase_cost', 'insurance_policy_number', 'insurance_expires_at',
             'image', 'damages', 'current_status', 'total_amount_earned',
         ]);
     }
@@ -73,7 +73,7 @@ class VehicleTable extends PowerGridComponent
     {
         return PowerGrid::fields()
             ->add('id')->add('registration_number')->add('brand')->add('model')
-            ->add('chassis_number')->add('battery_serial_number')->add('odometer_reading')
+            ->add('chassis_number')->add('battery_serial_number')->add('odometer_reading')->add('rate_per_unit')
             ->add('status', fn (Vehicle $vehicle): string => e(ucfirst($vehicle->current_status)))
             ->add('purchase_date_formatted', fn (Vehicle $vehicle): string => $vehicle->purchase_date?->format('Y-m-d') ?? '')
             ->add('purchase_cost')
@@ -97,6 +97,7 @@ class VehicleTable extends PowerGridComponent
             Column::make('Chassis Number', 'chassis_number')->sortable()->searchable()->visibleInExport(true),
             Column::make('Battery Serial Number', 'battery_serial_number')->sortable()->searchable()->visibleInExport(true),
             IndexNumberColumn::make('Odometer Reading', 'odometer_reading')->sortable()->visibleInExport(true),
+            IndexNumberColumn::make('Rate Per Unit', 'rate_per_unit')->sortable()->visibleInExport(true),
             Column::make('Status', 'status', 'current_status')->sortable()->visibleInExport(true),
             Column::make('Purchase Date', 'purchase_date_formatted', 'purchase_date')->sortable()->visibleInExport(true),
             IndexNumberColumn::make('Purchase Cost', 'purchase_cost')->sortable()->visibleInExport(true),

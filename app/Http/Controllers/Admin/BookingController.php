@@ -206,7 +206,7 @@ class BookingController extends Controller
             'vehicles' => Vehicle::query()->whereDoesntHave('bookings', function (Builder $query) use ($booking): void {
                 $query->whereIn('booking_status', ['taken', 'reserved'])
                     ->when($booking->exists, fn (Builder $query): Builder => $query->whereKeyNot($booking->id));
-            })->orderBy('registration_number')->get(['id', 'registration_number', 'odometer_reading']),
+            })->orderBy('registration_number')->get(['id', 'registration_number', 'odometer_reading', 'rate_per_unit']),
         ];
     }
 }

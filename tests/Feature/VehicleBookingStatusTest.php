@@ -97,7 +97,7 @@ class VehicleBookingStatusTest extends TestCase
             $sheet = $workbook->getActiveSheet();
             $this->assertSame(2, $sheet->getHighestDataRow());
             $this->assertSame('DYNAMIC-RENTED', $sheet->getCell('B2')->getFormattedValue());
-            $this->assertSame('Rented', $sheet->getCell('H2')->getFormattedValue());
+            $this->assertSame('Rented', $sheet->getCell('I2')->getFormattedValue());
             $workbook->disconnectWorksheets();
         } finally {
             unlink($path);

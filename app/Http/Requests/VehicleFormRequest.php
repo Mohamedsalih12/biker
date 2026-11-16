@@ -23,6 +23,7 @@ class VehicleFormRequest extends FormRequest
             'chassis_number' => ['nullable', 'string', 'max:255'],
             'battery_serial_number' => ['nullable', 'string', 'max:255'],
             'odometer_reading' => ['nullable', 'integer', 'min:0', 'max:9223372036854775807'],
+            'rate_per_unit' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
             'status' => ['sometimes', 'required', Rule::in(Vehicle::STATUSES)],
             'purchase_date' => ['nullable', 'date_format:Y-m-d'],
             'purchase_cost' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],

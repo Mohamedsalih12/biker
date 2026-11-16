@@ -39,7 +39,7 @@
         <select id="vehicle_id" name="vehicle_id" class="form-select mySelect2 @error('vehicle_id') is-invalid @enderror" data-placeholder="Select a vehicle" required aria-describedby="vehicle_id-error">
             <option value=""></option>
             @foreach ($vehicles as $vehicle)
-                <option value="{{ $vehicle->id }}" data-odometer-reading="{{ $vehicle->odometer_reading }}" @selected((string) old('vehicle_id', $booking->vehicle_id) === (string) $vehicle->id)>{{ $vehicle->registration_number }}</option>
+                <option value="{{ $vehicle->id }}" data-odometer-reading="{{ $vehicle->odometer_reading }}" data-rate-per-unit="{{ $vehicle->rate_per_unit }}" @selected((string) old('vehicle_id', $booking->vehicle_id) === (string) $vehicle->id)>{{ $vehicle->registration_number }}</option>
             @endforeach
         </select>
         @error('vehicle_id') <div id="vehicle_id-error" class="text-danger small">{{ $message }}</div> @enderror
@@ -57,7 +57,7 @@
     @endforeach
     <div class="col-md-6 mb-3">
         <label for="rate_per_unit" class="form-label">Rate **</label>
-        <input type="number" id="rate_per_unit" name="rate_per_unit" class="form-control @error('rate_per_unit') is-invalid @enderror" value="{{ old('rate_per_unit', $booking->rate_per_unit ?? 5500) }}" min="0.01" max="9999999999.99" step="0.01" required aria-describedby="rate-help rate_per_unit-error">
+        <input type="number" id="rate_per_unit" name="rate_per_unit" class="form-control @error('rate_per_unit') is-invalid @enderror" value="{{ old('rate_per_unit', $booking->rate_per_unit ?? $selectedVehicle?->rate_per_unit) }}" min="0.01" max="9999999999.99" step="0.01" required aria-describedby="rate-help rate_per_unit-error">
         <div id="rate-help" class="form-text">Rate per day, week, or month according to the rental type.</div>
         @error('rate_per_unit') <div id="rate_per_unit-error" class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
@@ -93,6 +93,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const vehicleSelect = $('#vehicle_id');
             const startOdometer = document.getElementById('start_odometer');
+            const ratePerUnit = document.getElementById('rate_per_unit');
             let selectedVehicleId = vehicleSelect.val();
 
             vehicleSelect.on('change', function () {
@@ -101,7 +102,9 @@
                 }
 
                 selectedVehicleId = vehicleSelect.val();
-                startOdometer.value = this.selectedOptions[0]?.dataset.odometerReading ?? '';
+                const selectedOption = this.selectedOptions[0];
+                startOdometer.value = selectedOption?.dataset.odometerReading ?? '';
+                ratePerUnit.value = selectedOption?.dataset.ratePerUnit ?? '';
             });
         });
     </script>

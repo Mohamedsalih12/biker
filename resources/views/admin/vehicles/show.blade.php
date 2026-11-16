@@ -20,7 +20,7 @@
                 @foreach ([
                     'registration_number' => 'Registration Number', 'brand' => 'Brand', 'model' => 'Model',
                     'chassis_number' => 'Chassis Number', 'battery_serial_number' => 'Battery Serial Number',
-                    'odometer_reading' => 'Odometer Reading (km)', 'status' => 'Status',
+                    'odometer_reading' => 'Odometer Reading (km)', 'rate_per_unit' => 'Rate Per Unit', 'status' => 'Status',
                     'purchase_date' => 'Purchase Date', 'purchase_cost' => 'Purchase Cost',
                     'insurance_policy_number' => 'Insurance Policy Number', 'insurance_expires_at' => 'Insurance Expires At',
                     'damages' => 'Damages',

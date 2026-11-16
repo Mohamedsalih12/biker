@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('chassis_number')->nullable();
             $table->string('battery_serial_number')->nullable();
             $table->unsignedBigInteger('odometer_reading')->nullable();
+            $table->decimal('rate_per_unit', 12, 2)->nullable();
             $table->enum('status', ['available', 'rented', 'maintenance', 'decommissioned'])->default('available')->index();
             $table->date('purchase_date')->nullable();
             $table->decimal('purchase_cost', 12, 2)->nullable();

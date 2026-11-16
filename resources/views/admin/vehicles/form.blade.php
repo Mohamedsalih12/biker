@@ -19,6 +19,11 @@
         @error('odometer_reading') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
     <div class="col-md-6 mb-3">
+        <label for="rate_per_unit" class="form-label">Rate Per Unit</label>
+        <input type="number" class="form-control @error('rate_per_unit') is-invalid @enderror" id="rate_per_unit" name="rate_per_unit" value="{{ old('rate_per_unit', $vehicle->rate_per_unit) }}" min="0" max="9999999999.99" step="1">
+        @error('rate_per_unit') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+    <div class="col-md-6 mb-3">
         <label for="status" class="form-label">Status</label>
         <select class="form-select mySelect2 @error('status') is-invalid @enderror" id="status" name="status" required>
             @foreach (\App\Models\Vehicle::STATUSES as $status)
@@ -35,7 +40,7 @@
     </div>
     <div class="col-md-6 mb-3">
         <label for="purchase_cost" class="form-label">Purchase Cost</label>
-        <input type="number" class="form-control @error('purchase_cost') is-invalid @enderror" id="purchase_cost" name="purchase_cost" value="{{ old('purchase_cost', $vehicle->purchase_cost) }}" min="0" max="9999999999.99" step="0.01">
+        <input type="number" class="form-control @error('purchase_cost') is-invalid @enderror" id="purchase_cost" name="purchase_cost" value="{{ old('purchase_cost', $vehicle->purchase_cost) }}" min="0" max="9999999999.99" step="1">
         @error('purchase_cost') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
     <div class="col-md-6 mb-3">

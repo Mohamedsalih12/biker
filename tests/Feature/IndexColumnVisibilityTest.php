@@ -78,7 +78,7 @@ class IndexColumnVisibilityTest extends TestCase
     {
         $expectedHeaders = match ($component) {
             UserTable::class => ['ID', 'Name', 'Email', 'Phone', 'Role', 'Active Status'],
-            VehicleTable::class => ['ID', 'Registration Number', 'Brand', 'Model', 'Chassis Number', 'Battery Serial Number', 'Odometer Reading', 'Status', 'Purchase Date', 'Purchase Cost', 'Insurance Policy Number', 'Insurance Expires At', 'Image Path', 'Damages'],
+            VehicleTable::class => ['ID', 'Registration Number', 'Brand', 'Model', 'Chassis Number', 'Battery Serial Number', 'Odometer Reading', 'Rate Per Unit', 'Status', 'Purchase Date', 'Purchase Cost', 'Insurance Policy Number', 'Insurance Expires At', 'Image Path', 'Damages'],
             default => ['ID', 'Booking Code', 'Customer', 'Vehicle Registration', 'Created By', 'Rental Type', 'Rate per Unit', 'Start Date', 'End Date', 'Actual Return Date', 'Start Odometer', 'End Odometer', 'Booking Status', 'Payment Status', 'Handover Notes', 'Return Notes'],
         };
         if ($component === VehicleTable::class) {

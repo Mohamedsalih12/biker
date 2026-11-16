@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->string('aadhaar', 14)->nullable();
             $table->string('password')->nullable()->change();
+            $table->text('notes')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
