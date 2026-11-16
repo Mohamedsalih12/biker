@@ -7,7 +7,7 @@
         <meta name="description" content="" />
         <meta name="author" content="" />
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link rel="icon" type="image/png" href="{{ asset('admin/images/GMBSmall.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('admin/images/BikerLogoSmall.jpeg') }}">
         <title>@yield('title')</title>
         
         <!-- Bootstrap 5 FIRST -->
