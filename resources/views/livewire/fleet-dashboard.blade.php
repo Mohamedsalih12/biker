@@ -8,22 +8,61 @@
     },
     get visibleCount() { return this.bikes.filter(bike => this.matches(bike)).length; }
 }">
-    <section class="fleet-hero">
+    <section class="fleet-hero" aria-labelledby="featured-ride-title">
         <div class="container">
-            <div class="row align-items-end g-4">
-                <div class="col-lg-8">
-                    <h1>Your city.<br>Your pace. <span>Your ride.</span></h1>
-                    <p class="fleet-hero-copy">A better everyday starts on two wheels. Explore our electric fleet and find a ride that fits your routine.</p>
-                    <a href="#fleet" class="fleet-hero-link">Find your next ride <i class="fas fa-arrow-down ms-2" aria-hidden="true"></i></a>
-                </div>
-                <div class="col-lg-4">
-                    <div class="fleet-availability-summary">
-                        <span class="fleet-summary-icon"><i class="fas fa-motorcycle" aria-hidden="true"></i></span>
-                        <div><strong>{{ $availableCount }} of {{ count($bikes) }} bikes</strong><span>available to ride</span></div>
+            @if ($featuredBike)
+                <div class="fleet-spotlight">
+                    <div class="fleet-spotlight-photo">
+                        <div class="fleet-spotlight-placeholder" role="img" aria-label="Photo not available for {{ $featuredBike['title'] }}">
+                            <i class="fas fa-motorcycle" aria-hidden="true"></i>
+                            <span>Photos coming soon</span>
+                        </div>
+                        @if ($featuredBike['images'] !== [])
+                            <img src="{{ $featuredBike['images'][0] }}" alt="{{ $featuredBike['title'] }}"
+                                width="800" height="600" fetchpriority="high" loading="eager"
+                                x-on:load="$el.previousElementSibling.hidden = true"
+                                x-on:error="$el.hidden = true; $el.previousElementSibling.hidden = false">
+                        @endif
+                        <span class="fleet-spotlight-status">
+                            <i class="fas {{ $featuredBike['available'] ? 'fa-check-circle' : 'fa-clock' }}" aria-hidden="true"></i>
+                            {{ $featuredBike['available'] ? 'Available to book' : 'Currently on a ride or reserved' }}
+                        </span>
                     </div>
-                    <p class="fleet-hero-note mb-0">Availability at a glance.<br>See what’s ready and what’s returning.</p>
+                    <div class="fleet-spotlight-details">
+                        <h1 id="featured-ride-title">{{ $featuredBike['available'] ? 'Ride this today' : 'Your next ride' }}<span>.</span></h1>
+                        <p class="fleet-hero-copy">{{ $featuredBike['available'] ? 'A real bike. A monthly rate. Your next move.' : 'Good rides are worth planning for. Here’s what’s coming back.' }}</p>
+                        <h2 class="fleet-spotlight-model">{{ $featuredBike['title'] }}</h2>
+                        <p class="fleet-spotlight-spec">{{ $featuredBike['odometer'] }}</p>
+                        @if (! $featuredBike['available'])
+                            <p class="fleet-spotlight-return">
+                                <i class="far fa-calendar-alt me-2" aria-hidden="true"></i>
+                                {{ $featuredBike['next_date'] ? 'Expected back '.$featuredBike['next_date'] : 'Return date to be confirmed' }}
+                            </p>
+                        @endif
+                        <div class="fleet-spotlight-price">
+                            @if ($featuredBike['price'] !== null)
+                                <strong>{{ $featuredBike['price'] }}</strong><span> / month</span>
+                            @else
+                                <strong class="fleet-spotlight-price-request">Price on request</strong>
+                            @endif
+                        </div>
+                        @if ($featuredBike['available'])
+                            <a class="btn fleet-spotlight-book" href="{{ route('fleet.bookings.create', $featuredBike['id']) }}">
+                                Book this bike <i class="fas fa-arrow-right ms-3" aria-hidden="true"></i>
+                            </a>
+                            <p class="fleet-spotlight-note">Reserve online. Pay at our office within 24 hours.</p>
+                        @else
+                            <p class="fleet-spotlight-note">Not available to book online yet. Visit us to discuss pre-booking.</p>
+                        @endif
+                        <a href="#fleet" class="fleet-hero-link">Explore all {{ count($bikes) }} {{ count($bikes) === 1 ? 'bike' : 'bikes' }} <i class="fas fa-arrow-down ms-2" aria-hidden="true"></i></a>
+                    </div>
                 </div>
-            </div>
+            @else
+                <div class="fleet-hero-empty">
+                    <h1 id="featured-ride-title">Your next ride<br>is on its way<span>.</span></h1>
+                    <p class="fleet-hero-copy mb-0">Our electric fleet will be back here soon. Check back for available bikes and monthly rates.</p>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -32,7 +71,7 @@
             <div class="alert alert-success fleet-booking-confirmation" role="status">
                 <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
                 <strong>Reservation received.</strong> Your booking reference is
-                <strong>{{ session('fleet_booking_code') }}</strong>. Visit our office to pay within 48 hours, otherwise the booking will be cancelled.
+                <strong>{{ session('fleet_booking_code') }}</strong>. Visit our office to pay within 24 hours, otherwise the booking will be cancelled.
             </div>
         @endif
         <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">

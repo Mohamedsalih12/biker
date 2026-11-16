@@ -22,18 +22,34 @@
 .fleet-nav-link:hover { color: var(--fleet-green); text-decoration: underline; text-underline-offset: 5px; }
 .fleet-signin { color: #173e30; border: 1px solid #b7cbc0; border-radius: 8px; padding: .65rem 1rem; font-size: .9rem; font-weight: 600; }
 .fleet-signin:hover { color: #fff; background: #173e30; border-color: #173e30; }
-.fleet-hero { background: #163f31; color: #fff; padding: 58px 0 54px; }
-.fleet-hero h1 { font-size: clamp(2.5rem, 4.7vw, 4.2rem); line-height: 1.08; letter-spacing: -.04em; font-weight: 750; margin-bottom: 1.3rem; text-wrap: balance; }
+.fleet-hero { background: #163f31; color: #fff; padding: 40px 0; }
+.fleet-hero h1 { font-size: clamp(2.8rem, 4.7vw, 4.2rem); line-height: 1.04; letter-spacing: -.035em; font-weight: 750; margin-bottom: 1rem; text-wrap: balance; }
 .fleet-hero h1 span { color: #c3ed91; }
 .fleet-hero-copy { max-width: 50ch; color: #d0e1d6; font-size: 1.04rem; line-height: 1.7; margin-bottom: 1.5rem; }
 .fleet-hero-link { color: #e0f5cc; text-decoration: none; font-weight: 650; font-size: .95rem; display: inline-flex; align-items: center; min-height: 44px; }
 .fleet-hero-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 5px; }
 .fleet-hero :focus-visible { outline-color: #c3ed91; }
-.fleet-availability-summary { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.3rem; border-bottom: 1px solid #547564; }
-.fleet-summary-icon { font-size: 2rem; color: #c3ed91; }
-.fleet-availability-summary strong { display: block; font-size: 1.4rem; font-weight: 650; font-variant-numeric: tabular-nums; }
-.fleet-availability-summary div > span { color: #d0e1d6; font-size: .9rem; }
-.fleet-hero-note { color: #d0e1d6; font-size: .9rem; line-height: 1.7; padding-top: 1rem; }
+.fleet-spotlight { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 64px); align-items: center; }
+.fleet-spotlight-photo { grid-column: 2; grid-row: 1; position: relative; aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: #e7eee7; color: #18372e; }
+.fleet-spotlight-photo > img { display: block; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.fleet-spotlight-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #415d50; font-size: .9rem; }
+.fleet-spotlight-placeholder[hidden] { display: none; }
+.fleet-spotlight-placeholder > i { font-size: 5rem; color: #58745f; }
+.fleet-spotlight-status { position: absolute; bottom: 20px; left: 20px; right: 20px; width: fit-content; max-width: calc(100% - 40px); display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; background: #163f31; color: #e0f5cc; font-size: .8rem; font-weight: 650; }
+.fleet-spotlight-details { grid-column: 1; grid-row: 1; min-width: 0; }
+.fleet-spotlight-details .fleet-hero-copy { font-size: 1rem; line-height: 1.6; margin-bottom: 24px; max-width: 33ch; }
+.fleet-spotlight-model { font-size: clamp(1.5rem, 2.2vw, 2rem); font-weight: 650; letter-spacing: -.025em; margin-bottom: 6px; overflow-wrap: anywhere; }
+.fleet-spotlight-spec { color: #d0e1d6; font-size: .85rem; margin-bottom: 0; }
+.fleet-spotlight-return { color: #e0f5cc; font-size: .9rem; margin: 16px 0 0; }
+.fleet-spotlight-price { margin-top: 20px; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
+.fleet-spotlight-price strong { font-size: clamp(2rem, 3vw, 2.6rem); line-height: 1.2; font-weight: 750; letter-spacing: -.03em; }
+.fleet-spotlight-price > span { color: #d0e1d6; font-size: 1rem; white-space: nowrap; }
+.fleet-spotlight-price .fleet-spotlight-price-request { font-size: 1.5rem; }
+.fleet-spotlight-book { display: inline-flex; align-items: center; justify-content: space-between; gap: 30px; min-height: 54px; padding: 14px 24px; border: 0; border-radius: 8px; background: #c3ed91; color: #163f31; font-size: 1rem; font-weight: 750; transition: background-color .2s ease-out; }
+.fleet-spotlight-book:hover, .fleet-spotlight-book:active { background: #e0f5cc; color: #163f31; }
+.fleet-spotlight-note { margin: 12px 0 8px; color: #d0e1d6; font-size: .8rem; line-height: 1.6; max-width: 42ch; }
+.fleet-spotlight-details .fleet-hero-link { font-size: .875rem; text-decoration: underline; text-underline-offset: 5px; }
+.fleet-hero-empty { padding: 24px 0; }
 .fleet-catalog { padding-top: 44px; padding-bottom: 56px; scroll-margin-top: 24px; }
 .fleet-catalog h2 { font-size: clamp(1.6rem, 3vw, 2rem); letter-spacing: -.035em; font-weight: 750; margin-bottom: .5rem; }
 .fleet-heading-dot { color: var(--fleet-green); }
@@ -122,11 +138,9 @@
 .fleet-skip-link { position: absolute; left: 16px; top: -100px; z-index: 20; background: #fff; color: #173e30; padding: 12px 18px; }
 .fleet-skip-link:focus { top: 12px; }
 @media (max-width: 991.98px) {
-    .fleet-hero { padding: 40px 0; }
-    .fleet-hero-note { display: none; }
-    .fleet-availability-summary { display: inline-flex; border-bottom: 0; padding-bottom: 0; }
-    .fleet-availability-summary strong { font-size: 1.1rem; }
-    .fleet-availability-summary div > span { display: inline; }
+    .fleet-spotlight { gap: 28px; }
+    .fleet-spotlight-photo { aspect-ratio: 1; }
+    .fleet-hero h1 { font-size: 3rem; }
 }
 @media (max-width: 767.98px) {
     .fleet-header nav { min-height: 74px; }
@@ -134,6 +148,14 @@
     .fleet-hero { padding: 34px 0 30px; }
     .fleet-hero h1 { font-size: 2.6rem; }
     .fleet-hero-copy { font-size: .95rem; }
+    .fleet-spotlight { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .fleet-spotlight-photo { grid-column: 1; grid-row: 1; aspect-ratio: 16 / 10; }
+    .fleet-spotlight-details { grid-column: 1; grid-row: 2; }
+    .fleet-spotlight-details .fleet-hero-copy { max-width: none; margin-bottom: 20px; }
+    .fleet-spotlight-status { left: 12px; bottom: 12px; right: 12px; max-width: calc(100% - 24px); padding: 8px 10px; font-size: .75rem; }
+    .fleet-spotlight-price { margin-top: 16px; margin-bottom: 16px; }
+    .fleet-spotlight-book { width: 100%; }
+    .fleet-spotlight-note { max-width: none; }
     .fleet-catalog { padding-top: 32px; padding-bottom: 36px; }
     .fleet-toolbar { gap: 12px !important; }
     .fleet-filters { width: 100%; }

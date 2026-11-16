@@ -55,8 +55,15 @@ class FleetDashboard extends Component
                 ];
             })->sortByDesc('available')->values()->all();
 
+        $featuredBike = collect($bikes)->firstWhere('available', true)
+            ?? collect($bikes)->whereNotNull('next_date')
+                ->sortBy(fn (array $bike): int => strtotime($bike['next_date']))
+                ->first()
+            ?? ($bikes[0] ?? null);
+
         return view('livewire.fleet-dashboard', [
             'bikes' => $bikes,
+            'featuredBike' => $featuredBike,
             'availableCount' => count(array_filter($bikes, fn (array $bike): bool => $bike['available'])),
         ]);
     }

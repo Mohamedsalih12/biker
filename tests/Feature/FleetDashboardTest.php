@@ -12,6 +12,66 @@ use Tests\TestCase;
 
 class FleetDashboardTest extends TestCase
 {
+    public function test_hero_features_an_available_bike_with_its_price_photo_and_booking_link(): void
+    {
+        $reserved = Vehicle::factory()->create(['brand' => 'Ather', 'model' => 'Alpha']);
+        Booking::factory()->for($reserved)->create(['booking_status' => 'reserved']);
+        $available = Vehicle::factory()->create([
+            'brand' => 'TVS', 'model' => 'iQube', 'rate_per_unit' => 6000,
+            'image' => 'vehicles/featured.jpg',
+        ]);
+
+        Livewire::test(FleetDashboard::class)
+            ->assertViewHas('featuredBike', fn (?array $bike): bool => $bike !== null && $bike['id'] === $available->id)
+            ->assertSee('Ride this today')
+            ->assertSee('Book this bike')
+            ->assertSee('href="'.route('fleet.bookings.create', $available).'"', false)
+            ->assertSee('/storage/vehicles/featured.jpg', false)
+            ->assertSee('₹6,000')
+            ->assertSee('Explore all 2 bikes');
+    }
+
+    public function test_hero_features_the_earliest_confirmed_return_when_no_bike_is_available(): void
+    {
+        $this->travelTo('2026-11-16');
+        $later = Vehicle::factory()->create(['brand' => 'Ather', 'model' => 'Alpha']);
+        $earlier = Vehicle::factory()->create(['brand' => 'TVS', 'model' => 'Zulu']);
+        $overdue = Vehicle::factory()->create(['brand' => 'Ather', 'model' => 'Overdue']);
+        Booking::factory()->for($later)->create(['booking_status' => 'taken', 'end_date' => '2026-12-01']);
+        Booking::factory()->for($earlier)->create(['booking_status' => 'reserved', 'end_date' => '2026-11-29']);
+        Booking::factory()->for($overdue)->create(['booking_status' => 'taken', 'end_date' => '2026-11-10']);
+
+        Livewire::test(FleetDashboard::class)
+            ->assertViewHas('featuredBike', fn (?array $bike): bool => $bike !== null && $bike['id'] === $earlier->id)
+            ->assertSee('Your next ride')
+            ->assertSee('Expected back 30 Nov 2026')
+            ->assertDontSee('Book this bike')
+            ->assertDontSee('Ride this today');
+    }
+
+    public function test_hero_does_not_promise_a_return_when_all_bikes_are_overdue(): void
+    {
+        $this->travelTo('2026-11-16');
+        $bike = Vehicle::factory()->create();
+        Booking::factory()->for($bike)->create(['booking_status' => 'taken', 'end_date' => '2026-11-10']);
+
+        Livewire::test(FleetDashboard::class)
+            ->assertViewHas('featuredBike', fn (?array $featured): bool => $featured !== null && $featured['id'] === $bike->id)
+            ->assertSee('Return date to be confirmed')
+            ->assertDontSee('Expected back')
+            ->assertDontSee('Book this bike');
+    }
+
+    public function test_hero_handles_a_bike_without_photos_or_a_listed_price(): void
+    {
+        Vehicle::factory()->create(['image' => null, 'images' => [], 'rate_per_unit' => null]);
+
+        Livewire::test(FleetDashboard::class)
+            ->assertSee('Ride this today')
+            ->assertSee('Photos coming soon')
+            ->assertSee('Price on request');
+    }
+
     public function test_available_bikes_appear_before_reserved_and_taken_bikes(): void
     {
         $reserved = Vehicle::factory()->create(['brand' => 'Ather', 'model' => 'Alpha']);
@@ -145,6 +205,8 @@ class FleetDashboardTest extends TestCase
     public function test_empty_fleet_has_an_honest_empty_state(): void
     {
         $this->get('/')->assertSee('Our next ride is on its way')->assertDontSee('Book Now');
+        Livewire::test(FleetDashboard::class)->assertViewHas('featuredBike', null)
+            ->assertDontSee('Book this bike')->assertDontSee('Ride this today');
     }
 
     public function test_fleet_and_bookings_use_two_queries_regardless_of_fleet_size(): void
