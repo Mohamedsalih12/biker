@@ -30,6 +30,12 @@ class VehicleFormRequest extends FormRequest
             'insurance_policy_number' => ['nullable', 'string', 'max:255'],
             'insurance_expires_at' => ['nullable', 'date_format:Y-m-d'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'images' => ['nullable', 'array', 'max:20'],
+            'images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'replacement_images' => ['nullable', 'array', 'max:20'],
+            'replacement_images.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_images' => ['nullable', 'array', 'max:100'],
+            'remove_images.*' => ['required', 'string', 'size:64', 'distinct'],
             'damages' => ['nullable', 'string', 'max:10000'],
         ];
     }

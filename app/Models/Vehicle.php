@@ -17,6 +17,7 @@ use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
  * @property Carbon|null $purchase_date
  * @property Carbon|null $insurance_expires_at
  * @property string|null $image
+ * @property list<string>|null $images
  * @property string|null $damages
  * @property-read string $current_status
  */
@@ -54,6 +55,7 @@ class Vehicle extends Model
         return LogOptions::defaults()->useLogName('vehicle')->logFillable()->logOnlyDirty()->dontLogEmptyChanges();
     }
 
+    /** @return HasMany<Booking, $this> */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
@@ -82,6 +84,16 @@ class Vehicle extends Model
 
     public function imageUrl(): ?string
     {
-        return $this->image ? asset('storage/'.$this->image) : null;
+        $path = $this->imagePaths()[0] ?? null;
+
+        return $path !== null ? asset('storage/'.ltrim($path, '/')) : null;
+    }
+
+    /** @return list<string> */
+    public function imagePaths(): array
+    {
+        return collect([$this->image, ...($this->images ?? [])])
+            ->filter(fn (mixed $path): bool => is_string($path) && trim($path) !== '')
+            ->unique()->values()->all();
     }
 }

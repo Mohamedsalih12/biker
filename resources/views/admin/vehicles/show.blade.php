@@ -9,13 +9,18 @@
             </h4>
         </div>
         <div class="card-body">
-            @if ($vehicle->image)
-                <div class="mb-3">
-                    <a href="{{ $vehicle->imageUrl() }}" target="_blank" rel="noopener">
-                        <img src="{{ $vehicle->imageUrl() }}" alt="Photo of {{ $vehicle->registration_number }}" class="img-thumbnail" width="320" loading="lazy">
-                    </a>
-                </div>
-            @endif
+            <div class="d-flex flex-wrap gap-3 mb-3">
+                @forelse ($vehicle->imagePaths() as $path)
+                    <figure class="mb-0">
+                        <a href="{{ asset('storage/'.ltrim($path, '/')) }}" target="_blank" rel="noopener">
+                            <img src="{{ asset('storage/'.ltrim($path, '/')) }}" alt="Picture {{ $loop->iteration }} of {{ $vehicle->registration_number }}" class="img-thumbnail" width="240" height="180" style="object-fit: contain" loading="lazy">
+                        </a>
+                        <figcaption class="small mt-1">Picture {{ $loop->iteration }}{{ $loop->first ? ' (cover)' : '' }}</figcaption>
+                    </figure>
+                @empty
+                    <span class="text-muted">No pictures yet.</span>
+                @endforelse
+            </div>
             <dl class="row">
                 @foreach ([
                     'registration_number' => 'Registration Number', 'brand' => 'Brand', 'model' => 'Model',

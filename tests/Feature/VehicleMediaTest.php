@@ -132,7 +132,7 @@ class VehicleMediaTest extends TestCase
             ->assertSee($damages)->assertDontSee('<script>alert(1)</script>', false);
         $this->get(route('xpress.vehicles.edit', $vehicle))->assertSee('multipart/form-data', false)
             ->assertSee(Storage::disk('public')->url($vehicle->image))->assertSee($damages);
-        $this->get(route('xpress.vehicles.create'))->assertSee('multipart/form-data', false)->assertSee('name="image"', false)->assertSee('name="damages"', false);
+        $this->get(route('xpress.vehicles.create'))->assertSee('multipart/form-data', false)->assertSee('name="images[]"', false)->assertSee('name="damages"', false);
         $this->assertDatabaseHas('activity_log', ['log_name' => 'vehicle', 'event' => 'created', 'subject_id' => $vehicle->id]);
     }
 

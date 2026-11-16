@@ -29,15 +29,10 @@ class FleetDashboard extends Component
                 $nextDate = $endDate?->copy()->addDay();
                 $dateConfirmed = $nextDate !== null && $nextDate->greaterThanOrEqualTo(today());
                 $title = trim(($vehicle->brand ?? '').' '.($vehicle->model ?? '')) ?: 'Electric bike';
-                $images = collect($vehicle->images ?? [])
-                    ->filter(fn (mixed $image): bool => is_string($image) && trim($image) !== '')
+                $images = collect($vehicle->imagePaths())
                     ->take(6)
                     ->map(fn (string $image): string => asset('storage/'.ltrim($image, '/')))
                     ->values()->all();
-
-                if ($images === [] && $vehicle->imageUrl() !== null) {
-                    $images = [$vehicle->imageUrl()];
-                }
 
                 return [
                     'id' => $vehicle->id,

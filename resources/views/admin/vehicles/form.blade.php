@@ -48,14 +48,42 @@
         <input type="date" class="form-control @error('insurance_expires_at') is-invalid @enderror" id="insurance_expires_at" name="insurance_expires_at" value="{{ old('insurance_expires_at', $vehicle->insurance_expires_at?->format('Y-m-d')) }}">
         @error('insurance_expires_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
-    <div class="col-md-6 mb-3">
-        <label for="image" class="form-label">Vehicle Photo</label>
-        <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/jpeg,image/png,image/webp" aria-describedby="image-help">
-        <div id="image-help" class="form-text">Optional JPG, PNG or WebP, up to 2 MB. Choose a new photo to replace the current one.</div>
-        @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
-        @if ($vehicle->image)
-            <img src="{{ $vehicle->imageUrl() }}" alt="Current photo of {{ $vehicle->registration_number }}" class="img-thumbnail mt-2" width="160" loading="lazy">
-        @endif
+    <div class="col-12 mb-3">
+        <fieldset>
+            <legend class="fs-6">Vehicle Pictures</legend>
+            <label for="images" class="form-label">Add pictures</label>
+            <input type="file" class="form-control @error('images') is-invalid @enderror" id="images" name="images[]" multiple accept="image/jpeg,image/png,image/webp" aria-describedby="images-help">
+            <div id="images-help" class="form-text">Select up to 20 JPG, PNG or WebP pictures per upload, up to 2 MB each. New pictures are added to the existing gallery. The first picture is the cover; the fleet shows the first six.</div>
+            @foreach (['images', 'images.*', 'replacement_images', 'replacement_images.*', 'remove_images', 'remove_images.*', 'image'] as $errorKey)
+                @foreach ($errors->get($errorKey) as $messages)
+                    @foreach ((array) $messages as $message)
+                        <div class="text-danger small" role="alert">{{ $message }}</div>
+                    @endforeach
+                @endforeach
+            @endforeach
+            <div class="row g-3 mt-1">
+                @forelse ($vehicle->imagePaths() as $path)
+                    @php($photoKey = hash('sha256', $path))
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <figure class="mb-2">
+                            <a href="{{ asset('storage/'.ltrim($path, '/')) }}" target="_blank" rel="noopener">
+                                <img src="{{ asset('storage/'.ltrim($path, '/')) }}" alt="Picture {{ $loop->iteration }} of {{ $vehicle->registration_number }}" class="img-thumbnail" width="160" height="120" style="object-fit: contain" loading="lazy">
+                            </a>
+                            <figcaption class="small mt-1">Picture {{ $loop->iteration }}{{ $loop->first ? ' (cover)' : '' }}</figcaption>
+                        </figure>
+                        <label for="replace-{{ $photoKey }}" class="form-label small">Replace picture {{ $loop->iteration }}</label>
+                        <input type="file" class="form-control form-control-sm" id="replace-{{ $photoKey }}" name="replacement_images[{{ $photoKey }}]" accept="image/jpeg,image/png,image/webp" aria-describedby="images-help">
+                        <div class="form-check mt-2">
+                            <input type="checkbox" class="form-check-input" id="remove-{{ $photoKey }}" name="remove_images[]" value="{{ $photoKey }}" @checked(in_array($photoKey, old('remove_images', []), true))>
+                            <label for="remove-{{ $photoKey }}" class="form-check-label">Remove picture {{ $loop->iteration }} on save</label>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted mb-0">No pictures yet.</p>
+                @endforelse
+            </div>
+            <p class="form-text mb-0 mt-2">Replacements and removals take effect when you save the vehicle. Leave a picture unchanged to keep it.</p>
+        </fieldset>
     </div>
     <div class="col-12 mb-3">
         <label for="damages" class="form-label">Damages</label>

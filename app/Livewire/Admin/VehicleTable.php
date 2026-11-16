@@ -65,7 +65,7 @@ class VehicleTable extends PowerGridComponent
         )->select([
             'id', 'registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number',
             'odometer_reading', 'rate_per_unit', 'status', 'purchase_date', 'purchase_cost', 'insurance_policy_number', 'insurance_expires_at',
-            'image', 'damages', 'current_status', 'total_amount_earned',
+            'image', 'images', 'damages', 'current_status', 'total_amount_earned',
         ]);
     }
 
@@ -177,20 +177,34 @@ class VehicleTable extends PowerGridComponent
         });
     }
 
-    public function removePhoto(int $vehicleId): void
+    public function removePhoto(int $vehicleId, ?string $photoKey = null): void
     {
         Gate::authorize('manage-vehicles');
 
-        DB::transaction(function () use ($vehicleId): void {
+        DB::transaction(function () use ($vehicleId, $photoKey): void {
             $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($vehicleId);
             Gate::authorize('update', $vehicle);
 
-            if ($vehicle->image === null) {
+            $images = $vehicle->imagePaths();
+            if ($images === [] && $photoKey === null) {
                 return;
             }
 
-            $image = $vehicle->image;
-            $vehicle->image = null;
+            if ($photoKey === null && count($images) > 1) {
+                throw ValidationException::withMessages(['image' => 'Select a specific photo to remove. Refresh the table and try again.']);
+            }
+
+            $image = $photoKey === null ? $images[0] : collect($images)->first(
+                fn (string $path): bool => hash('sha256', $path) === $photoKey,
+            );
+
+            if ($image === null) {
+                throw ValidationException::withMessages(['image' => 'This photo has changed. Refresh the table and try again.']);
+            }
+
+            $remainingImages = array_values(array_diff($images, [$image]));
+            $vehicle->image = $remainingImages[0] ?? null;
+            $vehicle->images = $remainingImages;
 
             if ($vehicle->save() !== true) {
                 throw ValidationException::withMessages(['image' => 'The photo could not be removed. Please try again.']);
