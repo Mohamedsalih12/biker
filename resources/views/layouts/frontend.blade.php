@@ -25,8 +25,9 @@
         <!--SALIH to refresh custom style and remove cache-->
         <link href="{{ asset('xpress/css/custom.css') }}" rel="stylesheet" />
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">        
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="{{ asset('xpress/css/bootstrap-icons.css') }}">
+        <link rel="stylesheet" href="{{ asset('xpress/css/font-awesome.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('xpress/css/font-awesome-fix.css') }}">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />

@@ -8,7 +8,7 @@
     <title>{{ $title ?? 'Find your next ride · Biker' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('admin/images/GMBSmall.png') }}">
     <link rel="stylesheet" href="{{ asset('xpress/css/bootstrap.min.css') }}">
-     <link rel="stylesheet" href="{{ asset('xpress/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('xpress/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('xpress/css/fleet-dashboard.css') }}">
     @livewireStyles
 </head>

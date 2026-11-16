@@ -1,10 +1,57 @@
 @component('layouts.fleet', ['title' => 'Reserve your ride · Biker'])
     <section class="container fleet-reservation" aria-labelledby="reservation-title">
-        <a class="fleet-back-link" href="{{ route('frontend.index') }}#fleet"><i class="fas fa-arrow-left me-2" aria-hidden="true"></i> Back to the fleet</a>
-        <div class="row g-4 g-lg-5">
-            <div class="col-lg-7">
-                <h1 id="reservation-title">Your next ride<br>starts here<span class="fleet-heading-dot">.</span></h1>
-                <p class="fleet-muted fleet-reservation-intro">Tell us a little about yourself and when you’d like to ride.</p>
+        <a class="fleet-back-link" href="{{ route('frontend.index') }}#fleet">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h14"/></svg>
+            Back to the fleet
+        </a>
+        <header class="fleet-reservation-heading">
+            <h1 id="reservation-title">Your next ride starts here<span class="fleet-heading-dot">.</span></h1>
+            <p class="fleet-muted fleet-reservation-intro">Your bike. Your dates. A little less waiting.</p>
+        </header>
+        <div class="fleet-reservation-desk">
+            <aside class="fleet-reservation-ride" aria-label="Selected bike">
+                <div class="fleet-reservation-summary">
+                    <div class="fleet-reservation-photo" x-data="{ photoLoaded: false }"
+                        x-init="$nextTick(() => { const image = $el.querySelector('img'); photoLoaded = image && image.complete && image.naturalWidth > 0; })">
+                        <div class="fleet-reservation-photo-fallback" x-show="!photoLoaded">
+                            <span>{{ $bikeTitle }}</span>
+                            <p>Bike photo not available</p>
+                        </div>
+                        @if ($vehicle->imageUrl())
+                            <img src="{{ $vehicle->imageUrl() }}" alt="{{ $bikeTitle }}" width="800" height="600"
+                                fetchpriority="high" x-on:load="photoLoaded = true" x-on:error="$el.hidden = true; photoLoaded = false">
+                        @endif
+                    </div>
+                    <div class="fleet-reservation-ride-details">
+                        <h2>{{ $bikeTitle }}</h2>
+                        <p class="fleet-reservation-odometer">
+                            {{ $vehicle->odometer_reading !== null ? \Illuminate\Support\Number::format($vehicle->odometer_reading, locale: 'en_IN').' km on the odometer' : 'Odometer not listed' }}
+                        </p>
+                        <div class="fleet-reservation-price">
+                            @if ($price)
+                                <strong>{{ $price }}</strong><span> / month</span>
+                            @else
+                                <strong>Price on request</strong>
+                            @endif
+                        </div>
+                        <p class="fleet-summary-note mb-0">Monthly rental rate. Payment and handover details will be confirmed by our team.</p>
+                    </div>
+                </div>
+                <div class="fleet-reservation-next">
+                    <h2>From reserved to riding.</h2>
+                    <ol>
+                        <li><strong>Reserve online</strong><span>Choose your dates and submit your details.</span></li>
+                        <li><strong>Visit our office within 24 hours</strong><span>Pay at the office to keep your reservation.</span></li>
+                    </ol>
+                </div>
+            </aside>
+            <div class="fleet-reservation-entry">
+                @if ($canBook)
+                    <div class="fleet-reservation-reassurance">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-14 5h4"/></svg>
+                        <div><strong>Reserve now. Pay at the office.</strong><span>No payment is collected online.</span></div>
+                    </div>
+                @endif
 
                 @if ($errors->any())
                     <div class="alert alert-danger" role="alert" tabindex="-1" id="reservation-errors">
@@ -47,7 +94,7 @@
                                 @error('aadhaar') <div id="aadhaar-error" class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
-                        <p id="aadhaar-help" class="fleet-form-note"><i class="fas fa-info-circle me-2" aria-hidden="true"></i> Already registered? Use the same Aadhaar number. We’ll use your existing customer record without changing your saved details.</p>
+                        <p id="aadhaar-help" class="fleet-form-note">Already registered? Use the same Aadhaar number. We’ll use your existing customer record without changing your saved details.</p>
 
                         <h2 class="fleet-dates-heading">Choose your dates</h2>
                         <div class="row g-3 mb-4">
@@ -70,7 +117,7 @@
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary fleet-book-button w-100" :disabled="submitting">
-                            <span x-show="!submitting">Confirm reservation <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i></span>
+                            <span x-show="!submitting">Confirm reservation <svg class="ms-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
                             <span x-show="submitting" x-cloak>Saving your reservation…</span>
                         </button>
                         <p class="fleet-form-note mt-3 mb-0">No payment is collected here. Submitting reserves this bike for your selected dates.</p>
@@ -84,24 +131,6 @@
                     </div>
                 @endif
             </div>
-            <aside class="col-lg-5" aria-label="Selected bike">
-                <div class="fleet-reservation-summary">
-                    <i class="fas fa-motorcycle fleet-reservation-bike-icon" aria-hidden="true"></i>
-                    <p class="fleet-selected-label">Your selected ride</p>
-                    <h2>{{ $bikeTitle }}</h2>
-                    <p class="fleet-reservation-odometer"><i class="fas fa-tachometer-alt me-2" aria-hidden="true"></i>
-                        {{ $vehicle->odometer_reading !== null ? \Illuminate\Support\Number::format($vehicle->odometer_reading, locale: 'en_IN').' km on the odometer' : 'Odometer not listed' }}
-                    </p>
-                    <div class="fleet-reservation-price">
-                        @if ($price)
-                            <strong>{{ $price }}</strong><span> / month</span>
-                        @else
-                            <strong>Price on request</strong>
-                        @endif
-                    </div>
-                    <p class="fleet-summary-note mb-0"><i class="far fa-calendar-alt me-2" aria-hidden="true"></i> Monthly rental rate. Payment and handover details will be confirmed by our team.</p>
-                </div>
-            </aside>
         </div>
     </section>
 @endcomponent

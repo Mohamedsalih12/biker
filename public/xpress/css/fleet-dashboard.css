@@ -108,11 +108,18 @@
 .fleet-book-button { display: inline-flex; align-items: center; justify-content: center; }
 .fleet-booking-confirmation { line-height: 1.7; margin-bottom: 24px; border-radius: 10px; }
 .fleet-reservation { padding-top: 32px; padding-bottom: 64px; }
-.fleet-back-link { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 24px; color: var(--fleet-green); text-decoration: none; font-size: .9rem; font-weight: 600; }
+.fleet-back-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-bottom: 16px; color: var(--fleet-green); text-decoration: none; font-size: .9rem; font-weight: 600; }
 .fleet-back-link:hover { color: var(--fleet-ink); text-decoration: underline; text-underline-offset: 4px; }
 .fleet-reservation h1 { font-size: clamp(2.2rem, 4vw, 3.2rem); line-height: 1.12; font-weight: 750; letter-spacing: -.035em; margin-bottom: 16px; }
-.fleet-reservation-intro { line-height: 1.7; margin-bottom: 28px; }
-.fleet-reservation-form { background: #fff; border: 1px solid #d8e3da; padding: 28px; border-radius: 14px; }
+.fleet-reservation-intro { line-height: 1.7; margin-bottom: 32px; }
+.fleet-reservation-desk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 56px); align-items: start; }
+.fleet-reservation-entry, .fleet-reservation-ride { min-width: 0; }
+.fleet-reservation-form { background: #fff; border: 1px solid #d8e3da; padding: 28px; border-radius: 0 0 14px 14px; }
+.fleet-reservation-reassurance { display: flex; align-items: center; gap: 14px; padding: 20px 28px; background: #e4f2e5; color: #173e30; border-radius: 14px 14px 0 0; }
+.fleet-reservation-reassurance svg { flex-shrink: 0; }
+.fleet-reservation-reassurance strong, .fleet-reservation-reassurance span { display: block; }
+.fleet-reservation-reassurance strong { font-size: .95rem; }
+.fleet-reservation-reassurance span { font-size: .825rem; margin-top: 3px; }
 .fleet-reservation h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 22px; }
 .fleet-reservation .form-label { font-size: .875rem; font-weight: 600; }
 .fleet-reservation .form-control { min-height: 48px; border-color: #b7cbc0; border-radius: 8px; color: var(--fleet-ink); caret-color: var(--fleet-green); }
@@ -121,15 +128,27 @@
 .fleet-reservation .form-control.is-invalid { border-color: #b53732; }
 .fleet-form-note { color: var(--fleet-muted); font-size: .8rem; line-height: 1.65; }
 .fleet-reservation .fleet-dates-heading { margin-top: 32px; padding-top: 24px; border-top: 1px solid #dce5df; }
-.fleet-reservation-summary { background: #163f31; color: #fff; border-radius: 14px; padding: 36px; position: sticky; top: 24px; }
-.fleet-reservation-bike-icon { color: #c3ed91; font-size: 3.2rem; margin-bottom: 32px; }
-.fleet-selected-label { color: #d0e1d6; font-size: .85rem; margin-bottom: 8px; }
+.fleet-reservation-summary { background: #163f31; color: #fff; border-radius: 14px; overflow: hidden; }
+.fleet-reservation-photo { position: relative; aspect-ratio: 4 / 3; background: #e7eee7; color: var(--fleet-ink); }
+.fleet-reservation-photo img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; background: #e7eee7; }
+.fleet-reservation-photo-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 32px; }
+.fleet-reservation-photo-fallback > span { font-size: clamp(2rem, 4vw, 3rem); font-weight: 750; line-height: 1.1; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.fleet-reservation-photo-fallback > p { margin: 16px 0 0; font-size: .875rem; color: #415d50; }
+.fleet-reservation-ride-details { padding: 28px 32px; }
 .fleet-reservation-summary h2 { font-size: 1.8rem; line-height: 1.25; margin-bottom: 16px; overflow-wrap: anywhere; }
 .fleet-reservation-odometer { color: #d0e1d6; font-size: .85rem; }
-.fleet-reservation-price { margin-top: 28px; padding-top: 24px; padding-bottom: 24px; border-top: 1px solid #547564; }
+.fleet-reservation-price { margin-top: 20px; padding-top: 20px; padding-bottom: 16px; border-top: 1px solid #547564; }
 .fleet-reservation-price strong { font-size: 2rem; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .fleet-reservation-price > span { color: #d0e1d6; font-size: .9rem; }
 .fleet-summary-note { color: #d0e1d6; font-size: .8rem; line-height: 1.7; }
+.fleet-reservation-next { padding: 28px 0 0; }
+.fleet-reservation-next h2 { margin-bottom: 18px; }
+.fleet-reservation-next ol { list-style: none; padding: 0; margin: 0; counter-reset: reservation-step; }
+.fleet-reservation-next li { position: relative; padding: 0 0 20px 42px; counter-increment: reservation-step; }
+.fleet-reservation-next li::before { content: counter(reservation-step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border: 1px solid #b7cbc0; border-radius: 50%; text-align: center; line-height: 26px; font-size: .8rem; font-weight: 700; }
+.fleet-reservation-next strong, .fleet-reservation-next span { display: block; }
+.fleet-reservation-next strong { font-size: .875rem; }
+.fleet-reservation-next span { color: var(--fleet-muted); font-size: .8rem; margin-top: 4px; line-height: 1.6; }
 .fleet-reservation-unavailable { padding: 28px 0; }
 .fleet-reservation-unavailable > i { font-size: 2rem; color: #805026; }
 .fleet-footer { border-top: 1px solid #dce5df; background: #edf2ec; color: #536b59; padding: 24px 0; font-size: .85rem; }
@@ -138,6 +157,11 @@
 .fleet-skip-link { position: absolute; left: 16px; top: -100px; z-index: 20; background: #fff; color: #173e30; padding: 12px 18px; }
 .fleet-skip-link:focus { top: 12px; }
 @media (max-width: 991.98px) {
+    .fleet-reservation-desk { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .fleet-reservation-ride { display: contents; }
+    .fleet-reservation-summary { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr); }
+    .fleet-reservation-photo { aspect-ratio: auto; min-height: 180px; }
+    .fleet-reservation-next { grid-row: 3; padding-top: 0; }
     .fleet-spotlight { gap: 28px; }
     .fleet-spotlight-photo { aspect-ratio: 1; }
     .fleet-hero h1 { font-size: 3rem; }
@@ -164,8 +188,20 @@
     .fleet-card .card-body { padding: 22px; }
     .fleet-results-note { font-size: .75rem; }
     .fleet-footer .container { justify-content: center !important; }
-    .fleet-reservation-form, .fleet-reservation-summary { padding: 22px; }
-    .fleet-reservation-summary { position: static; }
+    .fleet-reservation-form, .fleet-reservation-reassurance, .fleet-reservation-ride-details { padding: 22px; }
+    .fleet-reservation { padding-top: 20px; padding-bottom: 36px; }
+    .fleet-reservation h1 { font-size: 2.2rem; }
+    .fleet-reservation-intro { margin-bottom: 24px; }
+    .fleet-reservation-summary { grid-template-columns: minmax(0, .65fr) minmax(0, 1fr); }
+    .fleet-reservation-summary h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .fleet-reservation-photo-fallback { padding: 14px; }
+    .fleet-reservation-photo-fallback > span { font-size: 1.2rem; }
+    .fleet-reservation-photo-fallback > p { font-size: .75rem; }
+    .fleet-reservation-odometer { font-size: .75rem; margin-bottom: 0; }
+    .fleet-reservation-price { margin-top: 14px; padding-top: 12px; padding-bottom: 12px; }
+    .fleet-reservation-price strong { font-size: 1.5rem; }
+    .fleet-reservation-price > span { font-size: .75rem; }
+    .fleet-reservation .fleet-dates-heading { margin-top: 24px; padding-top: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .fleet-page *, .fleet-page *::before, .fleet-page *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
