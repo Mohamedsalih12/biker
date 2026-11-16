@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 class VehicleGalleryTest extends TestCase
 {
-    public function test_multiple_uploads_are_saved_and_shown_on_every_vehicle_surface(): void
+    public function test_multiple_uploads_are_saved_with_only_the_first_photo_shown_on_the_vehicle_index(): void
     {
         Storage::fake('public');
         $front = UploadedFile::fake()->image('front.jpg');
@@ -33,7 +33,7 @@ class VehicleGalleryTest extends TestCase
                 ->assertSee('/storage/'.$paths[0], false)->assertSee('/storage/'.$paths[1], false);
         }
         Livewire::actingAs($this->user)->test(VehicleTable::class)
-            ->assertSee('/storage/'.$paths[0], false)->assertSee('/storage/'.$paths[1], false);
+            ->assertSee('/storage/'.$paths[0], false)->assertDontSee('/storage/'.$paths[1], false);
         Livewire::test(FleetDashboard::class)
             ->assertSee('/storage/'.$paths[0], false)->assertSee('/storage/'.$paths[1], false);
         $this->get(route('xpress.vehicles.create'))->assertSee('name="images[]"', false)

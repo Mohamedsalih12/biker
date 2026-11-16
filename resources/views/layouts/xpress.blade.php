@@ -31,7 +31,7 @@
         <link href="{{ asset('xpress/css/font-awesome-fix.css') }}" rel="stylesheet" />
         <link href="{{ asset('xpress/css/datatables.css') }}" rel="stylesheet" />
 
-        <!-- Fieldt360 brand theme (loaded last on purpose) -->
+        <!-- Biker brand theme (loaded last on purpose) -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
         <link href="{{ asset('xpress/css/t360-theme.css') }}" rel="stylesheet" />
@@ -49,8 +49,8 @@
         @auth
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
 
-            <a class="navbar-brand" href="{{ route('home') }}">
-                <img src="{{ asset('admin/images/GMBLogo.png') }}" alt="GMB" height="32">
+            <a class="navbar-brand" href="{{ route('frontend.index') }}">
+                <img src="{{ asset('admin/images/BikerLogo.jpeg') }}" alt="Bike" height="32">
             </a>
 
             <!-- Sidebar Toggle-->
@@ -68,7 +68,7 @@
                             <li class="dropdown-submenu">
                                 <a class="dropdown-item dropdown-toggle" href="#">Source Table</a>
                                 <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="{{ route('home') }}">Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('frontend.index') }}">Dashboard</a></li>
                                 </ul>
                             </li>
                             @can('manage-users')
@@ -119,19 +119,6 @@
                     <h4 class="text-white">@yield('subTitle')</h4>
                     <h6 class="text-white">@yield('subTitle')</h6>
                 </div>
-            
-                <!-- Navbar Search-->
-                <form class="w-50 xpress-navbar-search">
-                    <div class="input-group">
-                        <input class="form-control" type="text" id="searchBox" name="searchBox" 
-                            value="{{Request::get('searchBox') ?? '' }}"
-                            placeholder="@yield('searchBox')" aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
-                        <button type="submit" name="clear" value="1" class="btn btn-warning">
-                            <i class="fa fa-times-circle" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                </form>
             </div>
         
             <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
@@ -176,7 +163,7 @@
                             <!-- Static Menu Items (No Collapse) -->
                             <li class="nav-item">
                                 <a class="nav-link {{ Request::is('admin/dashboard') ? 'active' : '' }}"
-                                href="{{ route('home') }}" aria-expanded="false" aria-controls="ui-basic">
+                                href="{{ route('frontend.index') }}" aria-expanded="false" aria-controls="ui-basic">
                                 <i class="fas fa-home"></i>&nbsp;&nbsp;&nbsp;&nbsp;
                                 <span class="menu-title">Dashboard</span>
                                 </a>
@@ -252,7 +239,7 @@
                 <footer class="py-4 bg-light mt-auto">
                     <div class="container-fluid px-4">
                         <div class="d-flex align-items-center justify-content-between small">
-                            <!-- <div class="text-muted">Copyright &copy; Your Website 2026</div> -->
+                            <!-- <div class="text-muted">Copyright &copy; Biker 2026</div> -->
                             @if($appSetting?->website_name)
                             <div><i class="fas fa-globe"></i> {{ $appSetting->website_name }}</div>
                             @endif

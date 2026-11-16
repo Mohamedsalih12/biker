@@ -1,14 +1,14 @@
 @extends('layouts.frontend')
 
-@section('title', 'Sign in — GULF MB Fieldt360')
+@section('title', 'Sign in — Biker')
 
 @section('content')
 @php
     $t360BrandPanel = [
-        ['fas fa-boxes', 'Live inventory', 'Stock levels across every warehouse, updated as teams work.'],
-        ['fas fa-arrow-circle-up', 'IN / OUT transactions', 'Receipts, issues and transfers without the paperwork chase.'],
-        ['fas fa-file-invoice', 'MARN invoicing', 'Imported and user-entered invoices, reconciled in one report.'],
-        ['fas fa-file-contract', 'Agreements', 'Contracts, payment tasks and bills on one timeline.'],
+        ['fas fa-boxes', 'Fleet availability', 'Check which bikes are available, booked or ready for their next ride.'],
+        ['fas fa-arrow-circle-up', 'Bike bookings', 'Manage customer bookings, rental dates and bike assignments.'],
+        ['fas fa-file-invoice', 'Rental payments', 'Record rental payments and review payment details for each booking.'],
+        ['fas fa-file-contract', 'Rental agreements', 'Prepare rental agreements with customer, bike and rental details.'],
     ];
 @endphp
 <style>
@@ -274,14 +274,14 @@
             <span class="logo-chip">
                 <img src="{{ asset('admin/images/GMBLogo.png') }}" alt="GULF MB logo">
             </span>
-            <span class="brand-word">Fieldt<b>360</b></span>
+            <span class="brand-word">Biker<b>.</b></span>
         </div>
 
         <div>
             <h1 class="t360-auth-headline">
-                The whole field operation — <em>in one 360°.</em>
+                Your bike rental business — <em>ready to ride.</em>
             </h1>
-            <p class="t360-auth-sub">One sign-in for POS coverage, warehouses, stock movement and invoicing.</p>
+            <p class="t360-auth-sub">One sign-in for your fleet, customer bookings, rental payments and agreements.</p>
 
             <ul class="t360-features">
                 @foreach ($t360BrandPanel as [$icon, $title, $text])
@@ -296,14 +296,14 @@
             </ul>
         </div>
 
-        <div class="t360-auth-meta">GULF MB · Fieldt360 Operations Platform</div>
+        <div class="t360-auth-meta">Biker · Bike Rental Management</div>
     </aside>
 
     {{-- Sign-in panel --}}
     <main class="t360-auth-form-panel">
         <div class="t360-auth-form">
             <h1>Sign in</h1>
-            <p class="lead-sm">Use your Fieldt360 account. Contact your supervisor if you are locked out.</p>
+            <p class="lead-sm">Use your Biker account. Contact your administrator if you are locked out.</p>
 
             @if ($errors->any())
                 <div class="t360-auth-error mb-4" role="alert">
@@ -322,7 +322,7 @@
                                class="form-control @error('email') is-invalid @enderror"
                                name="email" value="{{ old('email') }}"
                                required autocomplete="email" autofocus
-                               placeholder="you@gulfmb.com">
+                               placeholder="you@example.com">
                         @error('email')
                             <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
                         @enderror
@@ -353,7 +353,7 @@
             </form>
 
             <div class="t360-auth-card-note">
-                <i class="fas fa-lock me-1"></i> Secured with two-factor authentication · <b>GULF MB Fieldt360</b>
+                <i class="fas fa-lock me-1"></i> Secured with two-factor authentication · <b>Biker</b>
             </div>
         </div>
     </main>

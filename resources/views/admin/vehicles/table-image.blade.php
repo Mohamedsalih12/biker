@@ -1,6 +1,6 @@
 @if ($vehicle->imagePaths() !== [])
     <div class="d-flex flex-wrap gap-2" style="min-width: 8rem; max-width: 22rem;">
-    @foreach ($vehicle->imagePaths() as $path)
+    @foreach (array_slice($vehicle->imagePaths(), 0, 1) as $path)
         @php($photoKey = hash('sha256', $path))
         <div class="d-flex flex-column align-items-start gap-2" wire:key="vehicle-photo-{{ $vehicle->id }}-{{ $photoKey }}">
             <a href="{{ asset('storage/'.ltrim($path, '/')) }}" target="_blank" rel="noopener">

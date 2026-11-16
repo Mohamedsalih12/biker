@@ -58,7 +58,7 @@ return [
         ],
         'notifiable' => Notifiable::class,
         'mail' => [
-            'to' => 'ms.it@gulfmb.com',
+            'to' => 'mohamedsalihusyed@gmail.com',
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'mohamedsalih12@gmail.com'),
                 'name' => env('MAIL_FROM_NAME', 'Example'),
