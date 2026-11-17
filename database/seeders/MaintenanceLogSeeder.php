@@ -12,6 +12,6 @@ class MaintenanceLogSeeder extends Seeder
      */
     public function run(): void
     {
-        MaintenanceLog::factory()->count(10)->create();
+        MaintenanceLog::factory()->count(2)->create();
     }
 }

@@ -3,10 +3,9 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Livewire\Admin\UserTable;
+use App\Models\Booking;
 use App\Models\User;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -105,12 +104,8 @@ class UserTableBulkActionsTest extends TestCase
 
     public function test_foreign_key_restriction_rolls_back_the_whole_batch(): void
     {
-        Schema::create('user_delete_links', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
-        });
         $linked = User::factory()->create();
-        DB::table('user_delete_links')->insert(['user_id' => $linked->id]);
+        Booking::factory()->for($linked, 'customer')->create();
 
         Livewire::actingAs($this->user)->test(UserTable::class)
             ->set('checkboxValues', [$this->otherUser->id, $linked->id])

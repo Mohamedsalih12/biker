@@ -6,9 +6,6 @@ use App\Livewire\Admin\BookingTable;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -123,13 +120,9 @@ class BookingTableTest extends TestCase
 
     public function test_foreign_key_failure_rolls_back_the_entire_batch(): void
     {
-        Schema::create('booking_delete_links', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('booking_id')->constrained('bookings')->restrictOnDelete();
-        });
         $first = Booking::factory()->create();
         $linked = Booking::factory()->create();
-        DB::table('booking_delete_links')->insert(['booking_id' => $linked->id]);
+        Payment::factory()->for($linked)->create();
         Livewire::actingAs($this->user)->test(BookingTable::class)->set('checkboxValues', [$first->id, $linked->id])->call('bulkDelete')->assertHasErrors('ids');
         $this->assertModelExists($first);
         $this->assertModelExists($linked);

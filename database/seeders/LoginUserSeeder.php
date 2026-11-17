@@ -16,6 +16,7 @@ class LoginUserSeeder extends Seeder
                 'id' => '1',
                 'name' => 'Staff',
                 'email' => 'mohamedsalih12@gmail.com',
+                'role' => 'staff',
                 'email_verified_at' => now(),
                 'password' => Hash::make('12345678'),
                 'remember_token' => Str::random(10),
@@ -27,6 +28,7 @@ class LoginUserSeeder extends Seeder
                 'id' => '9',
                 'name' => 'Salih',
                 'email' => 'mohamedsalihusyed@gmail.com',
+                'role' => 'admin',
                 'email_verified_at' => now(),
                 'password' => Hash::make('12345678'),
                 'remember_token' => Str::random(10),
@@ -35,7 +37,7 @@ class LoginUserSeeder extends Seeder
             ],
         ];
 
-        foreach (array_chunk($records, 10) as $chunk) {
+        foreach (array_chunk($records, 2) as $chunk) {
             foreach ($chunk as $record) {
                 DB::table('users')->updateOrInsert(
                     ['email' => $record['email']],

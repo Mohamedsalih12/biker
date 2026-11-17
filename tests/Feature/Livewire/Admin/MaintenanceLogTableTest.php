@@ -102,10 +102,7 @@ class MaintenanceLogTableTest extends TestCase
 
     public function test_foreign_key_failure_rolls_back_bulk_delete_and_logs(): void
     {
-        Schema::create('maintenance_delete_links', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('maintenance_log_id')->constrained('maintenance_logs')->restrictOnDelete();
-        });
+        $this->createForeignKeyFixture();
         $first = MaintenanceLog::factory()->create();
         $linked = MaintenanceLog::factory()->create();
         DB::table('maintenance_delete_links')->insert(['maintenance_log_id' => $linked->id]);
@@ -117,6 +114,38 @@ class MaintenanceLogTableTest extends TestCase
         $this->assertModelExists($linked);
         $this->assertDatabaseMissing('deleted_models', ['model' => MaintenanceLog::class]);
         $this->assertDatabaseMissing('activity_log', ['log_name' => 'maintenance_log', 'event' => 'deleted']);
+    }
+
+    /**
+     * Create the fixture table that restricts maintenance log deletions.
+     *
+     * No production table references maintenance logs, so the test provides
+     * its own table. MySQL DDL implicitly commits any open transaction, which
+     * would destroy the transaction RefreshDatabase keeps open on the default
+     * connection and break the nested savepoint rollback under test. The
+     * fixture is therefore built through a dedicated connection to the same
+     * database, leaving the default connection's transaction intact. SQLite
+     * supports transactional DDL and uses the default connection directly.
+     */
+    private function createForeignKeyFixture(): void
+    {
+        $define = static function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('maintenance_log_id')->constrained('maintenance_logs')->restrictOnDelete();
+        };
+
+        if (DB::connection()->getDriverName() === 'mysql') {
+            $default = config('database.default');
+            config(['database.connections.fixture_ddl' => config("database.connections.{$default}")]);
+            Schema::connection('fixture_ddl')->dropIfExists('maintenance_delete_links');
+            Schema::connection('fixture_ddl')->create('maintenance_delete_links', $define);
+            DB::connection('fixture_ddl')->disconnect();
+
+            return;
+        }
+
+        Schema::dropIfExists('maintenance_delete_links');
+        Schema::create('maintenance_delete_links', $define);
     }
 
     public function test_export_respects_filters_neutralizes_formulas_and_logs_success(): void

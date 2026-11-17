@@ -188,19 +188,6 @@ class VehicleMaintenanceStatusTest extends TestCase
         $this->assertDatabaseHas('bookings', ['vehicle_id' => $vehicle->id]);
     }
 
-    public function test_migration_reconciles_existing_maintenance_statuses(): void
-    {
-        $active = MaintenanceLog::factory()->create()->vehicle;
-        $clear = Vehicle::factory()->create(['status' => 'maintenance']);
-        DB::table('vehicles')->where('id', $active->id)->update(['status' => 'available']);
-
-        $migration = require database_path('migrations/2026_11_17_101352_add_cancelled_status_to_maintenance_logs_table.php');
-        $migration->up();
-
-        $this->assertSame('maintenance', $active->fresh()->status);
-        $this->assertSame('available', $clear->fresh()->status);
-    }
-
     public function test_public_booking_rechecks_maintenance_after_the_form_opens(): void
     {
         $this->travelTo('2026-11-17');

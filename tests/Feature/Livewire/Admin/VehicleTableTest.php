@@ -3,12 +3,10 @@
 namespace Tests\Feature\Livewire\Admin;
 
 use App\Livewire\Admin\VehicleTable;
+use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Vehicle;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -136,13 +134,9 @@ class VehicleTableTest extends TestCase
 
     public function test_foreign_key_failure_rolls_back_the_whole_batch_and_its_logs(): void
     {
-        Schema::create('vehicle_delete_links', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('vehicle_id')->constrained('vehicles')->restrictOnDelete();
-        });
         $first = Vehicle::factory()->create();
         $linked = Vehicle::factory()->create();
-        DB::table('vehicle_delete_links')->insert(['vehicle_id' => $linked->id]);
+        Booking::factory()->for($linked)->create();
 
         Livewire::actingAs($this->user)->test(VehicleTable::class)->set('checkboxValues', [$first->id, $linked->id])
             ->call('bulkDelete')->assertHasErrors('ids');
