@@ -77,7 +77,7 @@ class MaintenanceLogTest extends TestCase
         $this->assertTrue($vehicle->maintenanceLogs->contains($log));
         $this->assertTrue($this->user->createdMaintenanceLogs->contains($log));
         $this->assertDatabaseHas('activity_log', ['log_name' => 'maintenance_log', 'event' => 'created', 'subject_id' => $log->id]);
-        $this->assertSame('available', $vehicle->fresh()->status);
+        $this->assertSame('maintenance', $vehicle->fresh()->status);
     }
 
     public function test_forms_show_defaults_and_index_uses_powergrid(): void
@@ -166,7 +166,7 @@ class MaintenanceLogTest extends TestCase
             'oversized cost' => ['cost', '10000000000'],
             'invalid vendor' => ['vendor_name', 'vendor_5'],
             'malformed vendor' => ['vendor_name', []],
-            'invalid status' => ['status', 'cancelled'],
+            'invalid status' => ['status', 'unknown'],
         ];
     }
 

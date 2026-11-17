@@ -106,3 +106,26 @@ table th, table td { border-color: #dce5df; }
 .select2-container--default .select2-selection--single .select2-selection__rendered { color: #18372e; }
 .placeholder-img { background-color: #e7eee7; color: #5b6c65; }
 .alert-primary, .alert-success { color: #135936; background-color: #e4f2e5; border-color: #b7cbc0; }
+
+/* Maintenance urgency is independent of vehicle availability. */
+tr.vehicle-maintenance-warning > td {
+    --bs-table-bg: #fff8e6;
+    --bs-table-striped-bg: #fff8e6;
+    --bs-table-accent-bg: transparent;
+    --bs-table-hover-bg: #fff0c2;
+    background-color: #fff8e6;
+}
+tr.vehicle-maintenance-danger > td {
+    --bs-table-bg: #fff0ee;
+    --bs-table-striped-bg: #fff0ee;
+    --bs-table-accent-bg: transparent;
+    --bs-table-hover-bg: #ffe2de;
+    background-color: #fff0ee;
+}
+tr.vehicle-maintenance-warning > td:first-child { border-left: 3px solid #9a6700; }
+tr.vehicle-maintenance-danger > td:first-child { border-left: 3px solid #b42318; }
+.vehicle-registration { display: flex; flex-wrap: wrap; align-items: baseline; gap: .375rem .75rem; max-width: 25rem; }
+.vehicle-maintenance-alert { display: inline-block; white-space: normal; line-height: 1.4; text-underline-offset: .2em; }
+.vehicle-maintenance-alert-warning, .vehicle-maintenance-alert-warning:hover, .vehicle-maintenance-alert-warning:focus { color: #795000; }
+.vehicle-maintenance-alert-danger, .vehicle-maintenance-alert-danger:hover, .vehicle-maintenance-alert-danger:focus { color: #9d2017; }
+.vehicle-maintenance-alert:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }

@@ -4,7 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Vehicle;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Number;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -15,17 +16,19 @@ class FleetDashboard extends Component
     public function render(): View
     {
         $bikes = Vehicle::query()
-            ->select(['id', 'brand', 'model', 'rate_per_unit', 'odometer_reading', 'image', 'images'])
+            ->select(['id', 'brand', 'model', 'rate_per_unit', 'odometer_reading', 'image', 'images', 'status'])
             ->where('status', '!=', 'decommissioned')
-            ->with(['bookings' => fn (HasMany $query): HasMany => $query
+            ->withExists(['maintenanceLogs as has_active_maintenance' => fn (Builder $query): Builder => $query->where('status', 'in_progress')])
+            ->with(['bookings' => fn (Relation $query): Relation => $query
                 ->select(['id', 'vehicle_id', 'end_date'])
                 ->whereIn('booking_status', ['reserved', 'taken'])
                 ->orderByDesc('end_date')])
             ->orderBy('brand')->orderBy('model')->orderBy('id')
             ->get()
             ->map(function (Vehicle $vehicle): array {
-                $available = $vehicle->bookings->isEmpty();
-                $endDate = $vehicle->bookings->first()?->end_date;
+                $underMaintenance = $vehicle->status === 'maintenance' || $vehicle->has_active_maintenance;
+                $available = ! $underMaintenance && $vehicle->bookings->isEmpty();
+                $endDate = $underMaintenance ? null : $vehicle->bookings->first()?->end_date;
                 $nextDate = $endDate?->copy()->addDay();
                 $dateConfirmed = $nextDate !== null && $nextDate->greaterThanOrEqualTo(today());
                 $title = trim(($vehicle->brand ?? '').' '.($vehicle->model ?? '')) ?: 'Electric bike';

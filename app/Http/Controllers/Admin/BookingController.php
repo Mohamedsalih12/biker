@@ -159,7 +159,11 @@ class BookingController extends Controller
 
     private function ensureVehicleAvailable(int $vehicleId, ?Booking $booking = null): void
     {
-        Vehicle::query()->whereKey($vehicleId)->lockForUpdate()->firstOrFail();
+        $vehicle = Vehicle::query()->whereKey($vehicleId)->lockForUpdate()->firstOrFail();
+
+        if (($booking === null || $booking->vehicle_id !== $vehicleId) && $vehicle->isUnderMaintenance()) {
+            throw ValidationException::withMessages(['vehicle_id' => 'This vehicle is under maintenance and cannot be booked.']);
+        }
 
         if (Booking::query()->where('vehicle_id', $vehicleId)->whereIn('booking_status', ['taken', 'reserved'])
             ->when($booking !== null, fn (Builder $query): Builder => $query->whereKeyNot($booking->id))
@@ -203,7 +207,12 @@ class BookingController extends Controller
         return [
             'booking' => $booking,
             'selectedCustomer' => $customerId ? User::query()->where('role', 'customer')->select(['id', 'name', 'aadhaar'])->find($customerId) : null,
-            'vehicles' => Vehicle::query()->whereDoesntHave('bookings', function (Builder $query) use ($booking): void {
+            'vehicles' => Vehicle::query()->where(function (Builder $query) use ($booking): void {
+                $query->where(function (Builder $query): void {
+                    $query->where('status', '!=', 'maintenance')
+                        ->whereDoesntHave('maintenanceLogs', fn (Builder $logs): Builder => $logs->where('status', 'in_progress'));
+                })->when($booking->exists, fn (Builder $query): Builder => $query->orWhereKey($booking->vehicle_id));
+            })->whereDoesntHave('bookings', function (Builder $query) use ($booking): void {
                 $query->whereIn('booking_status', ['taken', 'reserved'])
                     ->when($booking->exists, fn (Builder $query): Builder => $query->whereKeyNot($booking->id));
             })->orderBy('registration_number')->get(['id', 'registration_number', 'odometer_reading', 'rate_per_unit']),

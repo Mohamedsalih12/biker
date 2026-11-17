@@ -22,7 +22,8 @@ class FleetBookingController extends Controller
 
         return response()->view('booking', [
             'vehicle' => $vehicle,
-            'canBook' => ! $vehicle->bookings()->whereIn('booking_status', ['reserved', 'taken'])->exists()
+            'canBook' => ! $vehicle->isUnderMaintenance()
+                && ! $vehicle->bookings()->whereIn('booking_status', ['reserved', 'taken'])->exists()
                 && $this->hasBookablePrice($vehicle),
             'bikeTitle' => trim(($vehicle->brand ?? '').' '.($vehicle->model ?? '')) ?: 'Electric bike',
             'price' => $rate !== null
@@ -42,7 +43,7 @@ class FleetBookingController extends Controller
             $vehicle = Vehicle::query()->whereKey($vehicle->id)->lockForUpdate()->firstOrFail();
             abort_if($vehicle->status === 'decommissioned', 404);
 
-            if ($vehicle->bookings()->whereIn('booking_status', ['reserved', 'taken'])->exists()) {
+            if ($vehicle->isUnderMaintenance() || $vehicle->bookings()->whereIn('booking_status', ['reserved', 'taken'])->exists()) {
                 throw ValidationException::withMessages([
                     'booking' => 'This bike is no longer available. Please choose another bike.',
                 ]);

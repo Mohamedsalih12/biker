@@ -19,6 +19,8 @@ use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
  * @property string|null $image
  * @property list<string>|null $images
  * @property string|null $damages
+ * @property string|null $rate_per_unit
+ * @property-read bool $has_active_maintenance
  * @property-read string $current_status
  */
 class Vehicle extends Model
@@ -36,6 +38,15 @@ class Vehicle extends Model
         'odometer_reading', 'rate_per_unit', 'status', 'purchase_date', 'purchase_cost',
         'insurance_policy_number', 'insurance_expires_at', 'image', 'images', 'damages',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Vehicle $vehicle): void {
+            if ($vehicle->exists && $vehicle->maintenanceLogs()->where('status', 'in_progress')->exists()) {
+                $vehicle->status = 'maintenance';
+            }
+        });
+    }
 
     /** @return array<string, string> */
     protected function casts(): array
@@ -66,9 +77,53 @@ class Vehicle extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /** @return HasMany<MaintenanceLog, $this> */
     public function maintenanceLogs(): HasMany
     {
         return $this->hasMany(MaintenanceLog::class);
+    }
+
+    public function isUnderMaintenance(): bool
+    {
+        return $this->status === 'maintenance'
+            || $this->maintenanceLogs()->where('status', 'in_progress')->exists();
+    }
+
+    /** @return array{severity: string, message: string, log_id: int}|null */
+    public function maintenanceAlert(): ?array
+    {
+        $today = today();
+        $warning = null;
+        $danger = null;
+
+        foreach ($this->maintenanceLogs->sortBy('id') as $log) {
+            $date = match ($log->status) {
+                'scheduled' => $log->delivered_date,
+                'in_progress' => $log->expected_completion_date,
+                default => null,
+            };
+
+            if ($date === null) {
+                continue;
+            }
+
+            if ($date->lt($today)) {
+                $days = (int) $date->diffInDays($today);
+                $subject = $log->status === 'scheduled' ? 'Scheduled delivery' : 'Completion';
+                $danger ??= [
+                    'severity' => 'danger', 'log_id' => $log->id,
+                    'message' => $subject.' overdue by '.$days.' '.str('day')->plural($days),
+                ];
+            } elseif ($log->status === 'scheduled' && $date->lte($today->copy()->addDays(3))) {
+                $days = (int) $today->diffInDays($date);
+                $warning ??= [
+                    'severity' => 'warning', 'log_id' => $log->id,
+                    'message' => $days === 0 ? 'Maintenance due today' : 'Maintenance due in '.$days.' '.str('day')->plural($days),
+                ];
+            }
+        }
+
+        return $danger ?? $warning;
     }
 
     /** @param Builder<static> $query */

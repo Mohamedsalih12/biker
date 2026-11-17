@@ -19,6 +19,7 @@ use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Components\SetUp\Exportable;
 use PowerComponents\LivewirePowerGrid\Facades\Filter;
 use PowerComponents\LivewirePowerGrid\Facades\PowerGrid;
+use PowerComponents\LivewirePowerGrid\Facades\Rule;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
@@ -59,7 +60,7 @@ class VehicleTable extends PowerGridComponent
     {
         Gate::authorize('manage-vehicles');
 
-        return Vehicle::query()->fromSub(
+        return Vehicle::query()->with('maintenanceLogs:id,vehicle_id,status,delivered_date,expected_completion_date')->fromSub(
             Vehicle::query()->withCurrentStatus()->withSum('payments as total_amount_earned', 'amount_received'),
             'vehicles',
         )->select([
@@ -72,9 +73,14 @@ class VehicleTable extends PowerGridComponent
     public function fields(): PowerGridFields
     {
         return PowerGrid::fields()
-            ->add('id')->add('registration_number')->add('brand')->add('model')
+            ->add('id')
+            ->add('registration_number_plain', fn (Vehicle $vehicle): string => e($vehicle->registration_number))
+            ->add('registration_number', fn (Vehicle $vehicle): string => view('admin.vehicles.table-registration', [
+                'vehicle' => $vehicle, 'alert' => $vehicle->maintenanceAlert(),
+            ])->render())
+            ->add('brand')->add('model')
             ->add('chassis_number')->add('battery_serial_number')->add('odometer_reading')->add('rate_per_unit')
-            ->add('status', fn (Vehicle $vehicle): string => e(ucfirst($vehicle->current_status)))
+            ->add('status', fn (Vehicle $vehicle): string => $vehicle->current_status === 'maintenance' ? 'Under Maintenance' : e(ucfirst($vehicle->current_status)))
             ->add('purchase_date_formatted', fn (Vehicle $vehicle): string => $vehicle->purchase_date?->format('Y-m-d') ?? '')
             ->add('purchase_cost')
             ->add('insurance_policy_number')
@@ -110,11 +116,21 @@ class VehicleTable extends PowerGridComponent
         ];
     }
 
+    public function actionRules(): array
+    {
+        return [
+            Rule::rows()->setAttribute('class', 'vehicle-maintenance-warning')
+                ->when(fn (Vehicle $vehicle): bool => ($vehicle->maintenanceAlert()['severity'] ?? null) === 'warning'),
+            Rule::rows()->setAttribute('class', 'vehicle-maintenance-danger')
+                ->when(fn (Vehicle $vehicle): bool => ($vehicle->maintenanceAlert()['severity'] ?? null) === 'danger'),
+        ];
+    }
+
     public function filters(): array
     {
         return [
             Filter::select('status')->dataSource(array_map(
-                fn (string $status): array => ['value' => $status, 'label' => ucfirst($status)],
+                fn (string $status): array => ['value' => $status, 'label' => $status === 'maintenance' ? 'Under Maintenance' : ucfirst($status)],
                 Vehicle::CURRENT_STATUSES,
             ))->optionValue('value')->optionLabel('label')
                 ->builder(function (Builder $query, mixed $value): void {
@@ -168,6 +184,8 @@ class VehicleTable extends PowerGridComponent
         }
 
         return $rows->map(function (object $row): object {
+            $row->registration_number = $row->registration_number_plain;
+
             foreach (['registration_number', 'brand', 'model', 'chassis_number', 'battery_serial_number', 'insurance_policy_number', 'image', 'damages'] as $field) {
                 $value = html_entity_decode((string) $row->{$field}, ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $row->{$field} = e(Spreadsheet::neutralize($value));

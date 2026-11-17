@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
@@ -22,10 +23,39 @@ class MaintenanceLog extends Model
 
     public const array VENDORS = ['vendor_1', 'vendor_2', 'vendor_3', 'vendor_4'];
 
-    public const array STATUSES = ['scheduled', 'in_progress', 'completed'];
+    public const array STATUSES = ['scheduled', 'in_progress', 'completed', 'cancelled'];
 
     /** @var list<string> */
     protected $fillable = ['vehicle_id', 'service_description', 'delivered_date', 'expected_completion_date', 'cost', 'vendor_name', 'status'];
+
+    protected static function booted(): void
+    {
+        static::saved(function (MaintenanceLog $log): void {
+            $log->syncVehicleStatuses();
+        });
+
+        static::deleted(function (MaintenanceLog $log): void {
+            $log->syncVehicleStatuses();
+        });
+    }
+
+    private function syncVehicleStatuses(): void
+    {
+        $vehicleIds = array_filter(array_unique([$this->vehicle_id, $this->getOriginal('vehicle_id')]));
+
+        DB::transaction(function () use ($vehicleIds): void {
+            $vehicles = Vehicle::query()->whereKey($vehicleIds)->orderBy('id')->lockForUpdate()->get();
+
+            foreach ($vehicles as $vehicle) {
+                $vehicle->status = $vehicle->maintenanceLogs()->where('status', 'in_progress')->exists()
+                    ? 'maintenance' : 'available';
+
+                if ($vehicle->isDirty('status')) {
+                    $vehicle->saveOrFail();
+                }
+            }
+        });
+    }
 
     /** @param array<string, mixed> $attributes */
     public function __construct(array $attributes = [])
