@@ -25,6 +25,7 @@ return new class extends Migration
             $table->unsignedBigInteger('start_odometer');
             $table->unsignedBigInteger('end_odometer')->nullable();
             $table->enum('booking_status', ['reserved', 'taken', 'returned', 'cancelled'])->default('reserved')->index();
+            $table->timestamp('payment_due_at')->nullable()->index();
             $table->enum('payment_status', ['pending', 'paid', 'overdue'])->default('pending')->index();
             $table->text('handover_notes')->nullable();
             $table->text('return_notes')->nullable();

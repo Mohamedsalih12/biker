@@ -1,0 +1,4 @@
+Production setup :
+
+Ensure the server invokes Laravel’s scheduler every minute:
+* * * * * cd /path/to/biker && php artisan schedule:run >> /dev/null 2>&1

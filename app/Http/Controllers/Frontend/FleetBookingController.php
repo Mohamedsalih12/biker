@@ -93,6 +93,7 @@ class FleetBookingController extends Controller
             ]);
             $booking->booking_code = $bookingCode;
             $booking->user_id = $customer->id;
+            $booking->payment_due_at = now()->addHours(24);
 
             if (! $booking->save()) {
                 throw ValidationException::withMessages(['booking' => 'We could not save your reservation. Please try again.']);

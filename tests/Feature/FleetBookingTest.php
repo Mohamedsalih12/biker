@@ -34,6 +34,7 @@ class FleetBookingTest extends TestCase
             'role' => 'admin', 'rate_per_unit' => 1, 'booking_status' => 'taken', 'payment_status' => 'paid',
             'user_id' => $this->user->id, 'customer_id' => $this->user->id, 'vehicle_id' => 999999,
             'password' => 'InjectedPassword', 'email' => 'injected@example.test',
+            'payment_due_at' => '2099-01-01 00:00:00',
         ]))->assertRedirect(route('frontend.index'))->assertSessionHasNoErrors();
 
         $customer = User::query()->where('aadhaar', '123456789012')->sole();
@@ -51,6 +52,7 @@ class FleetBookingTest extends TestCase
         $this->assertSame(12345, $booking->start_odometer);
         $this->assertSame('reserved', $booking->booking_status);
         $this->assertSame('pending', $booking->payment_status);
+        $this->assertSame('2026-11-17 00:00:00', $booking->payment_due_at?->toDateTimeString());
         $this->assertSame('2026-11-18', $booking->start_date->toDateString());
         $this->assertSame('2026-12-20', $booking->end_date->toDateString());
         $this->assertGuest();

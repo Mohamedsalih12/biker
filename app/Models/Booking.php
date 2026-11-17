@@ -21,6 +21,7 @@ use Spatie\DeletedModels\Models\Concerns\KeepsDeletedModels;
  * @property Carbon|null $start_date
  * @property Carbon|null $end_date
  * @property Carbon|null $actual_return_date
+ * @property Carbon|null $payment_due_at
  * @property-read string $current_payment_status
  */
 class Booking extends Model
@@ -83,6 +84,7 @@ class Booking extends Model
         return [
             'rate_per_unit' => 'decimal:2', 'start_date' => 'date', 'end_date' => 'date',
             'actual_return_date' => 'date', 'start_odometer' => 'integer', 'end_odometer' => 'integer',
+            'payment_due_at' => 'datetime',
         ];
     }
 
@@ -141,7 +143,7 @@ class Booking extends Model
     {
         return LogOptions::defaults()->useLogName('booking')
             ->logOnly(['booking_code', 'customer_id', 'vehicle_id', 'user_id', 'rental_type', 'rate_per_unit',
-                'start_date', 'end_date', 'actual_return_date', 'start_odometer', 'end_odometer', 'booking_status', 'payment_status'])
+                'start_date', 'end_date', 'actual_return_date', 'start_odometer', 'end_odometer', 'booking_status', 'payment_status', 'payment_due_at'])
             ->logOnlyDirty()->dontLogIfAttributesChangedOnly(['updated_at'])->logEmptyChanges();
     }
 }
