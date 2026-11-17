@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('cost', 12, 2)->nullable();
             $table->unsignedBigInteger('odometer_reading')->nullable();
             $table->enum('vendor_name', ['vendor_1', 'vendor_2', 'vendor_3', 'vendor_4']);
-            $table->enum('status', ['scheduled', 'in_progress', 'completed'])->default('in_progress')->index();
+            $table->enum('status', ['scheduled', 'in_progress', 'completed', 'cancelled'])->default('in_progress')->index();
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->timestamps();
         });
