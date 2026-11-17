@@ -1,4 +1,3 @@
-@include('admin.payments.table-feedback')
 <p class="small text-muted">All fields are required except notes. Customer and vehicle are filled from the selected booking.</p>
 <div class="row">
     <div class="col-md-6 mb-3">

@@ -52,7 +52,7 @@ class MaintenanceLogTable extends PowerGridComponent
         $this->persist(['columns'], 'user-'.auth()->id());
 
         return [
-            PowerGrid::header()->showSearchInput()->showToggleColumns()->includeViewOnTop('admin.maintenance-logs.table-feedback'),
+            PowerGrid::header()->showSearchInput()->showToggleColumns(),
             PowerGrid::footer()->showPerPage(15, [15, 25, 50, 100])->showRecordCount(),
             PowerGrid::exportable('maintenance-logs')->type(Exportable::TYPE_XLS),
         ];

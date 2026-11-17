@@ -1,4 +1,3 @@
-@include('admin.maintenance-logs.table-feedback')
 <p class="small text-muted">Cost is optional. The odometer is fetched from the selected vehicle and saved as a historical reading.</p>
 <div class="row">
     <div class="col-md-6 mb-3">

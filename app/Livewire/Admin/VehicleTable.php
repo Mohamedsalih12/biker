@@ -50,7 +50,7 @@ class VehicleTable extends PowerGridComponent
         $this->persist(['columns'], 'user-'.auth()->id());
 
         return [
-            PowerGrid::header()->showSearchInput()->showToggleColumns()->includeViewOnTop('admin.vehicles.table-feedback'),
+            PowerGrid::header()->showSearchInput()->showToggleColumns(),
             PowerGrid::footer()->showPerPage(15, [15, 25, 50, 100])->showRecordCount(),
             PowerGrid::exportable('vehicles')->type(Exportable::TYPE_XLS),
         ];

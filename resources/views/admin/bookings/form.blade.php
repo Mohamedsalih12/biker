@@ -1,4 +1,3 @@
-@include('admin.bookings.table-feedback')
 @php
     $selectedVehicle = $vehicles->firstWhere('id', old('vehicle_id', $booking->vehicle_id));
     $startOdometer = old('start_odometer', $booking->start_odometer ?? $selectedVehicle?->odometer_reading);

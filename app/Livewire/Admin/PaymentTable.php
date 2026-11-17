@@ -52,7 +52,7 @@ class PaymentTable extends PowerGridComponent
         $this->persist(['columns'], 'user-'.auth()->id());
 
         return [
-            PowerGrid::header()->showSearchInput()->showToggleColumns()->includeViewOnTop('admin.payments.table-feedback'),
+            PowerGrid::header()->showSearchInput()->showToggleColumns(),
             PowerGrid::footer()->showPerPage(15, [15, 25, 50, 100])->showRecordCount(),
             PowerGrid::exportable('payments')->type(Exportable::TYPE_XLS),
         ];

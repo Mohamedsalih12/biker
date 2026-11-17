@@ -52,7 +52,7 @@ class BookingTable extends PowerGridComponent
         $this->persist(['columns'], 'user-'.auth()->id());
 
         return [
-            PowerGrid::header()->showSearchInput()->showToggleColumns()->includeViewOnTop('admin.bookings.table-feedback'),
+            PowerGrid::header()->showSearchInput()->showToggleColumns(),
             PowerGrid::footer()->showPerPage(15, [15, 25, 50, 100])->showRecordCount(),
             PowerGrid::exportable('bookings')->type(Exportable::TYPE_XLS),
         ];
