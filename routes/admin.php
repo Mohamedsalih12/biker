@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AllBookingController;
 use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\BookingCustomerController;
+use App\Http\Controllers\Admin\MaintenanceLogController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -67,6 +68,17 @@ Route::middleware(['auth', '2fa', 'force.password.change'])->group(function () {
         Route::get('payments/{payment}/edit', 'edit')->name('xpress.payments.edit');
         Route::put('payments/{payment}', 'update')->name('xpress.payments.update');
         Route::delete('payments/{payment}/delete', 'destroy')->name('xpress.payments.destroy');
+    });
+
+    Route::controller(MaintenanceLogController::class)->middleware('can:manage-maintenance-logs')->group(function () {
+        Route::get('maintenance-logs', 'index')->name('xpress.maintenance-logs.index');
+        Route::get('maintenance-logs/vehicles', 'vehicles')->name('xpress.maintenance-logs.vehicles');
+        Route::get('maintenance-logs/create', 'create')->name('xpress.maintenance-logs.create');
+        Route::post('maintenance-logs', 'store')->name('xpress.maintenance-logs.store');
+        Route::get('maintenance-logs/{maintenanceLog}', 'show')->name('xpress.maintenance-logs.show');
+        Route::get('maintenance-logs/{maintenanceLog}/edit', 'edit')->name('xpress.maintenance-logs.edit');
+        Route::put('maintenance-logs/{maintenanceLog}', 'update')->name('xpress.maintenance-logs.update');
+        Route::delete('maintenance-logs/{maintenanceLog}/delete', 'destroy')->name('xpress.maintenance-logs.destroy');
     });
 
     Route::post('users/{user}/reset-password', [UserPasswordResetController::class, 'store'])->middleware('can:manage-users')->name('users.reset-password.store');

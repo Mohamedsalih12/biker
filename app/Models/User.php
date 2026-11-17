@@ -7,7 +7,6 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
@@ -93,5 +92,10 @@ class User extends Authenticatable
     public function createdPayments(): HasMany
     {
         return $this->hasMany(Payment::class, 'user_id');
+    }
+
+    public function createdMaintenanceLogs(): HasMany
+    {
+        return $this->hasMany(MaintenanceLog::class, 'user_id');
     }
 }

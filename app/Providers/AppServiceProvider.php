@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Booking;
+use App\Models\MaintenanceLog;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
@@ -97,6 +98,10 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($ability === 'manage-payments' || $subject === Payment::class || $subject instanceof Payment) {
+                return $user instanceof User && $user->role === 'admin';
+            }
+
+            if ($ability === 'manage-maintenance-logs' || $subject === MaintenanceLog::class || $subject instanceof MaintenanceLog) {
                 return $user instanceof User && $user->role === 'admin';
             }
 

@@ -66,6 +66,11 @@ class Vehicle extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function maintenanceLogs(): HasMany
+    {
+        return $this->hasMany(MaintenanceLog::class);
+    }
+
     /** @param Builder<static> $query */
     #[Scope]
     protected function withCurrentStatus(Builder $query): void

@@ -112,6 +112,15 @@
                                 </ul>
                             </li>
                             @endcan
+                            @can('manage-maintenance-logs')
+                            <li class="dropdown-submenu">
+                                <a class="dropdown-item dropdown-toggle" href="#">Maintenance Logs</a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    <li><a class="dropdown-item" href="{{ route('xpress.maintenance-logs.index') }}">View Maintenance Logs</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('xpress.maintenance-logs.create') }}">Add Maintenance Log</a></li>
+                                </ul>
+                            </li>
+                            @endcan
                             <li><a class="dropdown-item" href="{{ route('settings') }}">Settings</a></li>
                         </ul>
                         </li>
@@ -217,6 +226,16 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {{ Request::is('admin/payments/create') ? 'active' : '' }}" href="{{ route('xpress.payments.create') }}">Add Payment</a>
+                                </li>
+                            </x-sidebar-collapse-item>
+                            @endcan
+                            @can('manage-maintenance-logs')
+                            <x-sidebar-collapse-item id="maintenance-logs" title="Maintenance Logs" icon="fa fa-wrench" :patterns="['admin/maintenance-logs', 'admin/maintenance-logs/*']">
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/maintenance-logs') ? 'active' : '' }}" href="{{ route('xpress.maintenance-logs.index') }}">View Maintenance Logs</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ Request::is('admin/maintenance-logs/create') ? 'active' : '' }}" href="{{ route('xpress.maintenance-logs.create') }}">Add Maintenance Log</a>
                                 </li>
                             </x-sidebar-collapse-item>
                             @endcan
