@@ -19,10 +19,10 @@
             <a class="fleet-brand" href="{{ route('frontend.index') }}" aria-label="Biker home">
                 <i class="fas fa-bolt" aria-hidden="true"></i> biker<span class="fleet-brand-period">.</span>
             </a>
-            <div class="d-flex align-items-center gap-4">
+            <!-- <div class="d-flex align-items-center gap-4">
                 <a class="fleet-nav-link d-none d-sm-inline" href="{{ route('frontend.index') }}#fleet">Explore the fleet</a>
                 <a class="btn fleet-signin" href="{{ route('login') }}">Sign in <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i></a>
-            </div>
+            </div> -->
         </nav>
     </header>
     <main id="main-content">

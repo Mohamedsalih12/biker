@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Biker — interactive product demo. Click through the fleet storefront and the rental management back office with sample data.">
+<title>Biker — Interactive Demo</title>
+
+<!-- Bootstrap 5 + Font Awesome + Instrument Sans (CDN, same stack as the real app) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.bunny.net">
+<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
+
+<style>
+/* ============================================================
+   Biker demo — single portable file.
+   Replicates the production app: public fleet storefront,
+   sign-in screen and the admin back office. All data is sample
+   data living inside this file; nothing is ever sent anywhere.
+   ============================================================ */
+
+/* ---------- Theme tokens (production palette) ---------- */
+:root {
+    --t360-red: #087b51;
+    --t360-red-hover: #065b3c;
+    --t360-red-soft: rgba(8, 123, 81, .12);
+    --t360-surface: #f4f7f4;
+    --t360-ink: #18372e;
+    --t360-ink-2: #163f31;
+    --t360-line: #dce5df;
+    --t360-muted: #5b6c65;
+    --fleet-ink: #18372e;
+    --fleet-muted: #5b6c65;
+    --fleet-green: #087b51;
+    --fleet-paper: #f4f7f4;
+    --bs-primary: #087b51;
+    --bs-primary-rgb: 8, 123, 81;
+    --bs-success: #087b51;
+    --bs-success-rgb: 8, 123, 81;
+    --bs-body-color: #18372e;
+    --bs-body-bg: #f4f7f4;
+    --bs-border-color: #dce5df;
+    --bs-link-color: #087b51;
+    --bs-link-color-rgb: 8, 123, 81;
+    --bs-link-hover-color: #065b3c;
+    --bs-link-hover-color-rgb: 6, 91, 60;
+}
+
+/* ---------- Base ---------- */
+html { scroll-behavior: smooth; }
+body {
+    background:
+        radial-gradient(1200px 500px at 85% -10%, rgba(8, 123, 81, .05), transparent 60%),
+        var(--t360-surface);
+    color: #18372e;
+    font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    min-height: 100vh;
+}
+::selection { background: #c4ed89; color: #153d2e; }
+a { color: #087b51; }
+a:hover { color: #065b3c; }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid #087b51;
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #eef2ee; }
+::-webkit-scrollbar-thumb { background: #c2d3c6; border-radius: 8px; border: 2px solid #eef2ee; }
+::-webkit-scrollbar-thumb:hover { background: #a9bfae; }
+
+h1, h2, h3, h4, h5, h6 { letter-spacing: -0.01em; }
+
+/* ---------- Buttons, badges, cards, tables (theme bridge) ---------- */
+.btn { border-radius: .575rem; font-weight: 500; }
+.btn-sm { border-radius: .5rem; }
+.btn-primary, .btn-success {
+    --bs-btn-color: #fff; --bs-btn-bg: #087b51; --bs-btn-border-color: #087b51;
+    --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #065b3c; --bs-btn-hover-border-color: #065b3c;
+    --bs-btn-active-color: #fff; --bs-btn-active-bg: #064c33; --bs-btn-active-border-color: #064c33;
+    --bs-btn-disabled-color: #fff; --bs-btn-disabled-bg: #087b51; --bs-btn-disabled-border-color: #087b51;
+    --bs-btn-focus-shadow-rgb: 8, 123, 81;
+    box-shadow: 0 6px 16px -8px rgba(8, 123, 81, .55);
+}
+.btn-outline-primary, .btn-outline-success {
+    --bs-btn-color: #087b51; --bs-btn-border-color: #087b51;
+    --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #087b51; --bs-btn-hover-border-color: #087b51;
+    --bs-btn-active-color: #fff; --bs-btn-active-bg: #065b3c; --bs-btn-active-border-color: #065b3c;
+    --bs-btn-focus-shadow-rgb: 8, 123, 81;
+}
+.btn-dark { --bs-btn-bg: #163f31; --bs-btn-border-color: #163f31; --bs-btn-hover-bg: #18372e; --bs-btn-hover-border-color: #18372e; }
+.badge { border-radius: 6px; font-weight: 600; letter-spacing: .02em; }
+.card {
+    border: 1px solid #dce5df;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 10px 30px -18px rgba(16, 24, 40, .18);
+    background-color: #fff; color: #18372e;
+}
+.card-header { background: transparent; border-bottom: 1px solid #dce5df; font-weight: 600; }
+.card-header.bg-primary { background-color: #087b51 !important; color: #fff !important; }
+.form-control, .form-select {
+    color: #18372e; background-color: #fff; border-color: #b7cbc0; caret-color: #087b51;
+    border-radius: .5rem;
+}
+.form-control::placeholder { color: #5b6c65; }
+.form-control:focus, .form-select:focus {
+    color: #18372e; background-color: #fff; border-color: #087b51;
+    box-shadow: 0 0 0 .2rem rgba(8, 123, 81, .15);
+}
+.form-check-input:checked { background-color: #087b51; border-color: #087b51; }
+.form-label { font-weight: 600; color: #415b4e; font-size: .875rem; }
+.form-text { color: #5b6c65; }
+.text-muted, .small-muted { color: #5b6c65 !important; }
+.text-primary, .text-success { color: #087b51 !important; }
+.bg-light { background-color: #f4f7f4 !important; }
+.dropdown-menu { background-color: #fff; color: #18372e; border-color: #dce5df; border-radius: 12px; }
+.dropdown-item { color: #18372e; }
+.dropdown-item:hover, .dropdown-item:focus { background-color: #edf5ed; color: #173e30; }
+.table {
+    --bs-table-color: #18372e; --bs-table-border-color: #dce5df;
+    --bs-table-striped-bg: #f4f7f4; --bs-table-hover-bg: #edf5ed; --bs-table-hover-color: #18372e;
+    margin-bottom: 0;
+}
+table thead { --bs-table-bg: #edf5ed; --bs-table-color: #18372e; }
+table th, table td { border-color: #dce5df; vertical-align: middle; }
+.alert-success { color: #135936; background-color: #e4f2e5; border-color: #b7cbc0; }
+.modal-content { border-radius: 16px; border-color: #dce5df; }
+
+/* Soft status chips (sample-data statuses rendered like the live tables) */
+.chip { display: inline-block; padding: .3rem .6rem; border-radius: 6px; font-size: .75rem; font-weight: 600; line-height: 1.3; white-space: nowrap; }
+.chip-reserved   { background: #eef1ef; color: #415b4e; }
+.chip-taken      { background: #e4f2e5; color: #135936; }
+.chip-returned   { background: #d9efce; color: #135936; }
+.chip-cancelled  { background: #ffe2de; color: #9d2017; }
+.chip-paid       { background: #e4f2e5; color: #135936; }
+.chip-pending    { background: #fff8e6; color: #795000; }
+.chip-overdue    { background: #fff0ee; color: #9d2017; }
+.chip-available  { background: #e4f2e5; color: #135936; }
+.chip-rented     { background: #e3edf6; color: #1c5a8a; }
+.chip-maintstatus{ background: #fff8e6; color: #795000; }
+.chip-down       { background: #eef1ef; color: #415b4e; }
+.chip-scheduled  { background: #eef1ef; color: #415b4e; }
+.chip-inprogress { background: #fff8e6; color: #795000; }
+.chip-completed  { background: #e4f2e5; color: #135936; }
+.chip-maintcancelled { background: #ffe2de; color: #9d2017; }
+.chip-role-admin { background: #163f31; color: #fff; }
+.chip-role-staff { background: #e4f2e5; color: #135936; }
+.chip-role-customer { background: #edf5ed; color: #415b4e; }
+.chip-active { background: #e4f2e5; color: #135936; }
+.chip-inactive { background: #eef1ef; color: #6b7a71; }
+
+/* ---------- Demo toast + demo pill ---------- */
+.demo-toast { position: fixed; top: 74px; right: 18px; z-index: 2000; min-width: 300px; max-width: 360px; }
+.demo-toast .toast { border-radius: 12px; border: 1px solid #b7cbc0; }
+.demo-toast .toast-body { display: flex; align-items: flex-start; gap: .65rem; color: #18372e; }
+.demo-toast .toast-body i { color: #087b51; font-size: 1.05rem; margin-top: .1rem; }
+.demo-pill {
+    position: fixed; bottom: 16px; right: 16px; z-index: 1900;
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: #163f31; color: #e0f5cc;
+    border: 1px solid rgba(255,255,255,.14); border-radius: 999px;
+    padding: .45rem .95rem; font-size: .78rem; font-weight: 600;
+    box-shadow: 0 10px 26px -12px rgba(0,0,0,.5);
+    pointer-events: none;
+}
+.demo-pill i { color: #c3ed91; }
+@media (max-width: 575.98px) { .demo-pill { font-size: .7rem; padding: .4rem .7rem; bottom: 10px; right: 10px; } }
+
+/* ---------- View router ---------- */
+.view { display: none; }
+.view.is-active { display: block; }
+.admin-view { display: none; }
+.admin-view.is-active { display: block; }
+
+/* ============================================================
+   ADMIN BACK OFFICE — replicates layouts/xpress.blade.php
+   (sb-topnav + fixed dark sidenav + content), theme from
+   t360-theme.css / fleet-colors.css
+   ============================================================ */
+#v-admin.is-active { display: flex; min-height: 100vh; padding: 0; }
+#v-admin { flex-direction: column; }
+.sb-topnav {
+    position: fixed; top: 0; right: 0; left: 0; z-index: 1040;
+    height: 56px; display: flex; align-items: center; gap: .5rem;
+    background: #163f31 !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .05), 0 6px 24px -12px rgba(0, 0, 0, .55);
+    padding: 0 .75rem 0 0;
+}
+.sb-topnav .navbar-brand {
+    color: #fff; width: 220px; text-align: center; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
+    font-weight: 700; font-size: 1.25rem; letter-spacing: -.03em; padding: 8px 0;
+}
+.sb-topnav .navbar-brand i { color: #c3ed91; font-size: 1.05rem; }
+.sb-topnav .navbar-brand .brand-dot { color: #c3ed91; }
+.sb-topnav .toggle-after-sidebar {
+    margin-left: 14px; color: #d0e1d6; border: 0; background: transparent; font-size: 1rem; padding: .4rem .6rem;
+    border-radius: 8px;
+}
+.sb-topnav .toggle-after-sidebar:hover { background: rgba(255,255,255,.08); color: #fff; }
+.sb-topnav .topnav-demo-tag {
+    margin-left: auto; margin-right: 1rem; display: none;
+    color: #b7cbc0; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+}
+@media (min-width: 1200px) { .sb-topnav .topnav-demo-tag { display: inline; } }
+.sb-topnav .nav-profile > a { color: #d0e1d6; font-weight: 600; font-size: .9rem; display: inline-flex; align-items: center; gap: .45rem; }
+.sb-topnav .nav-profile > a:hover { color: #fff; }
+.sb-topnav .nav-profile > a::after { content: "\f078"; font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: .6rem; opacity: .7; }
+.sb-topnav .dropdown-menu { margin-top: .5rem; }
+.sb-topnav .dropdown-item i { width: 1.3rem; text-align: center; color: #087b51; }
+
+#layoutSidenav { display: flex; width: 100%; margin-top: 56px; }
+#layoutSidenav_nav {
+    width: 225px; flex-shrink: 0; position: fixed; top: 56px; bottom: 0; left: 0; z-index: 1035;
+    overflow-y: auto; transition: margin-left .2s ease;
+}
+.sb-sidenav {
+    display: flex; flex-direction: column; height: 100%; flex-wrap: nowrap;
+    background: linear-gradient(180deg, #163f31 0%, #18372e 85%);
+}
+.sb-sidenav .sb-sidenav-menu { flex-grow: 1; }
+.sb-sidenav .sb-sidenav-menu .nav { display: flex; flex-direction: column; width: auto; list-style: none; margin: 0; padding: 0; }
+.sb-sidenav .sb-sidenav-menu-heading {
+    color: rgba(255, 255, 255, .34); font-size: .7rem; font-weight: 700; letter-spacing: .16em;
+    padding: 1.6rem 1rem .6rem; text-transform: uppercase;
+}
+.sb-sidenav-dark .sb-sidenav-menu .nav .nav-link,
+.sb-sidenav-dark .sub-menu .nav-link {
+    display: flex; align-items: center;
+    color: #d0e1d6; text-decoration: none;
+    border-radius: 10px; margin: 2px 10px; padding: .65rem .85rem;
+    transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+.sb-sidenav-dark .sb-sidenav-menu .nav .nav-link i,
+.sb-sidenav-dark .sub-menu .nav-link i { width: 1.4rem; text-align: center; color: #b7cbc0; transition: color .15s ease; }
+.sb-sidenav-dark .sb-sidenav-menu .nav .nav-link:hover,
+.sb-sidenav-dark .sub-menu .nav-link:hover { background: rgba(255,255,255,.06); color: #fff; transform: translateX(2px); }
+.sb-sidenav-dark .sb-sidenav-menu .nav .nav-link.active,
+.sb-sidenav-dark .sub-menu .nav-link.active { background: #244e3d; color: #fff; box-shadow: inset 3px 0 0 #c3ed91; }
+.sb-sidenav-dark .sb-sidenav-menu .nav .nav-link.active i,
+.sb-sidenav-dark .sub-menu .nav-link.active i { color: #c3ed91 !important; }
+.sb-sidenav-dark .sub-menu {
+    list-style: none; padding: 2px 0 6px; margin: 0 0 0 1.6rem !important;
+    border-left: 1px solid rgba(255,255,255,.07);
+}
+.sb-sidenav-dark .sub-menu .nav-link { font-size: .875rem; margin-left: 6px; padding: .5rem .75rem; }
+.sb-sidenav .nav-collapse-title .toggle-icon { margin-left: auto; font-size: .7rem; transition: transform .15s ease; }
+.sb-sidenav .nav-collapse-title[aria-expanded="true"] .toggle-icon { transform: rotate(180deg); }
+.sb-sidenav .sb-sidenav-collapse.collapse:not(.show) { display: none; }
+.sb-sidenav .sb-sidenav-collapse.collapsing { height: 0; overflow: hidden; transition: height .18s ease; }
+.sb-sidenav .sb-sidenav-collapse.collapse.show { display: block; }
+.sb-sidenav-footer {
+    background: rgba(255,255,255,.03); border-top: 1px solid rgba(255,255,255,.06);
+    color: #b7cbc0; padding: .8rem 1rem; font-size: .82rem; flex-shrink: 0;
+}
+#layoutSidenav_content { display: flex; flex-direction: column; flex: 1 1 auto; margin-left: 225px; transition: margin-left .2s ease; min-width: 0; }
+#layoutSidenav_content main { flex: 1 1 auto; }
+body.sb-sidenav-toggled #layoutSidenav_nav { margin-left: -225px; }
+body.sb-sidenav-toggled #layoutSidenav_content { margin-left: 0; }
+.sidenav-backdrop { display: none; }
+.sidenav-backdrop.show {
+    display: block;
+    position: fixed; top: 56px; left: 0; right: 0; bottom: 0; z-index: 1030;
+    background: rgba(24, 55, 46, .45);
+}
+@media (max-width: 991.98px) {
+    #layoutSidenav_nav { margin-left: -225px; box-shadow: 12px 0 30px -18px rgba(0,0,0,.5); }
+    #layoutSidenav_content { margin-left: 0; }
+    body.sb-sidenav-toggled #layoutSidenav_nav { margin-left: 0; }
+}
+
+/* ---------- Admin content ---------- */
+#layoutSidenav_content main { padding: .5rem 1rem 1.5rem 1.5rem; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.topbar h3 { font-weight: 700; letter-spacing: -.02em; }
+.btn-group-top { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.small-muted { font-size: .85rem; color: #5b6c65; }
+.section-title {
+    font-size: 19px; font-weight: 700; color: #18372e;
+    border-bottom: 2px solid #dce5df; padding-bottom: 8px; margin: 25px 0 20px;
+}
+.section-title:first-letter { color: #087b51; }
+table td, table th { vertical-align: middle; }
+table th { font-weight: 600; font-size: .8rem; white-space: nowrap; }
+.table-sort th { cursor: pointer; user-select: none; }
+.table-sort th .sort-icon { opacity: .45; font-size: .65rem; margin-left: .3rem; }
+.table-sort th.is-sorted { color: #065b3c; }
+.table-sort th.is-sorted .sort-icon { opacity: 1; }
+.table-card td { font-size: .875rem; }
+.cell-num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.cell-money { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.cell-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cell-code { font-weight: 600; white-space: nowrap; }
+.cell-actions .btn { padding: .15rem .5rem; font-size: .78rem; }
+.row-note { max-width: 15rem; white-space: normal; font-size: .8rem; color: #5b6c65; }
+.table-wrapper { overflow-x: auto; }
+.tbl-search { max-width: 260px; }
+.tbl-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .8rem .25rem 0; }
+.tbl-info { color: #5b6c65; font-size: .8rem; }
+.pagination { margin-bottom: 0; }
+.page-link { color: #087b51; border-color: #dce5df; font-size: .85rem; }
+.page-link:hover { color: #065b3c; background-color: #edf5ed; border-color: #b7cbc0; }
+.page-link:focus { color: #065b3c; box-shadow: 0 0 0 .2rem rgba(8, 123, 81, .15); }
+.page-item.active .page-link, .active > .page-link { background-color: #087b51; border-color: #087b51; color: #fff; }
+.page-item.disabled .page-link { color: #a9bfae; }
+.placeholder-img {
+    width: 88px; height: 66px; display: inline-flex; align-items: center; justify-content: center;
+    background: #e7eee7; color: #5b6c65; border-radius: 6px; font-size: .8rem; flex-direction: column; gap: .25rem;
+}
+.placeholder-img i { font-size: 1.2rem; color: #718e7a; }
+/* Admin dashboard */
+.stat-card {
+    border: 1px solid #dce5df; border-radius: 16px; background: #fff; height: 100%;
+    padding: 1.1rem 1.2rem; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 10px 30px -18px rgba(16,24,40,.18);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 16px 34px -18px rgba(16,24,40,.28); }
+.stat-card .stat-icon {
+    width: 2.6rem; height: 2.6rem; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 10px; font-size: .95rem; background: rgba(8,123,81,.12); color: #087b51;
+}
+.stat-card .stat-icon.stat-warn { background: #fff8e6; color: #795000; }
+.stat-card .stat-icon.stat-danger { background: #fff0ee; color: #9d2017; }
+.stat-card .stat-value { font-size: 1.65rem; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat-card .stat-label { color: #5b6c65; font-size: .82rem; font-weight: 600; }
+.stat-card .stat-hint { color: #5b6c65; font-size: .78rem; }
+.dash-list-item { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .7rem 0; border-top: 1px solid #dce5df; }
+.dash-list-item:first-child { border-top: 0; }
+.dash-list-item .t { font-weight: 600; font-size: .875rem; }
+.dash-list-item .s { color: #5b6c65; font-size: .76rem; }
+.chart-wrap svg { width: 100%; height: auto; display: block; }
+.chart-note { color: #5b6c65; font-size: .78rem; margin-top: .4rem; }
+/* ============================================================
+   PUBLIC FLEET STOREFRONT — replicates layouts/fleet.blade.php
+   + livewire/fleet-dashboard.blade.php (fleet-dashboard.css)
+   ============================================================ */
+.fleet-page {
+    --fleet-ink: #18372e; --fleet-muted: #5b6c65; --fleet-green: #087b51; --fleet-paper: #f4f7f4;
+    background: var(--fleet-paper); color: var(--fleet-ink);
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+#v-landing.is-active { display: block; }
+.fleet-page .container { max-width: 1240px; }
+.fleet-header { background: #fff; border-bottom: 1px solid #dce5df; }
+.fleet-header nav { min-height: 88px; }
+.fleet-brand { display: inline-flex; align-items: center; gap: .6rem; color: #173e30; text-decoration: none; font-size: 2rem; font-weight: 800; letter-spacing: -.04em; }
+.fleet-brand:hover { color: var(--fleet-green); }
+.fleet-brand > i { font-size: 1.4rem; color: var(--fleet-green); }
+.fleet-brand-period { margin-left: -.55rem; color: var(--fleet-green); }
+.fleet-nav-link { color: #415b4e; text-decoration: none; font-size: .9rem; font-weight: 600; }
+.fleet-nav-link:hover { color: var(--fleet-green); text-decoration: underline; text-underline-offset: 5px; }
+.fleet-signin { color: #173e30; border: 1px solid #b7cbc0; border-radius: 8px; padding: .65rem 1rem; font-size: .9rem; font-weight: 600; text-decoration: none; }
+.fleet-signin:hover { color: #fff; background: #173e30; border-color: #173e30; }
+.fleet-hero { background: #163f31; color: #fff; padding: 40px 0; }
+.fleet-hero h1 { font-size: clamp(2.8rem, 4.7vw, 4.2rem); line-height: 1.04; letter-spacing: -.035em; font-weight: 750; margin-bottom: 1rem; text-wrap: balance; }
+.fleet-hero h1 span { color: #c3ed91; }
+.fleet-hero-copy { max-width: 50ch; color: #d0e1d6; font-size: 1.04rem; line-height: 1.7; margin-bottom: 1.5rem; }
+.fleet-hero-link { color: #e0f5cc; text-decoration: none; font-weight: 650; font-size: .95rem; display: inline-flex; align-items: center; min-height: 44px; }
+.fleet-hero-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 5px; }
+.fleet-hero :focus-visible { outline-color: #c3ed91; }
+.fleet-spotlight { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 64px); align-items: center; }
+.fleet-spotlight-photo { grid-column: 2; grid-row: 1; position: relative; aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: #e7eee7; color: #18372e; }
+.fleet-spotlight-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #415d50; font-size: .9rem; }
+.fleet-spotlight-placeholder > i { font-size: 5rem; color: #58745f; }
+.fleet-spotlight-status { position: absolute; bottom: 20px; left: 20px; right: 20px; width: fit-content; max-width: calc(100% - 40px); display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; background: #163f31; color: #e0f5cc; font-size: .8rem; font-weight: 650; }
+.fleet-spotlight-details { grid-column: 1; grid-row: 1; min-width: 0; }
+.fleet-spotlight-details .fleet-hero-copy { font-size: 1rem; line-height: 1.6; margin-bottom: 24px; max-width: 33ch; }
+.fleet-spotlight-model { font-size: clamp(1.5rem, 2.2vw, 2rem); font-weight: 650; letter-spacing: -.025em; margin-bottom: 6px; overflow-wrap: anywhere; }
+.fleet-spotlight-spec { color: #d0e1d6; font-size: .85rem; margin-bottom: 0; }
+.fleet-spotlight-return { color: #e0f5cc; font-size: .9rem; margin: 16px 0 0; }
+.fleet-spotlight-price { margin-top: 20px; margin-bottom: 20px; font-variant-numeric: tabular-nums; }
+.fleet-spotlight-price strong { font-size: clamp(2rem, 3vw, 2.6rem); line-height: 1.2; font-weight: 750; letter-spacing: -.03em; }
+.fleet-spotlight-price > span { color: #d0e1d6; font-size: 1rem; white-space: nowrap; }
+.fleet-spotlight-book { display: inline-flex; align-items: center; justify-content: space-between; gap: 30px; min-height: 54px; padding: 14px 24px; border: 0; border-radius: 8px; background: #c3ed91; color: #163f31; font-size: 1rem; font-weight: 750; transition: background-color .2s ease-out; text-decoration: none; }
+.fleet-spotlight-book:hover, .fleet-spotlight-book:active { background: #e0f5cc; color: #163f31; }
+.fleet-spotlight-note { margin: 12px 0 8px; color: #d0e1d6; font-size: .8rem; line-height: 1.6; max-width: 42ch; }
+.fleet-spotlight-details .fleet-hero-link { font-size: .875rem; text-decoration: underline; text-underline-offset: 5px; }
+.fleet-hero-entry { animation: fleetHero .5s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes fleetHero { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fleet-page *, .fleet-page *::before, .fleet-page *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+.fleet-catalog { padding-top: 44px; padding-bottom: 56px; scroll-margin-top: 24px; }
+.fleet-catalog h2 { font-size: clamp(1.6rem, 3vw, 2rem); letter-spacing: -.035em; font-weight: 750; margin-bottom: .5rem; }
+.fleet-heading-dot { color: var(--fleet-green); }
+.fleet-muted { color: var(--fleet-muted); font-size: .95rem; }
+.fleet-monthly-label { color: #415d50; font-size: .875rem; padding-bottom: .3rem; }
+.fleet-toolbar { padding: 12px; border: 1px solid #dce5df; background: #fff; border-radius: 12px; }
+.fleet-filter { min-height: 44px; padding: .65rem .85rem; color: #53685b; border: 0; border-radius: 8px; font-size: .875rem; font-weight: 650; }
+.fleet-filter span { font-size: .75rem; margin-left: .35rem; font-variant-numeric: tabular-nums; }
+.fleet-filter:hover { background: #edf5ed; color: #173e30; }
+.fleet-filter.is-selected { background: #e4f2e5; color: #135936; }
+.fleet-search { position: relative; width: min(100%, 270px); }
+.fleet-search > i { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: #687a6f; font-size: .85rem; }
+.fleet-search input { padding-left: 38px; min-height: 44px; border-color: #dce5df; border-radius: 8px; font-size: .875rem; color: var(--fleet-ink); caret-color: var(--fleet-green); background: #fbfcfb; }
+.fleet-search input::placeholder { color: #5b6c65; }
+.fleet-search input:focus { border-color: var(--fleet-green); box-shadow: none; outline: 2px solid var(--fleet-green); outline-offset: 2px; }
+.fleet-results-note { color: var(--fleet-muted); font-size: .8rem; padding: 20px 0; }
+.fleet-legend-dot { color: var(--fleet-green); font-size: .5rem; vertical-align: middle; }
+.fleet-card { border: 1px solid #d8e3da; border-radius: 14px; overflow: hidden; background: #fff; }
+.fleet-gallery { position: relative; aspect-ratio: 16 / 10; background: #e7eee7; overflow: hidden; isolation: isolate; }
+.fleet-card-unavailable .fleet-gallery { background: #e4e9e4; }
+.fleet-photo-missing { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .7rem; color: #5b7463; }
+.fleet-photo-missing > i { font-size: 3.5rem; color: #718e7a; }
+.fleet-photo-missing > span { font-size: .8rem; }
+.fleet-status { position: absolute; top: 16px; left: 16px; z-index: 3; font-size: .75rem; font-weight: 650; padding: .55rem .75rem; border-radius: 6px; }
+.fleet-status.bg-success { background-color: #087b51 !important; }
+.fleet-status.bg-danger { background-color: #a83328 !important; }
+.fleet-card .card-body { padding: 24px; border-radius: 0; box-shadow: none; }
+.fleet-card h3 { font-size: 1.25rem; line-height: 1.4; font-weight: 750; margin-bottom: 10px; overflow-wrap: anywhere; letter-spacing: -.025em; }
+.fleet-spec { color: var(--fleet-muted); font-size: .825rem; margin-bottom: 18px; }
+.fleet-spec i { color: #68856f; }
+.fleet-return { color: #805026; font-size: .8rem; line-height: 1.6; min-height: 26px; margin-bottom: 18px; }
+.fleet-return strong { font-weight: 650; }
+.fleet-return-ready { color: #08734b; }
+.fleet-price-row { padding-top: 18px; border-top: 1px solid #e6ece6; margin-bottom: 18px; }
+.fleet-price { font-size: 1.8rem; font-weight: 750; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.fleet-price-unit { color: var(--fleet-muted); font-size: .85rem; white-space: nowrap; }
+.fleet-book-button, .fleet-prebook-button { min-height: 48px; border-radius: 8px; font-size: .9rem; font-weight: 650; }
+.fleet-book-button { display: inline-flex; align-items: center; justify-content: center; }
+.fleet-prebook-button:disabled { background: #edf0ed; border-color: #edf0ed; color: #5b685f; opacity: 1; }
+.fleet-empty { text-align: center; padding: 70px 20px; }
+.fleet-empty > i { font-size: 2.5rem; color: var(--fleet-green); margin-bottom: 20px; }
+.fleet-empty h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
+.fleet-footer { border-top: 1px solid #dce5df; background: #edf2ec; color: #536b59; padding: 24px 0; font-size: .85rem; }
+.fleet-footer-brand { font-size: 1.4rem; }
+.fleet-footer-brand > i { font-size: 1rem; }
+@media (max-width: 991.98px) {
+    .fleet-spotlight { gap: 28px; }
+    .fleet-spotlight-photo { aspect-ratio: 1; }
+    .fleet-hero h1 { font-size: 3rem; }
+}
+@media (max-width: 767.98px) {
+    .fleet-header nav { min-height: 74px; }
+    .fleet-page .container { padding-left: 20px; padding-right: 20px; }
+    .fleet-hero { padding: 34px 0 30px; }
+    .fleet-hero h1 { font-size: 2.6rem; }
+    .fleet-hero-copy { font-size: .95rem; }
+    .fleet-spotlight { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .fleet-spotlight-photo { grid-column: 1; grid-row: 1; aspect-ratio: 16 / 10; }
+    .fleet-spotlight-details { grid-column: 1; grid-row: 2; }
+    .fleet-spotlight-details .fleet-hero-copy { max-width: none; margin-bottom: 20px; }
+    .fleet-spotlight-status { left: 12px; bottom: 12px; right: 12px; max-width: calc(100% - 24px); padding: 8px 10px; font-size: .75rem; }
+    .fleet-spotlight-price { margin-top: 16px; margin-bottom: 16px; }
+    .fleet-spotlight-book { width: 100%; }
+    .fleet-spotlight-note { max-width: none; }
+    .fleet-catalog { padding-top: 32px; padding-bottom: 36px; }
+    .fleet-toolbar { gap: 12px !important; }
+    .fleet-filters { width: 100%; }
+    .fleet-filter { flex: 1; padding: .65rem .35rem; font-size: .78rem; }
+    .fleet-search { width: 100%; }
+    .fleet-card .card-body { padding: 22px; }
+    .fleet-results-note { font-size: .75rem; }
+    .fleet-footer .container { justify-content: center !important; }
+}
+
+/* ============================================================
+   SIGN-IN — replicates auth/login.blade.php (t360-auth)
+   ============================================================ */
+#v-login.is-active { display: block; }
+.t360-auth { display: flex; min-height: 100vh; font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.t360-auth-brand {
+    flex: 0 0 44%; position: relative; display: flex; flex-direction: column; justify-content: space-between;
+    padding: 3.4rem 3rem; color: #fff;
+    background:
+        radial-gradient(720px 480px at 18% 108%, rgba(8, 123, 81, .32), transparent 62%),
+        radial-gradient(560px 420px at 86% -12%, rgba(8, 123, 81, .12), transparent 60%),
+        linear-gradient(165deg, #163f31 0%, #18372e 70%, #153d2e 100%);
+    overflow: hidden;
+}
+.t360-auth-brand::after {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, .075) 1.1px, transparent 1.1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse at 30% 40%, rgba(0,0,0,.85), transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse at 30% 40%, rgba(0,0,0,.85), transparent 78%);
+    pointer-events: none;
+}
+.t360-auth-brand > * { position: relative; z-index: 1; }
+.t360-auth-logo { display: inline-flex; align-items: center; gap: .85rem; }
+.t360-auth-logo .logo-chip {
+    background: #fff; border-radius: 14px; padding: .55rem .8rem;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,.55);
+    display: inline-flex; align-items: center; gap: .5rem;
+}
+.t360-auth-logo .logo-chip i { color: #087b51; font-size: 1.2rem; }
+.t360-auth-logo .logo-chip span { font-weight: 800; letter-spacing: -.03em; color: #18372e; font-size: 1rem; }
+.t360-auth-logo .brand-word { font-size: 1.02rem; font-weight: 600; letter-spacing: .02em; }
+.t360-auth-logo .brand-word b { color: #c3ed91; font-weight: 700; }
+.t360-auth-headline { font-size: clamp(1.9rem, 3.2vw, 2.7rem); font-weight: 700; line-height: 1.16; letter-spacing: -.02em; margin: 2rem 0 1rem; }
+.t360-auth-headline em { font-style: normal; color: #c3ed91; white-space: nowrap; }
+.t360-auth-sub { color: #d0e1d6; font-size: 1.02rem; max-width: 34ch; margin-bottom: 0; }
+.t360-features { list-style: none; padding: 0; margin: 2.2rem 0 0; }
+.t360-features li { display: flex; align-items: flex-start; gap: .9rem; padding: .8rem 0; border-top: 1px solid rgba(255, 255, 255, .07); }
+.t360-features i {
+    flex: 0 0 2.4rem; height: 2.4rem; display: inline-flex; align-items: center; justify-content: center;
+    font-size: .95rem; color: #c3ed91; background: rgba(8, 123, 81, .16);
+    border: 1px solid rgba(195, 237, 145, .3); border-radius: 10px;
+}
+.t360-features .f-title { font-weight: 600; font-size: .95rem; }
+.t360-features .f-text { color: #d0e1d6; font-size: .82rem; }
+.t360-auth-meta { color: #b7cbc0; font-size: .8rem; }
+.t360-auth-form-panel {
+    flex: 1; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem;
+    background: radial-gradient(600px 380px at 100% 0%, rgba(8, 123, 81, .05), transparent 65%), #f4f7f4;
+}
+.t360-auth-form { width: min(400px, 100%); }
+.t360-auth-form h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -.02em; color: #18372e; margin-bottom: .35rem; }
+.t360-auth-form .lead-sm { color: #5b6c65; font-size: .95rem; margin-bottom: 2rem; }
+.t360-field { margin-bottom: 1.15rem; }
+.t360-field label { font-size: .8rem; font-weight: 600; color: #415b4e; letter-spacing: .02em; margin-bottom: .45rem; display: block; }
+.t360-field .t360-input-wrap { position: relative; display: flex; align-items: center; gap: .7rem; }
+.t360-field .t360-input-wrap i.lead-icon { flex: 0 0 1.4rem; margin-left: .35rem; color: #65786a; font-size: .95rem; text-align: center; pointer-events: none; }
+.t360-field input.form-control {
+    flex: 1 1 auto; min-width: 0; height: 47px; padding: 0 1rem; border-radius: 12px;
+    border: 1.5px solid #b7cbc0; background: #fff; font-size: .96rem;
+    transition: border-color .15s ease, box-shadow .15s ease; width: 100%;
+}
+.t360-field.has-eye input.form-control { padding-right: 2.6rem; }
+.t360-field input.form-control::placeholder { color: #5b6c65; }
+.t360-field input.form-control:focus { border-color: #087b51; box-shadow: 0 0 0 .28rem rgba(8, 123, 81, .1); outline: 0; }
+#togglePassword {
+    position: absolute; right: .5rem; top: 0; bottom: 0; margin: auto 0;
+    height: 37px; width: 37px; border: 0; background: transparent; color: #65786a; border-radius: 9px; z-index: 2;
+}
+#togglePassword:hover { background: #edf5ed; color: #415b4e; }
+.t360-auth-submit {
+    width: 100%; height: 47px; border: 0; border-radius: 12px;
+    background: linear-gradient(140deg, #087b51, #065b3c); color: #fff;
+    font-weight: 600; font-size: 1rem;
+    box-shadow: 0 14px 26px -12px rgba(8, 123, 81, .65);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; cursor: pointer;
+}
+.t360-auth-submit:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 18px 30px -12px rgba(8, 123, 81, .7); }
+.t360-auth-submit:active { transform: translateY(0); }
+.t360-auth-card-note { margin-top: 1.6rem; text-align: center; color: #65786a; font-size: .82rem; }
+.t360-auth-card-note b { color: #415b4e; }
+.t360-demo-hint {
+    display: flex; align-items: flex-start; gap: .6rem; margin-bottom: 1.6rem;
+    border: 1px dashed #b7cbc0; background: #fbfcfb; color: #415b4e;
+    border-radius: 12px; padding: .7rem .85rem; font-size: .82rem; line-height: 1.5;
+}
+.t360-demo-hint i { color: #087b51; margin-top: .15rem; }
+@media (max-width: 991.98px) {
+    .t360-auth-brand { flex: 0 0 40%; padding: 2.4rem 2rem; }
+    .t360-features li:nth-child(n+3) { display: none; }
+}
+@media (max-width: 767.98px) {
+    .t360-auth { flex-direction: column; min-height: 100dvh; }
+    .t360-auth-brand { flex: none; padding: 2rem 1.6rem 2.2rem; }
+    .t360-features, .t360-auth-meta { display: none; }
+    .t360-auth-headline { font-size: 1.55rem; margin-top: 1.4rem; }
+    .t360-auth-form-panel { padding: 2rem 1.25rem 3rem; }
+}
+
+/* ============================================================
+   Detail pages (booking / vehicle / payment / maintenance show)
+   ============================================================ */
+.show-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0; }
+.show-grid .show-item { padding: .9rem 1.1rem; border-top: 1px solid #dce5df; border-left: 1px solid #dce5df; margin: 0 -1px -1px 0; }
+.show-grid .show-item .k { color: #5b6c65; font-size: .74rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; margin-bottom: .3rem; }
+.show-grid .show-item .v { font-size: .92rem; font-weight: 600; overflow-wrap: anywhere; }
+.show-grid .show-item .v .s { font-weight: 400; color: #5b6c65; font-size: .8rem; display: block; margin-top: .15rem; }
+.show-wide { grid-column: 1 / -1; }
+.show-notes { background: #fbfcfb; border: 1px solid #dce5df; border-radius: 10px; padding: .8rem 1rem; font-size: .87rem; color: #415b4e; }
+.show-notes .k { font-weight: 700; font-size: .74rem; letter-spacing: .05em; text-transform: uppercase; color: #5b6c65; margin-bottom: .25rem; }
+.dl-link { text-decoration: none; font-weight: 600; }
+.dl-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 575.98px) {
+    .show-grid .show-item { border-left: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= DEMO toast + pill ================= -->
+<div class="demo-toast"><div class="toast" id="demoToast" role="status"><div class="toast-body"><i class="fas fa-circle-info"></i><div><strong>Demo mode.</strong> <span id="demoToastMsg">Nothing was saved — this is a sample-data preview.</span></div></div></div></div>
+<div class="demo-pill"><i class="fas fa-hand-pointer"></i> Interactive demo · sample data · nothing is saved</div>
+
+<!-- ================= WORLD: PUBLIC FLEET STOREFRONT ================= -->
+<div id="v-landing" class="view fleet-page">
+    <a href="#fleet" class="fleet-skip-link visually-hidden-focusable" style="position:absolute;left:16px;top:-100px;">Skip to content</a>
+    <header class="fleet-header">
+        <nav class="container d-flex justify-content-between align-items-center gap-3" aria-label="Main navigation">
+            <a class="fleet-brand" href="#/" aria-label="Biker home">
+                <i class="fas fa-bolt" aria-hidden="true"></i> biker<span class="fleet-brand-period">.</span>
+            </a>
+            <div class="d-flex align-items-center gap-4">
+                <a class="fleet-nav-link d-none d-sm-inline" href="#fleet">Explore the fleet</a>
+                <a class="btn fleet-signin" href="#/login">Sign in <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i></a>
+            </div>
+        </nav>
+    </header>
+    <main id="main-content">
+        <section class="fleet-hero" aria-labelledby="featured-ride-title">
+            <div class="container fleet-hero-entry">
+                <div class="fleet-spotlight">
+                    <div class="fleet-spotlight-photo">
+                        <div class="fleet-spotlight-placeholder" role="img" aria-label="Photo not available for Ather 450X">
+                            <i class="fas fa-motorcycle" aria-hidden="true"></i>
+                            <span>Photos coming soon</span>
+                        </div>
+                        <span class="fleet-spotlight-status">
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            Available to book
+                        </span>
+                    </div>
+                    <div class="fleet-spotlight-details">
+                        <h1 id="featured-ride-title">Ride this today<span>.</span></h1>
+                        <p class="fleet-hero-copy">A real bike. A monthly rate. Your next move.</p>
+                        <h2 class="fleet-spotlight-model">Ather 450X</h2>
+                        <p class="fleet-spotlight-spec">Odometer 4,120 km</p>
+                        <div class="fleet-spotlight-price">
+                            <strong>3,600</strong><span> / month</span>
+                        </div>
+                        <a class="btn fleet-spotlight-book" href="#" data-toast="Demo mode — online booking is switched off in this preview.">Book this bike <i class="fas fa-arrow-right ms-3" aria-hidden="true"></i></a>
+                        <p class="fleet-spotlight-note">Reserve online. Pay at our office within 24 hours.</p>
+                        <a href="#fleet" class="fleet-hero-link">Explore all 6 bikes <i class="fas fa-arrow-down ms-2" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="fleet" class="fleet-catalog container" aria-labelledby="fleet-title">
+            <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+                <div>
+                    <h2 id="fleet-title">Meet your next ride<span class="fleet-heading-dot">.</span></h2>
+                    <p class="fleet-muted mb-0">Real bikes. Clear prices. Your choice.</p>
+                </div>
+                <span class="fleet-monthly-label"><i class="far fa-calendar-alt me-2" aria-hidden="true"></i> Monthly rentals</span>
+            </div>
+
+            <div class="fleet-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3" id="fleetToolbar">
+                <div class="fleet-filters d-flex flex-wrap gap-1" role="group" aria-label="Filter bikes by availability">
+                    <button type="button" class="btn fleet-filter is-selected" data-fleet-filter="all" aria-pressed="true">All bikes <span>6</span></button>
+                    <button type="button" class="btn fleet-filter" data-fleet-filter="available" aria-pressed="false">Available <span>4</span></button>
+                    <button type="button" class="btn fleet-filter" data-fleet-filter="unavailable" aria-pressed="false">Not available <span>2</span></button>
+                </div>
+                <div class="fleet-search">
+                    <label for="fleet-search" class="visually-hidden">Search brand or model</label>
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input id="fleet-search" type="search" class="form-control" placeholder="Search brand or model">
+                </div>
+            </div>
+            <div class="d-flex flex-wrap justify-content-between gap-2 fleet-results-note">
+                <span role="status" id="fleetCount">6 bikes to explore</span>
+                <span><i class="fas fa-circle fleet-legend-dot me-1" aria-hidden="true"></i> Green means ready to ride</span>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="fleetCards"><!-- fleet cards rendered by JS --></div>
+
+            <div class="fleet-empty" id="fleetEmpty" hidden>
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <h3>No bikes match just yet</h3>
+                <p class="fleet-muted">Try another brand, model, or availability filter.</p>
+                <button type="button" class="btn fleet-signin" id="fleetReset">Show all bikes</button>
+            </div>
+        </section>
+    </main>
+    <footer class="fleet-footer">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <span class="fleet-brand fleet-footer-brand"><i class="fas fa-bolt" aria-hidden="true"></i> biker.</span>
+            <span>Less waiting. More riding.</span>
+            <span class="small">&copy; 2026 Biker</span>
+        </div>
+    </footer>
+</div>
+
+<!-- ================= WORLD: SIGN-IN ================= -->
+<div id="v-login" class="view">
+    <div class="t360-auth">
+        <aside class="t360-auth-brand">
+            <div class="t360-auth-logo">
+                <span class="logo-chip"><i class="fas fa-bolt" aria-hidden="true"></i><span>Biker</span></span>
+                <span class="brand-word">Biker<b>.</b></span>
+            </div>
+            <div>
+                <h1 class="t360-auth-headline">Your bike rental business — <em>ready to ride.</em></h1>
+                <p class="t360-auth-sub">One sign-in for your fleet, customer bookings, rental payments and agreements.</p>
+                <ul class="t360-features">
+                    <li>
+                        <i class="fas fa-boxes"></i>
+                        <span><span class="f-title d-block">Fleet availability</span><span class="f-text d-block">Check which bikes are available, booked or ready for their next ride.</span></span>
+                    </li>
+                    <li>
+                        <i class="fas fa-arrow-circle-up"></i>
+                        <span><span class="f-title d-block">Bike bookings</span><span class="f-text d-block">Manage customer bookings, rental dates and bike assignments.</span></span>
+                    </li>
+                    <li>
+                        <i class="fas fa-file-invoice"></i>
+                        <span><span class="f-title d-block">Rental payments</span><span class="f-text d-block">Record rental payments and review payment details for each booking.</span></span>
+                    </li>
+                    <li>
+                        <i class="fas fa-file-contract"></i>
+                        <span><span class="f-title d-block">Rental agreements</span><span class="f-text d-block">Prepare rental agreements with customer, bike and rental details.</span></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="t360-auth-meta">Biker · Bike Rental Management</div>
+        </aside>
+
+        <main class="t360-auth-form-panel">
+            <div class="t360-auth-form">
+                <h1>Sign in</h1>
+                <p class="lead-sm">Use your Biker account. Contact your administrator if you are locked out.</p>
+
+                <div class="t360-demo-hint" role="note">
+                    <i class="fas fa-circle-info"></i>
+                    <span>This is a demo. No password is needed — the <strong>Sign in</strong> button takes you straight into a sample workspace.</span>
+                </div>
+
+                <form id="loginForm" novalidate>
+                    <div class="t360-field">
+                        <label for="email">Email address</label>
+                        <div class="t360-input-wrap">
+                            <i class="fas fa-envelope lead-icon"></i>
+                            <input id="email" type="text" class="form-control" name="email" autocomplete="email" placeholder="you@example.com">
+                        </div>
+                    </div>
+                    <div class="t360-field has-eye">
+                        <label for="password">Password</label>
+                        <div class="t360-input-wrap">
+                            <i class="fas fa-shield-alt lead-icon" id="t360PasswordLock"></i>
+                            <input id="password" type="password" class="form-control" name="password" autocomplete="current-password" placeholder="••••••••">
+                            <button class="btn" type="button" id="togglePassword" aria-label="Show or hide password"><i class="bi bi-eye"></i></button>
+                        </div>
+                    </div>
+                    <button type="submit" class="t360-auth-submit">Sign in <i class="fas fa-arrow-right ms-2" id="t360SubmitArrow"></i></button>
+                </form>
+
+                <div class="t360-auth-card-note">
+                    <i class="fas fa-lock me-1"></i> Secured with two-factor authentication · <b>Biker</b>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- ================= WORLD: ADMIN BACK OFFICE ================= -->
+<div id="v-admin" class="view">
+    <nav class="sb-topnav">
+        <button class="btn btn-link btn-sm order-1 order-lg-0 toggle-after-sidebar" id="sidebarToggle" type="button" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
+        <a class="navbar-brand" href="#/"><i class="fas fa-bolt" aria-hidden="true"></i> biker<span class="brand-dot">.</span></a>
+        <span class="topnav-demo-tag">Interactive demo</span>
+        <ul class="navbar-nav ms-auto ms-md-0">
+            <li class="nav-item nav-profile dropdown">
+                <a class="nav-link" href="#" data-bs-toggle="dropdown" id="profileDropdown" aria-expanded="false"><span class="nav-profile-name">Salih</span></a>
+                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <a class="dropdown-item" href="#/profile"><i class="fas fa-user-gear"></i> User Profile</a>
+                    <a class="dropdown-item" href="#/settings"><i class="fas fa-gear"></i> Site Settings</a>
+                    <a class="dropdown-item" href="#/" data-toast="Demo mode — you stay signed in to the sample workspace."><i class="fas fa-right-from-bracket"></i> Logout</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Interface</div>
+
+                        <a class="nav-link" href="#/dashboard" data-page-link="dashboard"><i class="fas fa-home"></i>&nbsp;&nbsp;<span>Dashboard</span></a>
+
+                        <a class="nav-link nav-collapse-title" href="#collapse-users" data-bs-toggle="collapse" data-bs-target="#collapse-users" aria-expanded="false" aria-controls="collapse-users" data-page-group="users"><i class="fas fa-user"></i>&nbsp;&nbsp;<span>User Pages</span><i class="fas fa-chevron-down toggle-icon"></i></a>
+                        <div class="collapse sb-sidenav-collapse" id="collapse-users" data-bs-parent="#sidenavAccordion">
+                            <ul class="nav sub-menu">
+                                <li class="nav-item"><a class="nav-link" href="#/users" data-page-link="users">View Users</a></li>
+                            </ul>
+                        </div>
+
+                        <a class="nav-link nav-collapse-title" href="#collapse-vehicles" data-bs-toggle="collapse" data-bs-target="#collapse-vehicles" aria-expanded="false" aria-controls="collapse-vehicles" data-page-group="vehicles"><i class="fas fa-motorcycle"></i>&nbsp;&nbsp;<span>Vehicles</span><i class="fas fa-chevron-down toggle-icon"></i></a>
+                        <div class="collapse sb-sidenav-collapse" id="collapse-vehicles" data-bs-parent="#sidenavAccordion">
+                            <ul class="nav sub-menu">
+                                <li class="nav-item"><a class="nav-link" href="#/vehicles" data-page-link="vehicles">View Vehicles</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#/vehicles/new" data-page-link="vehicle-new">Add Vehicle</a></li>
+                            </ul>
+                        </div>
+
+                        <a class="nav-link nav-collapse-title" href="#collapse-bookings" data-bs-toggle="collapse" data-bs-target="#collapse-bookings" aria-expanded="false" aria-controls="collapse-bookings" data-page-group="bookings"><i class="fas fa-calendar"></i>&nbsp;&nbsp;<span>Bookings</span><i class="fas fa-chevron-down toggle-icon"></i></a>
+                        <div class="collapse sb-sidenav-collapse" id="collapse-bookings" data-bs-parent="#sidenavAccordion">
+                            <ul class="nav sub-menu">
+                                <li class="nav-item"><a class="nav-link" href="#/bookings" data-page-link="bookings">View Bookings</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#/bookings/new" data-page-link="booking-new">Add Booking</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#/all-bookings" data-page-link="all-bookings">All Bookings</a></li>
+                            </ul>
+                        </div>
+
+                        <a class="nav-link nav-collapse-title" href="#collapse-payments" data-bs-toggle="collapse" data-bs-target="#collapse-payments" aria-expanded="false" aria-controls="collapse-payments" data-page-group="payments"><i class="fas fa-money-bill"></i>&nbsp;&nbsp;<span>Payments</span><i class="fas fa-chevron-down toggle-icon"></i></a>
+                        <div class="collapse sb-sidenav-collapse" id="collapse-payments" data-bs-parent="#sidenavAccordion">
+                            <ul class="nav sub-menu">
+                                <li class="nav-item"><a class="nav-link" href="#/payments" data-page-link="payments">View Payments</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#/payments/new" data-page-link="payment-new">Add Payment</a></li>
+                            </ul>
+                        </div>
+
+                        <a class="nav-link nav-collapse-title" href="#collapse-maint" data-bs-toggle="collapse" data-bs-target="#collapse-maint" aria-expanded="false" aria-controls="collapse-maint" data-page-group="maintenance"><i class="fas fa-wrench"></i>&nbsp;&nbsp;<span>Maintenance Logs</span><i class="fas fa-chevron-down toggle-icon"></i></a>
+                        <div class="collapse sb-sidenav-collapse" id="collapse-maint" data-bs-parent="#sidenavAccordion">
+                            <ul class="nav sub-menu">
+                                <li class="nav-item"><a class="nav-link" href="#/maintenance" data-page-link="maintenance">View Maintenance Logs</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#/maintenance/new" data-page-link="maintenance-new">Add Maintenance Log</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Created By:</div>
+                    Mohamed Salih
+                </div>
+            </nav>
+        </div>
+        <div class="sidenav-backdrop" id="sidenavBackdrop"></div>
+
+        <div id="layoutSidenav_content">
+            <main>
+
+                <!-- ======== PAGE: DASHBOARD ======== -->
+                <section id="p-dashboard" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Dashboard</h3>
+                            <div class="small-muted">A live look at the sample fleet</div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4" id="dashStats"><!-- stat cards by JS --></div>
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <div class="card h-100">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <span>Recent bookings</span>
+                                    <a href="#/bookings" class="small text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a>
+                                </div>
+                                <div class="card-body pt-2">
+                                    <div class="table-wrapper">
+                                        <table class="table table-hover align-middle" id="dashRecentBookings">
+                                            <thead><tr><th>Code</th><th>Customer</th><th>Bike</th><th>Status</th></tr></thead>
+                                            <tbody><!-- by JS --></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="card h-100">
+                                <div class="card-header">Fleet pulse</div>
+                                <div class="card-body pt-2">
+                                    <div id="dashPulse"><!-- by JS --></div>
+                                    <div class="chart-wrap mt-3" id="dashChart"></div>
+                                    <div class="chart-note">Bookings started per month, last 6 months (sample data)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: USERS ======== -->
+                <section id="p-users" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Users</h3>
+                            <div class="small-muted">Data loads from Database table <b>Users</b></div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-primary btn-sm" href="#/users/new" data-toast="Demo mode — new accounts can’t be created in the preview."><i class="fas fa-plus me-1"></i> Add User</a>
+                            <button class="btn btn-outline-danger btn-sm" type="button" data-toast="Demo mode — bulk delete is switched off in this preview."><i class="far fa-trash-alt me-1"></i> Bulk Delete</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-end mb-2"><input class="form-control form-control-sm tbl-search" type="search" placeholder="Search…" data-table-search="users"></div>
+                            <div class="table-wrapper" id="usersTableHost"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: SETTINGS ======== -->
+                <section id="p-settings" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Site Settings</h3>
+                            <div class="small-muted">Brand, contact and social details shown across the app</div>
+                        </div>
+                    </div>
+                    <form data-demo>
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white"><h4 class="m-0">Website - General Settings</h4></div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-webname">Website Name</label><input id="s-webname" class="form-control" value="Biker"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-weburl">Website URL</label><input id="s-weburl" class="form-control" value="https://biker.example"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-pagetitle">Page Title</label><input id="s-pagetitle" class="form-control" value="Find your next ride · Biker"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-meta">Meta Description</label><input id="s-meta" class="form-control" value="Explore our electric bike rental fleet. Compare monthly prices, browse bike photos, and check availability."></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white"><h4 class="m-0">Website - Information</h4></div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12 mb-3"><label class="form-label" for="s-addr">Address</label><input id="s-addr" class="form-control" value="Shop 14, Marina Walk, Business Bay"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-ph1">Phone Number 1</label><input id="s-ph1" class="form-control" value="+971 4 555 0142"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-ph2">Phone Number 2</label><input id="s-ph2" class="form-control" value="+971 50 555 0142"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-em1">Email 1</label><input id="s-em1" class="form-control" value="hello@biker.example"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-em2">Email 2</label><input id="s-em2" class="form-control" value="support@biker.example"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white"><h4 class="m-0">Website - Social Media</h4></div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-fb">Facebook</label><input id="s-fb" class="form-control" value="https://facebook.com/biker"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-tw">Twitter</label><input id="s-tw" class="form-control" value="https://x.com/biker"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-ig">Instagram</label><input id="s-ig" class="form-control" value="https://instagram.com/biker"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-li">LinkedIn</label><input id="s-li" class="form-control" value="https://linkedin.com/company/biker"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="s-yt">YouTube</label><input id="s-yt" class="form-control" value="https://youtube.com/@biker"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-1"></i> Save Settings</button>
+                    </form>
+                </section>
+
+                <!-- ======== PAGE: PROFILE ======== -->
+                <section id="p-profile" class="admin-view">
+                    <div class="py-4">
+                        <div class="row justify-content-center">
+                            <div class="col-md-10">
+                                <h4>User Profile</h4>
+                                <hr>
+                            </div>
+                            <div class="col-md-10">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">Salih - User Profile</div>
+                                    <div class="card-body">
+                                        <form data-demo>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3"><label class="form-label" for="pr-name">Name</label><input id="pr-name" class="form-control" value="Salih"></div>
+                                                <div class="col-md-6 mb-3"><label class="form-label" for="pr-email">Email</label><input id="pr-email" class="form-control" readonly value="mohamedsalihusyed@gmail.com"></div>
+                                                <div class="col-md-6 mb-3"><label class="form-label" for="pr-phone">Phone</label><input id="pr-phone" class="form-control" value="+971 50 555 0109"></div>
+                                                <div class="col-md-6 mb-3"><label class="form-label" for="pr-addr">Address</label><input id="pr-addr" class="form-control" value="Flat 802, Green Tower, Deira"></div>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="submit" class="btn btn-warning">Update Profile</button>
+                                                <button type="button" class="btn btn-outline-primary" data-toast="Demo mode — password changes are switched off in this preview."><i class="fas fa-key me-1"></i> Change Password</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: VEHICLES LIST ======== -->
+                <section id="p-vehicles" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Vehicles</h3>
+                            <div class="small-muted">Data loads from Database table <b>Vehicles</b></div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-primary btn-sm" href="#/vehicles/new"><i class="fas fa-plus me-1"></i> Add Vehicle</a>
+                            <button class="btn btn-outline-danger btn-sm" type="button" data-toast="Demo mode — bulk delete is switched off in this preview."><i class="far fa-trash-alt me-1"></i> Bulk Delete</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-end mb-2"><input class="form-control form-control-sm tbl-search" type="search" placeholder="Search…" data-table-search="vehicles"></div>
+                            <div class="table-wrapper" id="vehiclesTableHost"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: ADD VEHICLE ======== -->
+                <section id="p-vehicle-new" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Add Vehicle</h3>
+                            <div class="small-muted">Register a new bike in the fleet</div>
+                        </div>
+                        <a class="btn btn-outline-secondary btn-sm" href="#/vehicles"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <p class="small text-muted">Required fields are marked **.</p>
+                            <form data-demo>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-reg">Registration Number **</label><input id="v-reg" class="form-control" placeholder="EV-0000-XXX" maxlength="255"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-brand">Brand</label><input id="v-brand" class="form-control" placeholder="Ather, Ola, TVS…"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-model">Model</label><input id="v-model" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-chassis">Chassis Number</label><input id="v-chassis" class="form-control" maxlength="255"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-battery">Battery Serial Number</label><input id="v-battery" class="form-control" maxlength="255"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-insno">Insurance Policy Number</label><input id="v-insno" class="form-control" maxlength="255"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-odo">Odometer Reading (km)</label><input id="v-odo" type="number" min="0" step="1" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-rate">Rate Per Unit</label><input id="v-rate" type="number" min="0" step="1" class="form-control"></div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="v-status">Status</label>
+                                        <select id="v-status" class="form-select">
+                                            <option>Available</option><option>Rented</option><option>Maintenance</option><option>Decommissioned</option>
+                                        </select>
+                                        <div class="form-text">The latest booking determines the displayed status. Maintenance and decommissioned override bookings; this value is used when there are no bookings.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-pdate">Purchase Date</label><input id="v-pdate" type="date" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-pcost">Purchase Cost</label><input id="v-pcost" type="number" min="0" step="1" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="v-isp">Insurance Expires At</label><input id="v-isp" type="date" class="form-control"></div>
+                                    <div class="col-12 mb-3">
+                                        <fieldset>
+                                            <legend class="fs-6">Vehicle Pictures</legend>
+                                            <label class="form-label" for="v-imgs">Add pictures</label>
+                                            <input type="file" id="v-imgs" class="form-control" multiple accept="image/jpeg,image/png,image/webp">
+                                            <div class="form-text">Select up to 20 JPG, PNG or WebP pictures per upload, up to 2 MB each. New pictures are added to the existing gallery. The first picture is the cover; the fleet shows the first six.</div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label" for="v-dmg">Damages</label>
+                                        <textarea id="v-dmg" class="form-control" rows="4"></textarea>
+                                        <div class="form-text">Describe any existing damage. Leave blank if there is nothing to record.</div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-1"></i> Save Vehicle</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: VEHICLE SHOW (dynamic) ======== -->
+                <section id="p-vehicle-show" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Vehicle <span id="vehShowReg"></span></h3>
+                            <div class="small-muted">Fleet record detail</div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-outline-secondary btn-sm" href="#/vehicles"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                            <button class="btn btn-primary btn-sm" data-toast="Demo mode — nothing was saved."><i class="fas fa-pen me-1"></i> Edit</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header">Record</div>
+                        <div class="card-body"><div class="show-grid" id="vehShowGrid"></div></div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-header">Vehicle Pictures</div>
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap gap-3" id="vehShowPhotos"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: BOOKINGS LIST ======== -->
+                <section id="p-bookings" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Bookings</h3>
+                            <div class="small-muted">Data loads from Database table <b>Bookings</b></div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-primary btn-sm" href="#/bookings/new"><i class="fas fa-plus me-1"></i> Add Booking</a>
+                            <button class="btn btn-outline-danger btn-sm" type="button" data-toast="Demo mode — bulk delete is switched off in this preview."><i class="far fa-trash-alt me-1"></i> Bulk Delete</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-end mb-2"><input class="form-control form-control-sm tbl-search" type="search" placeholder="Search…" data-table-search="bookings"></div>
+                            <div class="table-wrapper" id="bookingsTableHost"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: ALL BOOKINGS ======== -->
+                <section id="p-all-bookings" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">All Bookings</h3>
+                            <div class="small-muted">Every booking, including cancelled and returned rides</div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-primary btn-sm" href="#/bookings/new"><i class="fas fa-plus me-1"></i> Add Booking</a>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-end mb-2"><input class="form-control form-control-sm tbl-search" type="search" placeholder="Search…" data-table-search="allBookings"></div>
+                            <div class="table-wrapper" id="allBookingsTableHost"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: ADD BOOKING ======== -->
+                <section id="p-booking-new" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Add Booking</h3>
+                            <div class="small-muted">Booking code is auto-generated on save</div>
+                        </div>
+                        <a class="btn btn-outline-secondary btn-sm" href="#/bookings"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <p class="small text-muted">Required fields are marked **. Return details can be added later.</p>
+                            <form data-demo>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                            <label class="form-label mb-0" for="b-cust">Customer **</label>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#quickAddModal">Quick Add</button>
+                                        </div>
+                                        <select id="b-cust" class="form-select" required><option value=""></option></select>
+                                        <div class="form-text">Search by Aadhaar or name. Use Quick Add if the customer is not listed.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="b-veh">Vehicle Registration Number **</label>
+                                        <select id="b-veh" class="form-select" required><option value=""></option></select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="b-status">Booking Status **</label>
+                                        <select id="b-status" class="form-select"><option>Reserved</option><option>Taken</option><option>Returned</option><option>Cancelled</option></select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="b-rate">Rate **</label>
+                                        <input id="b-rate" type="number" class="form-control" min="0.01" step="0.01" placeholder="2,500.00">
+                                        <div class="form-text">Rate per day, week, or month according to the rental type.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="b-start">Start Date **</label><input id="b-start" type="date" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="b-end">End Date **</label><input id="b-end" type="date" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="b-return">Actual Return Date (optional)</label><input id="b-return" type="date" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="b-endo">End Odometer (km) (required when returned)</label><input id="b-endo" type="number" min="0" step="1" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="b-hand">Handover Notes (optional)</label><textarea id="b-hand" class="form-control" rows="3"></textarea></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="b-retn">Return Notes (optional)</label><textarea id="b-retn" class="form-control" rows="3"></textarea></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-1"></i> Save Booking</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: BOOKING SHOW (dynamic) ======== -->
+                <section id="p-booking-show" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Booking <span id="bkShowCode"></span></h3>
+                            <div class="small-muted">Rental record detail</div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-outline-secondary btn-sm" href="#/bookings"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                            <button class="btn btn-primary btn-sm" data-toast="Demo mode — nothing was saved."><i class="fas fa-pen me-1"></i> Edit</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header">Rental details</div>
+                        <div class="card-body"><div class="show-grid" id="bkShowGrid"></div></div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <span>Payments for this booking</span>
+                            <a href="#/payments/new" class="small text-decoration-none" data-toast="Demo mode — nothing was saved.">Record payment <i class="fas fa-arrow-right ms-1"></i></a>
+                        </div>
+                        <div class="card-body pt-2">
+                            <div class="table-wrapper">
+                                <table class="table table-hover align-middle" id="bkShowPayments">
+                                    <thead><tr><th>ID</th><th>Payment Date</th><th class="text-end">Amount</th><th>Method</th><th>Notes</th></tr></thead>
+                                    <tbody><!-- by JS --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: PAYMENTS LIST ======== -->
+                <section id="p-payments" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Payments</h3>
+                            <div class="small-muted">Data loads from Database table <b>Payments</b></div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-primary btn-sm" href="#/payments/new"><i class="fas fa-plus me-1"></i> Add Payment</a>
+                            <button class="btn btn-outline-danger btn-sm" type="button" data-toast="Demo mode — bulk delete is switched off in this preview."><i class="far fa-trash-alt me-1"></i> Bulk Delete</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-end mb-2"><input class="form-control form-control-sm tbl-search" type="search" placeholder="Search…" data-table-search="payments"></div>
+                            <div class="table-wrapper" id="paymentsTableHost"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: ADD PAYMENT ======== -->
+                <section id="p-payment-new" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Add Payment</h3>
+                            <div class="small-muted">Record a rental payment against a booking</div>
+                        </div>
+                        <a class="btn btn-outline-secondary btn-sm" href="#/payments"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <form data-demo>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="pay-book">Booking **</label>
+                                        <select id="pay-book" class="form-select" required><option value=""></option></select>
+                                        <div class="form-text">Customer and bike are filled from the booking.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="pay-date">Payment Date **</label><input id="pay-date" type="date" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="pay-amt">Amount Received **</label><input id="pay-amt" type="number" min="0.01" step="0.01" class="form-control"></div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="pay-method">Payment Method **</label>
+                                        <select id="pay-method" class="form-select"><option>Cash</option><option>UPI</option><option>Other</option></select>
+                                    </div>
+                                    <div class="col-12 mb-3"><label class="form-label" for="pay-notes">Notes (optional)</label><textarea id="pay-notes" class="form-control" rows="3"></textarea></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-1"></i> Save Payment</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: PAYMENT SHOW (dynamic) ======== -->
+                <section id="p-payment-show" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Payment <span id="payShowId"></span></h3>
+                            <div class="small-muted">Payment receipt detail</div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-outline-secondary btn-sm" href="#/payments"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                            <button class="btn btn-primary btn-sm" data-toast="Demo mode — nothing was saved."><i class="fas fa-pen me-1"></i> Edit</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-header">Receipt</div>
+                        <div class="card-body"><div class="show-grid" id="payShowGrid"></div></div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: MAINTENANCE LOGS LIST ======== -->
+                <section id="p-maintenance" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Maintenance Logs</h3>
+                            <div class="small-muted">Data loads from Database table <b>Maintenance Logs</b></div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-primary btn-sm" href="#/maintenance/new"><i class="fas fa-plus me-1"></i> Add Maintenance Log</a>
+                            <button class="btn btn-outline-danger btn-sm" type="button" data-toast="Demo mode — bulk delete is switched off in this preview."><i class="far fa-trash-alt me-1"></i> Bulk Delete</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-end mb-2"><input class="form-control form-control-sm tbl-search" type="search" placeholder="Search…" data-table-search="maints"></div>
+                            <div class="table-wrapper" id="maintsTableHost"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: ADD MAINTENANCE LOG ======== -->
+                <section id="p-maintenance-new" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Add Maintenance Log</h3>
+                            <div class="small-muted">Send a bike to the workshop</div>
+                        </div>
+                        <a class="btn btn-outline-secondary btn-sm" href="#/maintenance"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <form data-demo>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="m-veh">Vehicle Registration Number **</label>
+                                        <select id="m-veh" class="form-select" required><option value=""></option></select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="m-status">Status **</label>
+                                        <select id="m-status" class="form-select"><option>Scheduled</option><option>In Progress</option><option>Completed</option><option>Cancelled</option></select>
+                                    </div>
+                                    <div class="col-12 mb-3"><label class="form-label" for="m-desc">Service Description **</label><textarea id="m-desc" class="form-control" rows="3" placeholder="What is the bike in for?"></textarea></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="m-dd">Delivered Date **</label><input id="m-dd" type="date" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="m-ed">Expected Completion Date **</label><input id="m-ed" type="date" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="m-cost">Cost</label><input id="m-cost" type="number" min="0" step="0.01" class="form-control"></div>
+                                    <div class="col-md-6 mb-3"><label class="form-label" for="m-odo">Odometer Reading (km)</label><input id="m-odo" type="number" min="0" step="1" class="form-control"></div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="m-vendor">Vendor **</label>
+                                        <select id="m-vendor" class="form-select"><option>Vendor 1</option><option>Vendor 2</option><option>Vendor 3</option><option>Vendor 4</option></select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-1"></i> Save Maintenance Log</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======== PAGE: MAINTENANCE SHOW (dynamic) ======== -->
+                <section id="p-maintenance-show" class="admin-view">
+                    <div class="topbar">
+                        <div>
+                            <h3 class="mb-0">Maintenance Log <span id="mtShowId"></span></h3>
+                            <div class="small-muted">Workshop visit detail</div>
+                        </div>
+                        <div class="btn-group-top">
+                            <a class="btn btn-outline-secondary btn-sm" href="#/maintenance"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                            <button class="btn btn-primary btn-sm" data-toast="Demo mode — nothing was saved."><i class="fas fa-pen me-1"></i> Edit</button>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm">
+                        <div class="card-header">Workshop visit</div>
+                        <div class="card-body"><div class="show-grid" id="mtShowGrid"></div></div>
+                    </div>
+                </section>
+
+            </main>
+
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small flex-wrap gap-2">
+                        <div><i class="fas fa-globe"></i> Biker</div>
+                        <div><i class="fas fa-map-marker-alt"></i> Shop 14, Marina Walk, Business Bay</div>
+                        <div><a href="tel:+97145550142" style="text-decoration:none;"><i class="fas fa-phone"></i> +971 4 555 0142</a></div>
+                        <div><i class="fas fa-envelope"></i> hello@biker.example</div>
+                        <div><a href="#" style="text-decoration:none;">Terms &amp; Conditions</a></div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+</div>
+
+<!-- Quick-add customer modal (replicates admin/bookings/quick-add-customer) -->
+<div class="modal fade" id="quickAddModal" tabindex="-1" aria-labelledby="quickAddTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="quickAddTitle">Quick Add Customer</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <form data-demo data-dismiss-after>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label" for="qa-name">Name **</label><input id="qa-name" class="form-control" placeholder="Customer name"></div>
+                    <div class="mb-3"><label class="form-label" for="qa-aadhaar">Aadhaar</label><input id="qa-aadhaar" class="form-control" maxlength="14" placeholder="12-digit ID"></div>
+                    <div class="mb-3"><label class="form-label" for="qa-phone">Phone</label><input id="qa-phone" class="form-control" placeholder="Mobile number"></div>
+                    <div class="small text-muted">In the live app the customer is created and selected on the booking in one step.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ============================================================
+   Biker demo engine — all sample data lives here.
+   ============================================================ */
+(function () {
+    'use strict';
+
+    /* ---------- Sample data ---------- */
+    var customers = [
+        { id: 2,  name: 'Ramesh Iyer',        aadhaar: '4289 5517 3026', phone: '+91 98450 22110', address: '14, 3rd Cross, Indiranagar, Bengaluru' },
+        { id: 3,  name: 'Sunita Patil',       aadhaar: '5521 8804 6613', phone: '+91 99860 45521', address: '7B, Sunrise Apartments, Andheri West' },
+        { id: 4,  name: 'Arjun Menon',        aadhaar: '6104 2237 9048', phone: '+91 96633 87012', address: '22, Palm Grove Road, Kochi' },
+        { id: 5,  name: 'Priya Sharma',       aadhaar: '7789 0541 2387', phone: '+91 91204 55783', address: '901, Shanti Heights, Powai' },
+        { id: 6,  name: 'Imran Qureshi',      aadhaar: '8033 7712 4450', phone: '+91 97600 21854', address: '5, Rose Villa, Charminar Area' },
+        { id: 7,  name: 'Lakshmi Narayanan',  aadhaar: '2298 6300 5172', phone: '+91 94440 66230', address: '31, Temple Street, Mylapore' },
+        { id: 8,  name: 'Farhan Ahmed',       aadhaar: '9120 4485 0993', phone: '+91 90190 34772', address: '18, Lake View Colony, HSR Layout' },
+        { id: 9,  name: 'Deepa Krishnan',     aadhaar: '3345 2190 8866', phone: '+91 93810 90527', address: '6, Marina Row, Besant Nagar' },
+        { id: 10, name: 'Vikram Rao',         aadhaar: '5871 9023 4410', phone: '+91 98201 77390', address: '77, Hill Road, Bandra West' },
+        { id: 11, name: 'Anjali Nair',        aadhaar: '6690 1148 7725', phone: '+91 97390 41268', address: '12, Backwater Lane, Kozhikode' }
+    ];
+    var vehicles = [
+        { id: 1,  reg: 'EV-1042-ATX', brand: 'Ather', model: '450X',  chassis: 'CH-ATX45821094', battery: 'BAT-77120945', odo: 4120,  rate: 3600, status: 'available',      pdate: '2026-03-12', pcost: 145000, insNo: 'INS-44002187', insExp: '2027-03-11', damages: 'Minor scuff on right mirror cover, recorded at purchase.' },
+        { id: 2,  reg: 'EV-1088-OLP', brand: 'Ola',   model: 'S1 Pro', chassis: 'CH-OLP66120378', battery: 'BAT-33840712', odo: 2860,  rate: 3200, status: 'rented',         pdate: '2026-04-02', pcost: 138000, insNo: 'INS-44009830', insExp: '2027-04-01', damages: null },
+        { id: 3,  reg: 'EV-1121-IQB', brand: 'TVS',   model: 'iQube',  chassis: 'CH-IQB20931147', battery: 'BAT-90552183', odo: 5410,  rate: 2900, status: 'available',      pdate: '2026-02-20', pcost: 122000, insNo: 'INS-44013345', insExp: '2027-02-19', damages: null },
+        { id: 4,  reg: 'EV-1157-ATP', brand: 'Ather', model: '450 Plus', chassis: 'CH-ATP55470291', battery: 'BAT-11840662', odo: 1940, rate: 3400, status: 'available',      pdate: '2026-05-08', pcost: 132000, insNo: 'INS-44018702', insExp: '2027-05-07', damages: 'Small chip on front fender paint.' },
+        { id: 5,  reg: 'EV-1203-OLA', brand: 'Ola',   model: 'S1 Air', chassis: 'CH-OLA88123409', battery: 'BAT-66209415', odo: 6780,  rate: 2800, status: 'rented',         pdate: '2026-01-30', pcost: 109000, insNo: 'INS-44022319', insExp: '2027-01-29', damages: null },
+        { id: 6,  reg: 'EV-1266-IQS', brand: 'TVS',   model: 'iQube S', chassis: 'CH-IQS44120985', battery: 'BAT-20983174', odo: 3520, rate: 3000, status: 'available',      pdate: '2026-06-15', pcost: 128000, insNo: 'INS-44028660', insExp: '2027-06-14', damages: null },
+        { id: 7,  reg: 'EV-1301-GTX', brand: 'Ather', model: '450X Gen 3', chassis: 'CH-GTX70391228', battery: 'BAT-88450391', odo: 2450, rate: 3700, status: 'available',    pdate: '2026-07-01', pcost: 152000, insNo: 'INS-44033124', insExp: '2027-06-30', damages: null },
+        { id: 8,  reg: 'EV-1344-OLS', brand: 'Ola',   model: 'S1 X',   chassis: 'CH-OLS33091746', battery: 'BAT-40712368', odo: 8210,  rate: 2600, status: 'maintenance',    pdate: '2026-03-25', pcost: 99000,  insNo: 'INS-44039008', insExp: '2027-03-24', damages: 'Left side panel cracked, awaiting workshop repair.' },
+        { id: 9,  reg: 'EV-1399-IQB2', brand: 'TVS',  model: 'iQube',  chassis: 'CH-IQB51022873', battery: 'BAT-55321097', odo: 11230, rate: 2700, status: 'decommissioned', pdate: '2025-11-10', pcost: 118000, insNo: 'INS-44015477', insExp: '2026-11-09', damages: 'Battery pack degraded below service threshold.' },
+        { id: 10, reg: 'EV-1420-ATX', brand: 'Ather', model: '450X',  chassis: 'CH-ATX99021436', battery: 'BAT-60289411', odo: 940,   rate: 3800, status: 'available',      pdate: '2026-08-19', pcost: 155000, insNo: 'INS-44045182', insExp: '2027-08-18', damages: null },
+        { id: 11, reg: 'EV-1477-OLP', brand: 'Ola',   model: 'S1 Pro', chassis: 'CH-OLP77410385', battery: 'BAT-91045582', odo: 5100,  rate: 3300, status: 'available',      pdate: '2026-09-05', pcost: 141000, insNo: 'INS-44050233', insExp: '2027-09-04', damages: null },
+        { id: 12, reg: 'EV-1503-IQB', brand: 'TVS',   model: 'iQube',  chassis: 'CH-IQB88540162', battery: 'BAT-11409953', odo: 240,   rate: 3100, status: 'available',      pdate: '2026-10-11', pcost: 124000, insNo: 'INS-44056890', insExp: '2027-10-10', damages: null }
+    ];
+    var bookings = [
+        { id: 1,  code: '10421', cust: 2,  veh: 1,  by: 'Salih', type: 'monthly', rate: 3600, start: '2026-06-01', end: '2026-07-01', ret: '2026-07-01', odo1: 3410, odo2: 3588, status: 'returned',  pay: 'paid',    hand: 'Delivered with helmet and charger. Odometer photographed.', retn: 'Returned clean, no new damage.' },
+        { id: 2,  code: '10422', cust: 3,  veh: 2,  by: 'Staff', type: 'monthly', rate: 3200, start: '2026-07-05', end: '2026-08-05', ret: '2026-08-04', odo1: 2010, odo2: 2290, status: 'returned',  pay: 'paid',    hand: 'Battery at 96%.', retn: 'Tyre pressure topped up before handover back.' },
+        { id: 3,  code: '10423', cust: 4,  veh: 3,  by: 'Salih', type: 'weekly',  rate: 900,  start: '2026-08-10', end: '2026-08-17', ret: '2026-08-17', odo1: 4620, odo2: 4775, status: 'returned',  pay: 'paid',    hand: null, retn: null },
+        { id: 4,  code: '10424', cust: 5,  veh: 4,  by: 'Salih', type: 'monthly', rate: 3400, start: '2026-09-01', end: '2026-10-01', ret: '2026-09-30', odo1: 1420, odo2: 1710, status: 'returned',  pay: 'paid',    hand: 'Customer briefed on charging points nearby.', retn: 'Small chip on front fender noted on return inspection.' },
+        { id: 5,  code: '10425', cust: 6,  veh: 5,  by: 'Staff', type: 'monthly', rate: 2800, start: '2026-10-03', end: '2026-11-03', ret: null,         odo1: 5900, odo2: null, status: 'cancelled', pay: 'pending', hand: null, retn: null },
+        { id: 6,  code: '10426', cust: 7,  veh: 6,  by: 'Salih', type: 'monthly', rate: 3000, start: '2026-10-05', end: '2026-11-05', ret: '2026-11-05', odo1: 2980, odo2: 3310, status: 'returned',  pay: 'paid',    hand: null, retn: 'Returned with 41% charge.' },
+        { id: 7,  code: '10427', cust: 8,  veh: 7,  by: 'Salih', type: 'monthly', rate: 3700, start: '2026-10-12', end: '2026-11-12', ret: null,         odo1: 1980, odo2: null, status: 'reserved',  pay: 'pending', hand: null, retn: null },
+        { id: 8,  code: '10428', cust: 9,  veh: 2,  by: 'Staff', type: 'monthly', rate: 3200, start: '2026-10-18', end: '2026-11-18', ret: null,         odo1: 2410, odo2: null, status: 'taken',     pay: 'paid',    hand: 'Helmet bag included. Range discussion done.', retn: null },
+        { id: 9,  code: '10429', cust: 10, veh: 9,  by: 'Salih', type: 'daily',   rate: 250,  start: '2026-10-20', end: '2026-10-22', ret: null,         odo1: 11150, odo2: null, status: 'cancelled', pay: 'pending', hand: null, retn: null },
+        { id: 10, code: '10430', cust: 2,  veh: 8,  by: 'Salih', type: 'monthly', rate: 2600, start: '2026-11-01', end: '2026-12-01', ret: null,         odo1: 7940, odo2: null, status: 'cancelled', pay: 'pending', hand: null, retn: null },
+        { id: 11, code: '10431', cust: 3,  veh: 10, by: 'Salih', type: 'monthly', rate: 3800, start: '2026-11-03', end: '2026-12-03', ret: null,         odo1: 610,  odo2: null, status: 'taken',     pay: 'paid',    hand: 'Brand new bike. First service due at 500 km.', retn: null },
+        { id: 12, code: '10432', cust: 4,  veh: 5,  by: 'Staff', type: 'monthly', rate: 2800, start: '2026-11-08', end: '2026-12-08', ret: null,         odo1: 6420, odo2: null, status: 'taken',     pay: 'overdue', hand: 'Delivered at 88% charge.', retn: null },
+        { id: 13, code: '10433', cust: 5,  veh: 11, by: 'Salih', type: 'weekly',  rate: 1000, start: '2026-11-10', end: '2026-11-17', ret: null,         odo1: 4980, odo2: null, status: 'taken',     pay: 'pending', hand: null, retn: null },
+        { id: 14, code: '10434', cust: 6,  veh: 12, by: 'Salih', type: 'daily',   rate: 280,  start: '2026-11-14', end: '2026-11-16', ret: '2026-11-16', odo1: 140,  odo2: 205,  status: 'returned',  pay: 'paid',    hand: null, retn: 'No issues reported.' },
+        { id: 15, code: '10435', cust: 7,  veh: 1,  by: 'Salih', type: 'monthly', rate: 3600, start: '2026-11-15', end: '2026-12-15', ret: null,         odo1: 3980, odo2: null, status: 'taken',     pay: 'paid',    hand: 'Second rental for this customer. ID on file.', retn: null },
+        { id: 16, code: '10436', cust: 8,  veh: 4,  by: 'Staff', type: 'monthly', rate: 3400, start: '2026-11-17', end: '2026-12-17', ret: null,         odo1: 1880, odo2: null, status: 'reserved',  pay: 'pending', hand: null, retn: null },
+        { id: 17, code: '10437', cust: 9,  veh: 7,  by: 'Salih', type: 'monthly', rate: 3700, start: '2026-11-18', end: '2026-12-18', ret: null,         odo1: 2120, odo2: null, status: 'reserved',  pay: 'pending', hand: null, retn: null },
+        { id: 18, code: '10438', cust: 10, veh: 3,  by: 'Salih', type: 'monthly', rate: 2900, start: '2026-11-20', end: '2026-12-20', ret: null,         odo1: 5190, odo2: null, status: 'reserved',  pay: 'pending', hand: null, retn: null }
+    ];
+    var payments = [
+        { id: 1,  bk: 1,  date: '2026-06-01', amt: 3600, method: 'upi',   notes: 'Full month paid in advance.' },
+        { id: 2,  bk: 2,  date: '2026-07-05', amt: 3200, method: 'cash',  notes: null },
+        { id: 3,  bk: 3,  date: '2026-08-10', amt: 900,  method: 'upi',   notes: null },
+        { id: 4,  bk: 4,  date: '2026-09-01', amt: 1700, method: 'cash',  notes: 'Part payment. Balance cleared 12 Sep.' },
+        { id: 5,  bk: 4,  date: '2026-09-12', amt: 1700, method: 'upi',   notes: 'Balance of September rental.' },
+        { id: 6,  bk: 6,  date: '2026-10-05', amt: 3000, method: 'other', notes: 'Paid via bank transfer.' },
+        { id: 7,  bk: 8,  date: '2026-10-18', amt: 1600, method: 'upi',   notes: 'Advance only. Balance due 05 Nov.' },
+        { id: 8,  bk: 8,  date: '2026-11-05', amt: 1600, method: 'cash',  notes: 'Balance collected at office.' },
+        { id: 9,  bk: 11, date: '2026-11-03', amt: 3800, method: 'upi',   notes: null },
+        { id: 10, bk: 13, date: '2026-11-10', amt: 1000, method: 'cash',  notes: null },
+        { id: 11, bk: 14, date: '2026-11-14', amt: 280,  method: 'upi',   notes: null },
+        { id: 12, bk: 15, date: '2026-11-15', amt: 3600, method: 'upi',   notes: null }
+    ];
+    var maints = [
+        { id: 1, veh: 2,  desc: 'Scheduled 60-day brake and tyre inspection.',          del: '2026-09-21', exp: '2026-09-23', cost: 850,  odo: 2295,  vendor: 'Vendor 1', status: 'completed',   by: 'Salih' },
+        { id: 2, veh: 11, desc: 'Firmware update and range calibration.',               del: '2026-10-02', exp: '2026-10-02', cost: 0,    odo: 4985,  vendor: 'Vendor 2', status: 'completed',   by: 'Staff' },
+        { id: 3, veh: 3,  desc: 'Rear mudguard refit and chain case check.',            del: '2026-10-18', exp: '2026-10-20', cost: 420,  odo: 5330,  vendor: 'Vendor 1', status: 'completed',   by: 'Salih' },
+        { id: 4, veh: 8,  desc: 'Left side panel replacement and full body polish.',    del: '2026-11-16', exp: '2026-11-22', cost: 3400, odo: 8210,  vendor: 'Vendor 3', status: 'in_progress', by: 'Salih' },
+        { id: 5, veh: 5,  desc: 'Battery health check scheduled after long rental.',    del: '2026-12-09', exp: '2026-12-10', cost: null, odo: 6850,  vendor: 'Vendor 4', status: 'scheduled',   by: 'Staff' },
+        { id: 6, veh: 9,  desc: 'Battery pack replacement evaluation before decommission review.', del: '2026-11-10', exp: '2026-11-14', cost: 2200, odo: 11230, vendor: 'Vendor 3', status: 'cancelled',   by: 'Salih' }
+    ];
+    var users = [
+        { id: 1,  name: 'Staff',   email: 'mohamedsalih12@gmail.com',        phone: '+91 80 4123 5566', role: 'staff',    active: 1 },
+        { id: 2,  name: 'Ramesh Iyer',       email: 'ramesh.iyer@example.com',       phone: '+91 98450 22110', role: 'customer', active: 1 },
+        { id: 3,  name: 'Sunita Patil',      email: 'sunita.patil@example.com',      phone: '+91 99860 45521', role: 'customer', active: 1 },
+        { id: 4,  name: 'Arjun Menon',       email: 'arjun.menon@example.com',       phone: '+91 96633 87012', role: 'customer', active: 1 },
+        { id: 5,  name: 'Priya Sharma',      email: 'priya.sharma@example.com',      phone: '+91 91204 55783', role: 'customer', active: 1 },
+        { id: 6,  name: 'Imran Qureshi',     email: 'imran.qureshi@example.com',     phone: '+91 97600 21854', role: 'customer', active: 1 },
+        { id: 7,  name: 'Lakshmi Narayanan', email: 'lakshmi.n@example.com',         phone: '+91 94440 66230', role: 'customer', active: 1 },
+        { id: 8,  name: 'Farhan Ahmed',      email: 'farhan.ahmed@example.com',      phone: '+91 90190 34772', role: 'customer', active: 1 },
+        { id: 9,  name: 'Deepa Krishnan',    email: 'deepa.krishnan@example.com',    phone: '+91 93810 90527', role: 'customer', active: 1 },
+        { id: 10, name: 'Vikram Rao',        email: 'vikram.rao@example.com',        phone: '+91 98201 77390', role: 'customer', active: 1 },
+        { id: 11, name: 'Anjali Nair',       email: 'anjali.nair@example.com',       phone: '+91 97390 41268', role: 'customer', active: 1 },
+        { id: 12, name: 'Salih',         email: 'mohamedsalihusyed@gmail.com',     phone: '+91 98450 01090', role: 'admin',    active: 1 }
+    ];
+
+    var TODAY = '2026-11-17';
+
+    /* ---------- Lookups + helpers ---------- */
+    function custName(id) { var c = customers.find(function (x) { return x.id === id; }); return c ? c.name : '—'; }
+    function veh(id) { return vehicles.find(function (x) { return x.id === id; }) || {}; }
+    function bk(id) { return bookings.find(function (x) { return x.id === id; }) || {}; }
+    function vehReg(id) { return veh(id).reg || '—'; }
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
+    function fmtDate(d) { if (!d) return '—'; var p = d.split('-'); return p[2] + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(p[1],10)-1] + ' ' + p[0]; }
+    function fmtMoney(n) { return n == null ? '—' : Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function fmtInt(n) { return n == null ? '—' : Number(n).toLocaleString('en-IN'); }
+    function esc(s) { return s == null ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function chip(cls, text) { return '<span class="chip chip-' + cls + '">' + text + '</span>'; }
+    function bkStatusChip(s) { return chip(s, cap(s)); }
+    function payStatusChip(s) { return chip(s, cap(s)); }
+    function vehStatusChip(s) {
+        var m = { available: ['available','Available'], rented: ['rented','Rented'], maintenance: ['maintstatus','Maintenance'], decommissioned: ['down','Decommissioned'] };
+        var v = m[s] || ['down', cap(s)]; return chip(v[0], v[1]);
+    }
+    function mtStatusChip(s) {
+        var m = { scheduled: ['scheduled','Scheduled'], in_progress: ['inprogress','In Progress'], completed: ['completed','Completed'], cancelled: ['maintcancelled','Cancelled'] };
+        var v = m[s] || ['down', cap(s)]; return chip(v[0], v[1]);
+    }
+    function roleChip(r) { return chip('role-' + r, cap(r)); }
+    function activeChip(a) { return a ? chip('active','Active') : chip('inactive','Inactive'); }
+    function actionsMenu(kind, id, viewHash, editLabel) {
+        return '<div class="dropdown cell-actions">' +
+            '<button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Row actions"><i class="fas fa-ellipsis-h"></i></button>' +
+            '<ul class="dropdown-menu dropdown-menu-end">' +
+            '<li><a class="dropdown-item" href="' + viewHash + '"><i class="fas fa-eye me-2"></i>View</a></li>' +
+            '<li><a class="dropdown-item" href="#" data-toast="Demo mode — nothing was saved."><i class="fas fa-pen me-2"></i>' + (editLabel || 'Edit') + '</a></li>' +
+            '<li><hr class="dropdown-divider"></li>' +
+            '<li><a class="dropdown-item text-danger" href="#" data-toast="Demo mode — delete is switched off in this preview."><i class="fas fa-trash me-2"></i>Delete</a></li>' +
+            '</ul></div>';
+    }
+
+    /* ---------- Generic data table (search + sort + pagination) ---------- */
+    var tables = {};
+    function makeTable(key, hostSel, def) {
+        var st = { page: 1, q: '', sort: def.sort || { key: 'id', dir: -1 } };
+        var host = document.querySelector(hostSel);
+        function colVal(r, c) { return c.val ? c.val(r) : r[c.key]; }
+        function filtered() {
+            var rs = def.rows.slice();
+            if (st.q) {
+                var q = st.q.toLowerCase();
+                rs = rs.filter(function (r) { return def.search(r).toLowerCase().indexOf(q) !== -1; });
+            }
+            if (st.sort) {
+                var c = null;
+                for (var i = 0; i < def.columns.length; i++) if (def.columns[i].key === st.sort.key) c = def.columns[i];
+                if (c) rs.sort(function (a, b) {
+                    var x = colVal(a, c), y = colVal(b, c);
+                    if (c.num) { x = Number(x) || 0; y = Number(y) || 0; return (x - y) * st.sort.dir; }
+                    x = x == null ? '' : String(x).toLowerCase(); y = y == null ? '' : String(y).toLowerCase();
+                    return x < y ? -st.sort.dir : x > y ? st.sort.dir : 0;
+                });
+            }
+            return rs;
+        }
+        function render() {
+            var rs = filtered(), size = 8, pages = Math.max(1, Math.ceil(rs.length / size));
+            if (st.page > pages) st.page = pages;
+            var from = (st.page - 1) * size, slice = rs.slice(from, from + size);
+            var h = '<table class="table table-hover align-middle table-card table-sort"><thead><tr>';
+            def.columns.forEach(function (c) {
+                var sorted = st.sort && st.sort.key === c.key;
+                var icon = sorted ? (st.sort.dir === 1 ? 'fa-arrow-up' : 'fa-arrow-down') : 'fa-arrow-up-arrow-down';
+                h += '<th class="' + (c.thCls || '') + (sorted ? ' is-sorted' : '') + '" data-sort="' + esc(c.key || '') + '">' + c.label + (c.key ? '<i class="fas ' + icon + ' sort-icon"></i>' : '') + '</th>';
+            });
+            h += '</tr></thead><tbody>';
+            if (!slice.length) {
+                h += '<tr><td colspan="' + def.columns.length + '" class="text-center text-muted py-4">No records match your search.</td></tr>';
+            }
+            slice.forEach(function (r) {
+                h += '<tr>' + def.columns.map(function (c) {
+                    return '<td class="' + (c.cls || '') + '">' + (c.fmt ? c.fmt(r) : esc(colVal(r, c))) + '</td>';
+                }).join('') + '</tr>';
+            });
+            h += '</tbody></table>';
+            h += '<div class="tbl-footer"><span class="tbl-info">Showing ' + (rs.length ? from + 1 : 0) + ' to ' + Math.min(from + size, rs.length) + ' of ' + rs.length + ' entries</span>';
+            if (pages > 1) {
+                h += '<ul class="pagination pagination-sm">';
+                h += '<li class="page-item' + (st.page === 1 ? ' disabled' : '') + '"><a class="page-link" href="#" data-page-nav="' + (st.page - 1) + '"><i class="fas fa-chevron-left"></i></a></li>';
+                for (var p = 1; p <= pages; p++) h += '<li class="page-item' + (p === st.page ? ' active' : '') + '"><a class="page-link" href="#" data-page-nav="' + p + '">' + p + '</a></li>';
+                h += '<li class="page-item' + (st.page === pages ? ' disabled' : '') + '"><a class="page-link" href="#" data-page-nav="' + (st.page + 1) + '"><i class="fas fa-chevron-right"></i></a></li>';
+                h += '</ul>';
+            }
+            h += '</div>';
+            host.innerHTML = h;
+            Array.prototype.forEach.call(host.querySelectorAll('th[data-sort]'), function (th) {
+                th.addEventListener('click', function () {
+                    var k = th.getAttribute('data-sort');
+                    if (!k) return;
+                    if (st.sort && st.sort.key === k) st.sort.dir = -st.sort.dir;
+                    else st.sort = { key: k, dir: 1 };
+                    render();
+                });
+            });
+            Array.prototype.forEach.call(host.querySelectorAll('[data-page-nav]'), function (a) {
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var p = parseInt(a.getAttribute('data-page-nav'), 10);
+                    if (p >= 1 && p <= Math.ceil(filtered().length / 8)) { st.page = p; render(); }
+                });
+            });
+        }
+        tables[key] = { setQuery: function (q) { st.q = q; st.page = 1; render(); }, render: render };
+        render();
+    }
+
+    /* ---------- Table column definitions ---------- */
+    makeTable('users', '#usersTableHost', {
+        rows: users,
+        search: function (r) { return [r.id, r.name, r.email, r.phone, r.role].join(' '); },
+        columns: [
+            { label: 'ID', key: 'id', num: true, cls: 'cell-num', thCls: 'text-end' },
+            { label: 'Name', key: 'name', fmt: function (r) { return '<strong>' + esc(r.name) + '</strong>'; } },
+            { label: 'Email', key: 'email' },
+            { label: 'Phone', key: 'phone' },
+            { label: 'Role', key: 'role', fmt: function (r) { return roleChip(r.role); } },
+            { label: 'Active Status', key: 'active', fmt: function (r) { return activeChip(r.active); } },
+            { label: 'Actions', key: null, fmt: function (r) { return actionsMenu('user', r.id, '#/profile'); } }
+        ]
+    });
+
+    function vehPhotoCell(r) {
+        return '<span class="placeholder-img"><i class="fas fa-motorcycle"></i><span>No photo</span></span>';
+    }
+    var vehicleColumns = [
+        { label: 'ID', key: 'id', num: true, cls: 'cell-num', thCls: 'text-end' },
+        { label: 'Photo', key: null, fmt: vehPhotoCell },
+        { label: 'Registration Number', key: 'reg', fmt: function (r) { return '<a class="dl-link" href="#/vehicle/' + r.id + '">' + esc(r.reg) + '</a>'; } },
+        { label: 'Brand', key: 'brand' },
+        { label: 'Model', key: 'model' },
+        { label: 'Chassis Number', key: 'chassis' },
+        { label: 'Battery Serial Number', key: 'battery' },
+        { label: 'Odometer Reading', key: 'odo', num: true, cls: 'cell-num', thCls: 'text-end', fmt: function (r) { return fmtInt(r.odo) + ' km'; } },
+        { label: 'Rate Per Unit', key: 'rate', num: true, cls: 'cell-money', thCls: 'text-end' },
+        { label: 'Status', key: 'status', fmt: function (r) { return vehStatusChip(r.status); } },
+        { label: 'Purchase Date', key: 'pdate', cls: 'cell-date', fmt: function (r) { return fmtDate(r.pdate); } },
+        { label: 'Purchase Cost', key: 'pcost', num: true, cls: 'cell-money', thCls: 'text-end' },
+        { label: 'Insurance Policy Number', key: 'insNo' },
+        { label: 'Insurance Expires At', key: 'insExp', cls: 'cell-date', fmt: function (r) { return fmtDate(r.insExp); } },
+        { label: 'Damages', key: 'damages', cls: 'row-note', fmt: function (r) { return r.damages ? esc(r.damages) : '<span class="text-muted">—</span>'; } },
+        { label: 'Actions', key: null, fmt: function (r) { return actionsMenu('vehicle', r.id, '#/vehicle/' + r.id); } }
+    ];
+    function vehSearch(r) { return [r.reg, r.brand, r.model, r.chassis, r.battery, r.status].join(' '); }
+    makeTable('vehicles', '#vehiclesTableHost', { rows: vehicles, search: vehSearch, columns: vehicleColumns });
+
+    var bookingColumns = [
+        { label: 'ID', key: 'id', num: true, cls: 'cell-num', thCls: 'text-end' },
+        { label: 'Booking Code', key: 'code', cls: 'cell-code', fmt: function (r) { return '<a class="dl-link" href="#/booking/' + r.id + '">' + esc(r.code) + '</a>'; } },
+        { label: 'Customer', key: 'cust', fmt: function (r) { return esc(custName(r.cust)); } },
+        { label: 'Vehicle Registration', key: 'veh', fmt: function (r) { return esc(vehReg(r.veh)); } },
+        { label: 'Created By', key: 'by' },
+        { label: 'Rental Type', key: 'type', fmt: function (r) { return cap(r.type); } },
+        { label: 'Rate per Unit', key: 'rate', num: true, cls: 'cell-money', thCls: 'text-end' },
+        { label: 'Start Date', key: 'start', cls: 'cell-date', fmt: function (r) { return fmtDate(r.start); } },
+        { label: 'End Date', key: 'end', cls: 'cell-date', fmt: function (r) { return fmtDate(r.end); } },
+        { label: 'Actual Return Date', key: 'ret', cls: 'cell-date', fmt: function (r) { return r.ret ? fmtDate(r.ret) : '—'; } },
+        { label: 'Start Odometer', key: 'odo1', num: true, cls: 'cell-num', thCls: 'text-end', fmt: function (r) { return fmtInt(r.odo1); } },
+        { label: 'End Odometer', key: 'odo2', num: true, cls: 'cell-num', thCls: 'text-end', fmt: function (r) { return r.odo2 == null ? '—' : fmtInt(r.odo2); } },
+        { label: 'Booking Status', key: 'status', fmt: function (r) { return bkStatusChip(r.status); } },
+        { label: 'Payment Status', key: 'pay', fmt: function (r) { return payStatusChip(r.pay); } },
+        { label: 'Actions', key: null, fmt: function (r) { return actionsMenu('booking', r.id, '#/booking/' + r.id); } }
+    ];
+    function bkSearch(r) { return [r.code, custName(r.cust), vehReg(r.veh), r.by, r.type, r.status, r.pay].join(' '); }
+    makeTable('bookings', '#bookingsTableHost', { rows: bookings, search: bkSearch, columns: bookingColumns, sort: { key: 'id', dir: -1 } });
+    makeTable('allBookings', '#allBookingsTableHost', { rows: bookings, search: bkSearch, columns: bookingColumns, sort: { key: 'id', dir: -1 } });
+
+    makeTable('payments', '#paymentsTableHost', {
+        rows: payments,
+        search: function (r) { var b = bk(r.bk); return [b.code, custName(b.cust), vehReg(b.veh), r.method, r.notes || ''].join(' '); },
+        sort: { key: 'id', dir: -1 },
+        columns: [
+            { label: 'ID', key: 'id', num: true, cls: 'cell-num', thCls: 'text-end' },
+            { label: 'Booking Code', key: 'bk', cls: 'cell-code', fmt: function (r) { return '<a class="dl-link" href="#/booking/' + r.bk + '">' + esc(bk(r.bk).code) + '</a>'; } },
+            { label: 'Payment Date', key: 'date', cls: 'cell-date', fmt: function (r) { return fmtDate(r.date); } },
+            { label: 'Amount Received', key: 'amt', num: true, cls: 'cell-money', thCls: 'text-end' },
+            { label: 'Payment Method', key: 'method', fmt: function (r) { return cap(r.method); } },
+            { label: 'Customer', key: null, fmt: function (r) { return esc(custName(bk(r.bk).cust)); } },
+            { label: 'Vehicle Registration', key: null, fmt: function (r) { return esc(vehReg(bk(r.bk).veh)); } },
+            { label: 'Created By', key: null, fmt: function (r) { return esc(bk(r.bk).by || '—'); } },
+            { label: 'Notes', key: 'notes', cls: 'row-note', fmt: function (r) { return r.notes ? esc(r.notes) : '<span class="text-muted">—</span>'; } },
+            { label: 'Actions', key: null, fmt: function (r) { return actionsMenu('payment', r.id, '#/payment/' + r.id); } }
+        ]
+    });
+
+    makeTable('maints', '#maintsTableHost', {
+        rows: maints,
+        search: function (r) { return [vehReg(r.veh), r.desc, r.vendor, r.status].join(' '); },
+        sort: { key: 'id', dir: -1 },
+        columns: [
+            { label: 'ID', key: 'id', num: true, cls: 'cell-num', thCls: 'text-end' },
+            { label: 'Vehicle Registration', key: 'veh', fmt: function (r) { return '<a class="dl-link" href="#/vehicle/' + r.veh + '">' + esc(vehReg(r.veh)) + '</a>'; } },
+            { label: 'Service Description', key: 'desc', cls: 'row-note' },
+            { label: 'Delivered Date', key: 'del', cls: 'cell-date', fmt: function (r) { return fmtDate(r.del); } },
+            { label: 'Expected Completion Date', key: 'exp', cls: 'cell-date', fmt: function (r) { return fmtDate(r.exp); } },
+            { label: 'Cost', key: 'cost', num: true, cls: 'cell-money', thCls: 'text-end' },
+            { label: 'Odometer Reading', key: 'odo', num: true, cls: 'cell-num', thCls: 'text-end', fmt: function (r) { return r.odo == null ? '—' : fmtInt(r.odo) + ' km'; } },
+            { label: 'Vendor', key: 'vendor' },
+            { label: 'Status', key: 'status', fmt: function (r) { return mtStatusChip(r.status); } },
+            { label: 'Created By', key: 'by' },
+            { label: 'Actions', key: null, fmt: function (r) { return actionsMenu('maintenance', r.id, '#/maintenance/' + r.id); } }
+        ]
+    });
+
+    /* ---------- Toast + delegated demo actions ---------- */
+    var toastEl = document.getElementById('demoToast');
+    var toastMsg = document.getElementById('demoToastMsg');
+    var toast = new bootstrap.Toast(toastEl, { delay: 3200 });
+    function showToast(msg) { toastMsg.textContent = (msg || 'Nothing was saved — this is a sample-data preview.').replace(/^Demo mode\s*[—–-]\s*/i, ''); toast.show(); }
+
+    document.addEventListener('click', function (e) {
+        var t = e.target.closest('[data-toast]');
+        if (t) {
+            if (t.tagName === 'A') e.preventDefault();
+            showToast(t.getAttribute('data-toast'));
+        }
+    });
+    document.addEventListener('submit', function (e) {
+        var f = e.target.closest('form[data-demo]');
+        if (!f) return;
+        e.preventDefault();
+        showToast('Nothing was saved — this is a sample-data preview.');
+        if (f.hasAttribute('data-dismiss-after')) {
+            var m = f.closest('.modal');
+            if (m) bootstrap.Modal.getOrCreateInstance(m).hide();
+        }
+    });
+
+    /* ---------- Landing: fleet cards ---------- */
+    var landingBikes = [
+        { id: 1,  title: 'Ather 450X',    odo: 4120, price: 3600, available: true,  ret: null },
+        { id: 2,  title: 'Ola S1 Pro',    odo: 2860, price: 3200, available: false, ret: '18 Dec 2026' },
+        { id: 3,  title: 'TVS iQube',     odo: 5410, price: 2900, available: true,  ret: null },
+        { id: 4,  title: 'Ather 450 Plus', odo: 1940, price: 3400, available: true, ret: null },
+        { id: 5,  title: 'Ola S1 Air',    odo: 6780, price: 2800, available: false, ret: '01 Dec 2026' },
+        { id: 6,  title: 'TVS iQube S',   odo: 3520, price: 3000, available: true,  ret: null }
+    ];
+    var fleetState = { filter: 'all', search: '' };
+    function renderFleet() {
+        var host = document.getElementById('fleetCards');
+        var h = '';
+        landingBikes.forEach(function (bike, i) {
+            var ok = (fleetState.filter === 'all' || (fleetState.filter === 'available' ? bike.available : !bike.available)) &&
+                     bike.title.toLowerCase().indexOf(fleetState.search) !== -1;
+            if (!ok) return;
+            h += '<div class="col">' +
+                '<article class="card fleet-card h-100' + (bike.available ? '' : ' fleet-card-unavailable') + '" aria-labelledby="bike-title-' + bike.id + '">' +
+                '<div class="fleet-gallery" role="img" aria-label="Photo not available for ' + esc(bike.title) + '">' +
+                '<div class="fleet-photo-missing"><i class="fas fa-motorcycle" aria-hidden="true"></i><span>Photos coming soon</span></div>' +
+                '<span class="badge fleet-status ' + (bike.available ? 'bg-success' : 'bg-danger') + '">' +
+                '<i class="fas ' + (bike.available ? 'fa-check-circle' : 'fa-clock') + ' me-1" aria-hidden="true"></i>' +
+                (bike.available ? 'Available' : 'Not Available') + '</span>' +
+                '</div>' +
+                '<div class="card-body d-flex flex-column">' +
+                '<h3 id="bike-title-' + bike.id + '">' + esc(bike.title) + '</h3>' +
+                '<p class="fleet-spec"><i class="fas fa-tachometer-alt me-2" aria-hidden="true"></i> ' + fmtInt(bike.odo) + ' km on the clock</p>' +
+                '<p class="fleet-return' + (bike.available ? ' fleet-return-ready' : '') + '">' +
+                '<i class="' + (bike.available ? 'fas fa-check-circle' : 'far fa-calendar-alt') + ' me-2" aria-hidden="true"></i>' +
+                (bike.available ? 'Ready for your next ride' : 'Next Available: <strong>' + bike.ret + '</strong>') + '</p>' +
+                '<div class="fleet-price-row mt-auto"><span class="fleet-price">' + fmtInt(bike.price) + '</span><span class="fleet-price-unit"> / month</span></div>' +
+                (bike.available
+                    ? '<button type="button" class="btn btn-primary fleet-book-button w-100" data-toast="Demo mode — online booking is switched off in this preview.">Book Now <i class="fas fa-arrow-right ms-2" aria-hidden="true"></i></button>'
+                    : '<button type="button" class="btn fleet-prebook-button w-100" disabled>Visit us to pre-book from ' + bike.ret + '</button>') +
+                '</div></article></div>';
+        });
+        host.innerHTML = h;
+        var n = host.querySelectorAll('.col').length;
+        document.getElementById('fleetCount').textContent = n + ' bike' + (n === 1 ? '' : 's') + ' to explore';
+        document.getElementById('fleetEmpty').hidden = n !== 0;
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fleet-filter]'), function (btn) {
+        btn.addEventListener('click', function () {
+            fleetState.filter = btn.getAttribute('data-fleet-filter');
+            Array.prototype.forEach.call(document.querySelectorAll('[data-fleet-filter]'), function (b) {
+                var on = b === btn;
+                b.classList.toggle('is-selected', on);
+                b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+            renderFleet();
+        });
+    });
+    document.getElementById('fleet-search').addEventListener('input', function () {
+        fleetState.search = this.value.toLowerCase().trim();
+        renderFleet();
+    });
+    document.getElementById('fleetReset').addEventListener('click', function () {
+        fleetState = { filter: 'all', search: '' };
+        document.getElementById('fleet-search').value = '';
+        renderFleet();
+    });
+    renderFleet();
+
+    /* ---------- Dashboard ---------- */
+    function statCard(icon, iconCls, value, label, hint) {
+        return '<div class="col-md-6 col-xl-3"><div class="stat-card">' +
+            '<div class="d-flex align-items-center gap-3 mb-2"><span class="stat-icon ' + iconCls + '"><i class="' + icon + '"></i></span></div>' +
+            '<div class="stat-value">' + value + '</div>' +
+            '<div class="stat-label">' + label + '</div>' +
+            '<div class="stat-hint">' + hint + '</div></div></div>';
+    }
+    function renderDashboard() {
+        var taken = bookings.filter(function (b) { return b.status === 'taken'; });
+        var avail = vehicles.filter(function (v) { return v.status === 'available'; });
+        var revenue = payments.reduce(function (s, p) { return s + p.amt; }, 0);
+        var overdue = bookings.filter(function (b) { return b.pay === 'overdue'; });
+        document.getElementById('dashStats').innerHTML =
+            statCard('fas fa-motorcycle', '', taken.length + ' / ' + vehicles.length, 'Bikes out on rent', 'Active rentals across the fleet') +
+            statCard('fas fa-circle-check', '', avail.length, 'Bikes available', 'Ready to book right now') +
+            statCard('fas fa-indian-rupee-sign', '', fmtInt(revenue), 'Revenue collected', 'Across ' + payments.length + ' recorded payments') +
+            statCard('fas fa-triangle-exclamation', 'stat-danger', overdue.length, 'Overdue payments', 'Bookings past their due date');
+        var recent = bookings.slice().sort(function (a, b) { return b.id - a.id; }).slice(0, 5);
+        var rh = '';
+        recent.forEach(function (b) {
+            rh += '<tr><td class="cell-code">' + esc(b.code) + '</td><td>' + esc(custName(b.cust)) + '</td><td>' + esc(vehReg(b.veh)) + '</td><td>' + bkStatusChip(b.status) + '</td></tr>';
+        });
+        document.querySelector('#dashRecentBookings tbody').innerHTML = rh;
+        var pulse = '';
+        taken.slice(0, 4).forEach(function (b) {
+            pulse += '<div class="dash-list-item"><div><div class="t">' + esc(vehReg(b.veh)) + ' · ' + esc(custName(b.cust)) + '</div><div class="s">Due back ' + fmtDate(b.end) + '</div></div>' + payStatusChip(b.pay) + '</div>';
+        });
+        maints.filter(function (m) { return m.status === 'in_progress' || m.status === 'scheduled'; }).slice(0, 2).forEach(function (m) {
+            pulse += '<div class="dash-list-item"><div><div class="t">' + esc(vehReg(m.veh)) + ' · Workshop</div><div class="s">' + esc(m.desc) + '</div></div>' + mtStatusChip(m.status) + '</div>';
+        });
+        document.getElementById('dashPulse').innerHTML = pulse;
+        var months = ['2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11'];
+        var counts = months.map(function (m) { return bookings.filter(function (b) { return b.start.indexOf(m) === 0; }).length; });
+        var max = Math.max.apply(null, counts.concat([1]));
+        var bars = '', W = 420, bw = 34, gap = (W - months.length * bw) / (months.length + 1);
+        months.forEach(function (m, i) {
+            var bh = Math.round((counts[i] / max) * 130);
+            bars += '<rect x="' + Math.round(gap + i * (bw + gap)) + '" y="' + (150 - bh) + '" width="' + bw + '" height="' + bh + '" rx="6" fill="#087b51" opacity="' + (i === months.length - 1 ? 1 : .45) + '"></rect>' +
+                '<text x="' + Math.round(gap + i * (bw + gap) + bw / 2) + '" y="168" text-anchor="middle" font-size="11" fill="#5b6c65">' + ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'][i] + '</text>' +
+                '<text x="' + Math.round(gap + i * (bw + gap) + bw / 2) + '" y="' + (142 - bh) + '" text-anchor="middle" font-size="11" font-weight="600" fill="#18372e">' + counts[i] + '</text>';
+        });
+        document.getElementById('dashChart').innerHTML = '<svg viewBox="0 0 ' + W + ' 180" role="img" aria-label="Bookings started per month">' +
+            '<line x1="0" y1="150" x2="' + W + '" y2="150" stroke="#dce5df"></line>' + bars + '</svg>';
+    }
+    renderDashboard();
+
+    /* ---------- Detail pages ---------- */
+    function item(k, v, wide, sub) {
+        return '<div class="show-item' + (wide ? ' show-wide' : '') + '"><div class="k">' + k + '</div><div class="v">' + v + (sub ? '<span class="s">' + sub + '</span>' : '') + '</div></div>';
+    }
+    function fillBookingShow(id) {
+        var b = bk(id), v = veh(b.veh), c = customers.find(function (x) { return x.id === b.cust; }) || {};
+        document.getElementById('bkShowCode').textContent = '#' + b.code;
+        document.getElementById('bkShowGrid').innerHTML =
+            item('Customer', esc(c.name) || '—', false, esc(c.aadhaar || '') + ' · ' + esc(c.phone || '')) +
+            item('Vehicle', esc(v.reg), false, esc((v.brand || '') + ' ' + (v.model || ''))) +
+            item('Booking Status', bkStatusChip(b.status)) +
+            item('Payment Status', payStatusChip(b.pay)) +
+            item('Rental Type', cap(b.type), false, 'Created by ' + esc(b.by)) +
+            item('Rate', fmtMoney(b.rate) + ' / ' + b.type) +
+            item('Start Date', fmtDate(b.start), false, 'Odometer ' + fmtInt(b.odo1) + ' km') +
+            item('End Date', fmtDate(b.end), false, 'Odometer ' + (b.odo2 == null ? 'not recorded yet' : fmtInt(b.odo2) + ' km')) +
+            item('Actual Return Date', b.ret ? fmtDate(b.ret) : '—') +
+            '<div class="show-item show-wide"><div class="show-notes">' +
+            '<div class="k">Handover Notes</div>' + (b.hand ? esc(b.hand) : '<span class="text-muted">No handover notes recorded.</span>') +
+            '<div class="k" style="margin-top:.8rem;">Return Notes</div>' + (b.retn ? esc(b.retn) : '<span class="text-muted">No return notes recorded.</span>') +
+            '</div></div>';
+        var ph = '';
+        payments.filter(function (p) { return p.bk === b.id; }).forEach(function (p) {
+            ph += '<tr><td>' + p.id + '</td><td class="cell-date">' + fmtDate(p.date) + '</td><td class="cell-money">' + fmtMoney(p.amt) + '</td><td>' + cap(p.method) + '</td><td>' + (p.notes ? esc(p.notes) : '<span class="text-muted">—</span>') + '</td></tr>';
+        });
+        if (!ph) ph = '<tr><td colspan="5" class="text-center text-muted py-3">No payments recorded for this booking.</td></tr>';
+        document.querySelector('#bkShowPayments tbody').innerHTML = ph;
+    }
+    function fillVehicleShow(id) {
+        var v = veh(id);
+        document.getElementById('vehShowReg').textContent = v.reg;
+        document.getElementById('vehShowGrid').innerHTML =
+            item('Registration Number', esc(v.reg)) +
+            item('Brand · Model', esc(v.brand + ' ' + v.model)) +
+            item('Status', vehStatusChip(v.status)) +
+            item('Rate Per Unit', fmtMoney(v.rate)) +
+            item('Odometer Reading', fmtInt(v.odo) + ' km') +
+            item('Chassis Number', esc(v.chassis)) +
+            item('Battery Serial Number', esc(v.battery)) +
+            item('Purchase Date', fmtDate(v.pdate), false, 'Purchase cost ' + fmtMoney(v.pcost)) +
+            item('Insurance Policy Number', esc(v.insNo), false, 'Expires ' + fmtDate(v.insExp)) +
+            item('Total Amount Earned', fmtMoney(payments.filter(function (p) { var b = bk(p.bk); return b.veh === v.id; }).reduce(function (s, p) { return s + p.amt; }, 0)), false, 'From recorded payments') +
+            '<div class="show-item show-wide"><div class="show-notes"><div class="k">Damages</div>' + (v.damages ? esc(v.damages) : '<span class="text-muted">No damage recorded for this vehicle.</span>') + '</div></div>';
+        var photos = '';
+        for (var i = 1; i <= 3; i++) {
+            photos += '<span class="placeholder-img"><i class="fas fa-motorcycle"></i><span>Photo ' + i + '</span></span>';
+        }
+        document.getElementById('vehShowPhotos').innerHTML = photos;
+    }
+    function fillPaymentShow(id) {
+        var p = payments.find(function (x) { return x.id === id; }), b = bk(p.bk);
+        document.getElementById('payShowId').textContent = '#' + p.id;
+        document.getElementById('payShowGrid').innerHTML =
+            item('Booking', '<a class="dl-link" href="#/booking/' + b.id + '">#' + esc(b.code) + '</a>', false, esc(custName(b.cust)) + ' · ' + esc(vehReg(b.veh))) +
+            item('Payment Date', fmtDate(p.date)) +
+            item('Amount Received', fmtMoney(p.amt)) +
+            item('Payment Method', cap(p.method)) +
+            item('Recorded By', esc(b.by || '—')) +
+            '<div class="show-item show-wide"><div class="show-notes"><div class="k">Notes</div>' + (p.notes ? esc(p.notes) : '<span class="text-muted">No notes on this payment.</span>') + '</div></div>';
+    }
+    function fillMaintShow(id) {
+        var m = maints.find(function (x) { return x.id === id; });
+        document.getElementById('mtShowId').textContent = '#' + m.id;
+        document.getElementById('mtShowGrid').innerHTML =
+            item('Vehicle', '<a class="dl-link" href="#/vehicle/' + m.veh + '">' + esc(vehReg(m.veh)) + '</a>') +
+            item('Status', mtStatusChip(m.status)) +
+            item('Vendor', esc(m.vendor)) +
+            item('Delivered Date', fmtDate(m.del)) +
+            item('Expected Completion', fmtDate(m.exp)) +
+            item('Cost', fmtMoney(m.cost)) +
+            item('Odometer Reading', m.odo == null ? '—' : fmtInt(m.odo) + ' km', false, 'Recorded by ' + esc(m.by)) +
+            '<div class="show-item show-wide"><div class="show-notes"><div class="k">Service Description</div>' + esc(m.desc) + '</div></div>';
+    }
+
+    /* ---------- Forms: seeded selects + defaults ---------- */
+    function fillSelect(id, options) {
+        var sel = document.getElementById(id);
+        if (sel) sel.innerHTML = options;
+    }
+    fillSelect('b-cust', '<option value=""></option>' + customers.map(function (c) {
+        return '<option value="' + c.id + '">' + esc(c.aadhaar) + ' — ' + esc(c.name) + '</option>';
+    }).join(''));
+    fillSelect('b-veh', '<option value=""></option>' + vehicles.map(function (v) {
+        return '<option value="' + v.id + '" data-rate="' + v.rate + '" data-odo="' + v.odo + '">' + esc(v.reg) + '</option>';
+    }).join(''));
+    fillSelect('pay-book', '<option value=""></option>' + bookings.slice().sort(function (a, b) { return b.id - a.id; }).map(function (b) {
+        return '<option value="' + b.id + '">#' + esc(b.code) + ' — ' + esc(custName(b.cust)) + ' · ' + esc(vehReg(b.veh)) + '</option>';
+    }).join(''));
+    fillSelect('m-veh', '<option value=""></option>' + vehicles.map(function (v) {
+        return '<option value="' + v.id + '">' + esc(v.reg) + '</option>';
+    }).join(''));
+    ['b-start', 'b-end', 'pay-date', 'm-dd', 'm-ed'].forEach(function (id) { var el = document.getElementById(id); if (el) el.value = TODAY; });
+    var bEnd = document.getElementById('b-end'); if (bEnd) bEnd.value = '2026-12-17';
+    var mEd = document.getElementById('m-ed'); if (mEd) mEd.value = '2026-11-21';
+    var bVeh = document.getElementById('b-veh');
+    if (bVeh) bVeh.addEventListener('change', function () {
+        var opt = bVeh.selectedOptions[0];
+        if (opt && opt.value) {
+            document.getElementById('b-rate').value = opt.getAttribute('data-rate');
+        }
+    });
+
+    /* ---------- Router ---------- */
+    var worldEl = {
+        landing: document.getElementById('v-landing'),
+        login: document.getElementById('v-login'),
+        admin: document.getElementById('v-admin')
+    };
+    function setWorld(name) {
+        Object.keys(worldEl).forEach(function (k) {
+            worldEl[k].classList.toggle('is-active', k === name);
+        });
+    }
+    function setAdminPage(page, group) {
+        Array.prototype.forEach.call(document.querySelectorAll('.admin-view'), function (s) {
+            s.classList.toggle('is-active', s.id === 'p-' + page);
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('[data-page-link]'), function (a) {
+            a.classList.toggle('active', a.getAttribute('data-page-link') === page);
+        });
+        var groups = document.querySelectorAll('[data-page-group]');
+        Array.prototype.forEach.call(groups, function (g) {
+            var match = g.getAttribute('data-page-group') === group;
+            g.setAttribute('aria-expanded', match ? 'true' : 'false');
+            var target = document.getElementById(g.getAttribute('data-bs-target').slice(1));
+            if (target) target.classList.toggle('show', match);
+            var icon = g.querySelector('.toggle-icon');
+            if (icon) icon.classList.toggle('fa-chevron-up', match);
+        });
+        if (window.innerWidth < 992) {
+            document.body.classList.remove('sb-sidenav-toggled');
+            document.getElementById('sidenavBackdrop').classList.remove('show');
+        }
+        window.scrollTo(0, 0);
+    }
+    function route() {
+        var h = (location.hash || '#/').replace(/^#\/?/, '');
+        var parts = h.split('/').filter(Boolean);
+        if (parts.length === 0) { setWorld('landing'); document.title = 'Biker — Interactive Demo'; return; }
+        if (parts[0] === 'login') { setWorld('login'); document.title = 'Sign in — Biker (Demo)'; return; }
+        setWorld('admin');
+        var page, fill;
+        switch (parts[0]) {
+            case 'dashboard': page = 'dashboard'; break;
+            case 'users': page = 'users'; break;
+            case 'vehicles': page = parts[1] === 'new' ? 'vehicle-new' : 'vehicles'; break;
+            case 'vehicle': page = 'vehicle-show'; fill = function () { fillVehicleShow(parseInt(parts[1], 10)); }; break;
+            case 'bookings': page = parts[1] === 'new' ? 'booking-new' : 'bookings'; break;
+            case 'booking': page = 'booking-show'; fill = function () { fillBookingShow(parseInt(parts[1], 10)); }; break;
+            case 'all-bookings': page = 'all-bookings'; break;
+            case 'payments': page = parts[1] === 'new' ? 'payment-new' : 'payments'; break;
+            case 'payment': page = 'payment-show'; fill = function () { fillPaymentShow(parseInt(parts[1], 10)); }; break;
+            case 'maintenance': page = parts[1] === 'new' ? 'maintenance-new' : (/^\d+$/.test(parts[1] || '') ? 'maintenance-show' : 'maintenance'); if (page === 'maintenance-show') fill = function () { fillMaintShow(parseInt(parts[1], 10)); }; break;
+            case 'maint': case 'maintenance-log': page = 'maintenance-show'; fill = function () { fillMaintShow(parseInt(parts[1], 10)); }; break;
+            case 'settings': page = 'settings'; break;
+            case 'profile': page = 'profile'; break;
+            default: page = 'dashboard';
+        }
+        if (fill) fill();
+        var group = page === 'all-bookings' ? 'bookings'
+            : page === 'dashboard' ? ''
+            : page.replace(/-new$/, '').replace(/-show$/, '');
+        setAdminPage(page, group);
+        document.title = 'Biker — Interactive Demo';
+    }
+    window.addEventListener('hashchange', route);
+    route();
+
+    /* ---------- Sidebar + login wiring ---------- */
+    document.getElementById('sidebarToggle').addEventListener('click', function () {
+        var on = document.body.classList.toggle('sb-sidenav-toggled');
+        if (window.innerWidth < 992) document.getElementById('sidenavBackdrop').classList.toggle('show', on);
+    });
+    document.getElementById('sidenavBackdrop').addEventListener('click', function () {
+        document.body.classList.remove('sb-sidenav-toggled');
+        this.classList.remove('show');
+    });
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        location.hash = '#/dashboard';
+    });
+    var tgl = document.getElementById('togglePassword'), pwd = document.getElementById('password');
+    tgl.addEventListener('click', function () {
+        var show = pwd.getAttribute('type') === 'password';
+        pwd.setAttribute('type', show ? 'text' : 'password');
+        tgl.querySelector('i').classList.toggle('fa-eye-slash', show);
+        tgl.querySelector('i').classList.toggle('fa-eye', !show);
+    });
+})();
+
+</script>
+
+</body>
+</html>

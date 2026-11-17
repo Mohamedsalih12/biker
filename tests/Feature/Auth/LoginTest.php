@@ -119,7 +119,8 @@ class LoginTest extends TestCase
         $response = $this->actingAsUser()->get(route('home'));
 
         $response->assertOk();
-        $response->assertSee('You are logged in!');
+        $response->assertSee('Dashboard');
+        $response->assertSee('No bookings recorded yet.');
     }
 
     public function test_user_can_logout(): void

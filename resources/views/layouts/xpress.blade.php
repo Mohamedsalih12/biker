@@ -171,10 +171,10 @@
 
                             <!-- Static Menu Items (No Collapse) -->
                             <li class="nav-item">
-                                <a class="nav-link {{ Request::is('admin/dashboard') ? 'active' : '' }}"
-                                href="{{ route('frontend.index') }}" aria-expanded="false" aria-controls="ui-basic">
+                                <a class="nav-link {{ Request::is('/home') ? 'active' : '' }}"
+                                href="{{ route('home') }}" aria-expanded="false" aria-controls="ui-basic">
                                 <i class="fas fa-home"></i>&nbsp;&nbsp;&nbsp;&nbsp;
-                                <span class="menu-title">Dashboard</span>
+                                <span class="menu-title">Admin Dashboard</span>
                                 </a>
                             </li>
                             

@@ -272,7 +272,7 @@
     <aside class="t360-auth-brand">
         <div class="t360-auth-logo">
             <span class="logo-chip">
-                <img src="{{ asset('admin/images/GMBLogo.png') }}" alt="GULF MB logo">
+                <img src="{{ asset('admin/images/BikerLogo.jpeg') }}" alt="Biker logo">
             </span>
             <span class="brand-word">Biker<b>.</b></span>
         </div>
