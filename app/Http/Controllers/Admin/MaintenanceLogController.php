@@ -106,6 +106,11 @@ class MaintenanceLogController extends Controller
             }
             $attributes = $request->validated();
             $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($attributes['vehicle_id']);
+            if (! $maintenanceLog->exists && $vehicle->bookings()->whereIn('booking_status', ['reserved', 'taken'])->exists()) {
+                throw ValidationException::withMessages([
+                    'vehicle_id' => 'Cannot create a maintenance log for a vehicle with a reserved or taken booking.',
+                ]);
+            }
             if (! $maintenanceLog->exists || $maintenanceLog->vehicle_id !== $vehicle->id) {
                 $maintenanceLog->odometer_reading = $vehicle->odometer_reading;
             }

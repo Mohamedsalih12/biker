@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
 use App\Models\MaintenanceLog;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -13,6 +14,47 @@ use Tests\TestCase;
 
 class MaintenanceLogTest extends TestCase
 {
+    #[DataProvider('blockingBookingStatuses')]
+    public function test_creation_rejects_vehicle_with_reserved_or_taken_booking(string $bookingStatus): void
+    {
+        $vehicle = Vehicle::factory()->create(['odometer_reading' => 12345]);
+        $booking = Booking::factory()->for($vehicle)->create(['booking_status' => $bookingStatus]);
+        Booking::factory()->for($vehicle)->create(['booking_status' => 'returned']);
+
+        $this->actingAsUser()->from('/admin/maintenance-logs/create')
+            ->post('/admin/maintenance-logs', $this->payload($vehicle))
+            ->assertRedirect('/admin/maintenance-logs/create')
+            ->assertSessionHasErrors(['vehicle_id' => 'Cannot create a maintenance log for a vehicle with a reserved or taken booking.']);
+
+        $this->assertDatabaseCount('maintenance_logs', 0);
+        $this->assertDatabaseMissing('activity_log', ['log_name' => 'maintenance_log', 'event' => 'created']);
+        $this->assertSame($bookingStatus, $booking->fresh()->booking_status);
+        $this->assertSame(12345, $vehicle->fresh()->odometer_reading);
+    }
+
+    public static function blockingBookingStatuses(): array
+    {
+        return ['reserved' => ['reserved'], 'taken' => ['taken']];
+    }
+
+    #[DataProvider('nonBlockingBookingStatuses')]
+    public function test_creation_accepts_vehicle_with_only_returned_or_cancelled_bookings(string $bookingStatus): void
+    {
+        $vehicle = Vehicle::factory()->create();
+        Booking::factory()->for($vehicle)->create(['booking_status' => $bookingStatus]);
+        Booking::factory()->create(['booking_status' => 'taken']);
+
+        $this->actingAsUser()->post('/admin/maintenance-logs', $this->payload($vehicle))
+            ->assertRedirect('/admin/maintenance-logs')->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('maintenance_logs', ['vehicle_id' => $vehicle->id]);
+    }
+
+    public static function nonBlockingBookingStatuses(): array
+    {
+        return ['returned' => ['returned'], 'cancelled' => ['cancelled']];
+    }
+
     public function test_admin_creates_log_with_server_owned_creator_and_odometer(): void
     {
         $this->travelTo(now()->setDate(2026, 11, 16)->setTime(12, 0));
